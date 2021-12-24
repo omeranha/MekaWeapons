@@ -1,0 +1,29 @@
+
+modLoader="javafml"
+loaderVersion="[36,)"
+license="MIT"
+[[mods]]
+modId="mekaweapons"
+version="${file.jarVersion}"
+displayName="Meka-Weapons"
+logoFile="mekaweapons.png"
+authors="oMeranha"
+description='''Weapons for Mekanism!'''
+[[dependencies.mekaweapons]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.mekaweapons]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5,1.17)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.mekaweapons]]
+    modId="mekanism"
+    mandatory=true
+    versionRange="10.1.0.455"
+    ordering="AFTER"
+    side="BOTH"

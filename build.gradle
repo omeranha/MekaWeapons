@@ -1,0 +1,96 @@
+buildscript {
+    repositories {
+        maven {
+            url = 'https://maven.minecraftforge.net'
+        }
+        maven {
+            name = 'parchment'
+            url = 'https://maven.parchmentmc.org'
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.parchmentmc:librarian:1.+'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'maven-publish'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
+
+version = '1.0'
+group = 'meranha'
+archivesBaseName = 'mekatana'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+
+minecraft {
+    mappings channel: 'parchment', version: '2021.08.29-1.16.5'
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                mekatana {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            mods {
+                mekatana {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        data {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            args '--mod', 'mekatana', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            mods {
+                mekatana {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    maven { url 'https://cursemaven.com/' }
+    maven { url 'https://maven.theillusivec4.top/' }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.16.5-36.2.22'
+
+    compileOnly fg.deobf("curse.maven:Mekanism-268560:3577006")
+    runtimeOnly fg.deobf("curse.maven:Mekanism-268560:3577006")
+    runtimeOnly fg.deobf("curse.maven:JEI-238222:3564654")
+    runtimeOnly fg.deobf("curse.maven:MmmMmmMmmMmm-225738:3279930")
+}
+
+jar {
+    manifest {
+        attributes([
+            "Specification-Title": "mekaweapons",
+            "Specification-Vendor": "oMeranha",
+            "Specification-Version": "1",
+            "Implementation-Title": "mekaweapons",
+            "Implementation-Version": "${version}",
+            "Implementation-Vendor" :"oMeranha",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+jar.finalizedBy('reobfJar')
