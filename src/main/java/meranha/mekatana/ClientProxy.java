@@ -20,7 +20,7 @@ public class ClientProxy implements IProxy {
     @Override
     public void init(FMLCommonSetupEvent event) {
 
-        Map<String, PlayerRenderer> skinMapTana = Minecraft.getInstance().getBlockEntityRenderDispatcher().getSkinMap();
+        Map<String, PlayerRenderer> skinMapTana = Minecraft.getInstance().getEntityRenderDispatcher().getSkinMap();
         for (PlayerRenderer render : new PlayerRenderer[]{skinMapTana.get("default"), skinMapTana.get("slim")})
             render.addLayer(new MekaTanaRenderer(render));
     }
