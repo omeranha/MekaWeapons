@@ -563,5 +563,26 @@
             "translation": [3, -2.25, 0],
             "scale": [0.9, 0.9, 1]
         }
-    }
+    },
+    "overrides": [
+        {
+            "predicate": {
+                "mekanism:pulling": 1
+            },
+            "model": "mekanism:item/electric_bow_pulling_0"
+        },
+        {
+            "predicate": {
+                "mekanism:pulling": 1,
+                "mekanism:pull": 0.65
+            },
+            "model": "mekanism:item/electric_bow_pulling_1"
+        },
+        {
+            "predicate": {
+                "mekanism:pulling": 1,
+                "mekanism:pull": 0.9
+            },
+            "model": "mekanism:item/electric_bow_pulling_2"
+        }]
 }

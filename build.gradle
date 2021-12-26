@@ -74,6 +74,7 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.16.5-36.2.22'
 
     compileOnly fg.deobf("curse.maven:Mekanism-268560:3577006")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.16.5-4.0.5.3")
     runtimeOnly fg.deobf("curse.maven:Mekanism-268560:3577006")
     runtimeOnly fg.deobf("curse.maven:JEI-238222:3564654")
     runtimeOnly fg.deobf("curse.maven:MmmMmmMmmMmm-225738:3279930")
