@@ -19,6 +19,7 @@ public class MekaConfig extends BaseMekanismConfig {
 
     public final CachedFloatingLongValue mekaBowEnergyUsage;
     public final CachedFloatingLongValue mekaBowEnergyUsageFire;
+    public final CachedIntValue mekaBowDamage;
 
     MekaConfig() {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -36,6 +37,7 @@ public class MekaConfig extends BaseMekanismConfig {
         builder.comment("MekaBow Settings.").push("mekabow");
         mekaBowEnergyUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Bow.", "energyUsage", FloatingLong.createConst(120));
         mekaBowEnergyUsageFire = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Bow with flame mode active.", "energyUsageFire", FloatingLong.createConst(1_200));
+        mekaBowDamage = CachedIntValue.wrap(this, builder.comment("Be careful! The final damage of Meka-Bow is based on how fast the arrow is going when hits.").define("mekaBowDamage", 25));
         builder.pop(2);
 
         this.configSpec = builder.build();
@@ -43,7 +45,7 @@ public class MekaConfig extends BaseMekanismConfig {
 
     @Override
     public String getFileName() {
-        return "mekaweapons-configs";
+        return "mekaweapons";
     }
 
     @Override
@@ -53,6 +55,6 @@ public class MekaConfig extends BaseMekanismConfig {
 
     @Override
     public ModConfig.Type getConfigType() {
-        return ModConfig.Type.SERVER;
+        return ModConfig.Type.CLIENT;
     }
 }

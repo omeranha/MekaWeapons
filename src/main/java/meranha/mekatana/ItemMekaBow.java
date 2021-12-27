@@ -20,7 +20,6 @@ import mekanism.common.util.MekanismUtils;
 import mekanism.common.util.StorageUtils;
 import mekanism.common.util.text.BooleanStateDisplay.OnOff;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
@@ -35,10 +34,7 @@ import net.minecraft.item.Items;
 import net.minecraft.item.Rarity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.Util;
+import net.minecraft.util.*;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
@@ -57,6 +53,20 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
     public void appendHoverText(@Nonnull ItemStack stack, World world, @Nonnull List<ITextComponent> tooltip, @Nonnull ITooltipFlag flag) {
         StorageUtils.addStoredEnergy(stack, tooltip, true);
         tooltip.add(MekanismLang.FIRE_MODE.translateColored(EnumColor.PINK, OnOff.of(getFireState(stack))));
+        tooltip.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.PINK, OnOff.of(getAutoFire(stack))));
+    }
+
+    public void onUseTick(World world, LivingEntity player, ItemStack stack, int count) {
+        boolean autoFire = getAutoFire(stack);
+        if (autoFire && getUseDuration(stack) - count >= getChargeTicks()) {
+            player.stopUsingItem();
+            stack.releaseUsing(world, player, 0);
+            player.startUsingItem(player.getUsedItemHand());
+        }
+    }
+
+    public static int getChargeTicks() {
+        return (int)Math.ceil(20.0F);
     }
 
     @Override
@@ -96,6 +106,10 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
                         arrowEntity.setCritArrow(true);
                     }
                     int power = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, stack);
+                    int damage = ModConfig.general.mekaBowDamage.get();
+                    if (power == 0) {
+                        arrowEntity.setBaseDamage(damage);
+                    }
                     if (power > 0) {
                         arrowEntity.setBaseDamage(arrowEntity.getBaseDamage() + 0.5 * power + 0.5);
                     }
@@ -134,8 +148,17 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
         return ItemDataUtils.getBoolean(stack, NBTConstants.MODE);
     }
 
+    public void setAutoFire(ItemStack stack, boolean state) {
+        ItemDataUtils.setBoolean(stack, NBTConstants.MODE, state);
+    }
+
+    public boolean getAutoFire(ItemStack stack) {
+        return ItemDataUtils.getBoolean(stack, NBTConstants.MODE);
+    }
+
     @Override
     public void addHUDStrings(List<ITextComponent> list, PlayerEntity player, ItemStack stack, EquipmentSlotType slotType) {
+        list.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.PINK, OnOff.of(getAutoFire(stack))));
         list.add(MekanismLang.FIRE_MODE.translateColored(EnumColor.PINK, OnOff.of(getFireState(stack))));
         StorageUtils.addStoredEnergy(stack, list, true, MekanismLang.STORED_ENERGY);
     }
@@ -177,6 +200,13 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
                 player.sendMessage(MekanismUtils.logFormat(MekanismLang.FIRE_MODE.translate(OnOff.of(newState, true))), Util.NIL_UUID);
             }
         }
+        if (player.isShiftKeyDown()) {
+            boolean newState = !getAutoFire(stack);
+            setAutoFire(stack, newState);
+            if (displayChangeMessage) {
+                player.sendMessage(MekanismUtils.logFormat(WeaponsLang.AUTOFIRE_MODE.translate(OnOff.of(newState, true))), Util.NIL_UUID);
+            }
+        }
     }
 
     @Nonnull
@@ -193,21 +223,6 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
     @Override
     public boolean shouldCauseBlockBreakReset(ItemStack oldStack, ItemStack newStack) {
         return oldStack.getItem() != newStack.getItem();
-    }
-
-    @Override
-    public boolean isEnchantable(@Nonnull ItemStack stack) {
-        return true;
-    }
-
-    @Override
-    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
-        return true;
-    }
-
-    @Override
-    public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
-        return true;
     }
 
     @Override

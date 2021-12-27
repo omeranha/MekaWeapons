@@ -1,4 +1,5 @@
 {
 	"item.mekaweapons.mekatana": "Meka-Tana",
-	"item.mekaweapons.mekabow": "Meka-Bow"
+	"item.mekaweapons.mekabow": "Meka-Bow",
+	"tooltip.mekanism.autofire_mode": "AutoFire Mode: %s"
 }
