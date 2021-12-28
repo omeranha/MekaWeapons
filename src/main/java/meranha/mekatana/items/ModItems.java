@@ -1,9 +1,9 @@
-package meranha.mekatana;
+package meranha.mekatana.items;
 
 import mekanism.common.registration.impl.ItemDeferredRegister;
 import mekanism.common.registration.impl.ItemRegistryObject;
 
-public final class Items {
+public final class ModItems {
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister("mekaweapons");
 
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("mekatana", ItemMekaTana::new);

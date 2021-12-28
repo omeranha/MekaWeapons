@@ -2,11 +2,11 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
-		"1": "mekaweapons:items/mekatana/pennant_base",
+		"1": "mekaweapons:items/mekatana/base",
 		"3": "mekaweapons:items/mekatana/handle",
-		"5": "mekaweapons:items/mekatana/pennant_blade",
-		"6": "mekaweapons:items/mekatana/pennant_part",
-		"particle": "mekaweapons:items/mekatana/pennant_base"
+		"5": "mekaweapons:items/mekatana/blade",
+		"6": "mekaweapons:items/mekatana/part",
+		"particle": "mekaweapons:items/mekatana/base"
 	},
 	"elements": [
 		{

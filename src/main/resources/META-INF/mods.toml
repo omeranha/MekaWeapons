@@ -27,3 +27,7 @@ description='''Weapons for Mekanism!'''
     versionRange="10.1.0.455"
     ordering="AFTER"
     side="BOTH"
+[[dependencies.mekaweapons]]
+    modId = "curios"
+    mandatory =false
+    versionRange = "[1.16.5-4.0.5.2,)"

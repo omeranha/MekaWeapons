@@ -1,7 +1,8 @@
-package meranha.mekatana;
+package meranha.mekatana.client;
 
 import mekanism.api.math.FloatingLong;
 import mekanism.common.config.BaseMekanismConfig;
+import mekanism.common.config.value.CachedBooleanValue;
 import mekanism.common.config.value.CachedFloatingLongValue;
 import mekanism.common.config.value.CachedIntValue;
 import net.minecraftforge.common.ForgeConfigSpec;

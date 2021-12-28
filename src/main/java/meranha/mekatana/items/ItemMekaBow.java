@@ -1,4 +1,4 @@
-package meranha.mekatana;
+package meranha.mekatana.items;
 
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -13,12 +13,15 @@ import mekanism.common.capabilities.ItemCapabilityWrapper;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
 import mekanism.common.capabilities.energy.item.RateLimitEnergyHandler;
 import mekanism.common.config.MekanismConfig;
+import mekanism.common.content.gear.IModuleContainerItem;
 import mekanism.common.item.interfaces.IItemHUDProvider;
 import mekanism.common.item.interfaces.IModeItem;
 import mekanism.common.util.ItemDataUtils;
 import mekanism.common.util.MekanismUtils;
 import mekanism.common.util.StorageUtils;
 import mekanism.common.util.text.BooleanStateDisplay.OnOff;
+import meranha.mekatana.client.WeaponsConfig;
+import meranha.mekatana.WeaponsLang;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -26,12 +29,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.AbstractArrowEntity;
 import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ArrowItem;
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.Rarity;
+import net.minecraft.item.*;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.*;
@@ -42,7 +40,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.event.ForgeEventFactory;
 
-public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider {
+public class ItemMekaBow extends BowItem implements IModeItem, IModuleContainerItem, IItemHUDProvider {
 
     public ItemMekaBow(Properties properties) {
         super(properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1));
@@ -52,11 +50,10 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(@Nonnull ItemStack stack, World world, @Nonnull List<ITextComponent> tooltip, @Nonnull ITooltipFlag flag) {
         StorageUtils.addStoredEnergy(stack, tooltip, true);
-        tooltip.add(MekanismLang.FIRE_MODE.translateColored(EnumColor.PINK, OnOff.of(getFireState(stack))));
-        tooltip.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.PINK, OnOff.of(getAutoFire(stack))));
+        tooltip.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.YELLOW, OnOff.of(getAutoFire(stack))));
     }
 
-    public void onUseTick(World world, LivingEntity player, ItemStack stack, int count) {
+    public void onUseTick(@Nonnull World world, @Nonnull LivingEntity player, @Nonnull ItemStack stack, int count) {
         boolean autoFire = getAutoFire(stack);
         if (autoFire && getUseDuration(stack) - count >= getChargeTicks()) {
             player.stopUsingItem();
@@ -74,10 +71,9 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
         if (entityLiving instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) entityLiving;
             IEnergyContainer energyContainer = null;
-            boolean fireState = getFireState(stack);
             if (!player.isCreative()) {
                 energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-                FloatingLong energyNeeded = fireState ? ModConfig.general.mekaBowEnergyUsageFire.get() : ModConfig.general.mekaBowEnergyUsage.get();
+                FloatingLong energyNeeded = WeaponsConfig.general.mekaBowEnergyUsage.get();
                 if (energyContainer == null || energyContainer.extract(energyNeeded, Action.SIMULATE, AutomationType.MANUAL).smallerThan(energyNeeded)) {
                     return;
                 }
@@ -105,23 +101,21 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
                     if (velocity == 1) {
                         arrowEntity.setCritArrow(true);
                     }
+                    int damage = WeaponsConfig.general.mekaBowDamage.get();
+                    arrowEntity.setBaseDamage(damage);
                     int power = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, stack);
-                    int damage = ModConfig.general.mekaBowDamage.get();
-                    if (power == 0) {
-                        arrowEntity.setBaseDamage(damage);
-                    }
                     if (power > 0) {
-                        arrowEntity.setBaseDamage(arrowEntity.getBaseDamage() + 0.5 * power + 0.5);
+                        arrowEntity.setBaseDamage(damage + 0.5 * power + 0.5);
                     }
                     int punch = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, stack);
                     if (punch > 0) {
                         arrowEntity.setKnockback(punch);
                     }
-                    if (fireState || EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, stack) > 0) {
+                    if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, stack) > 0) {
                         arrowEntity.setSecondsOnFire(100);
                     }
                     if (!player.isCreative() && energyContainer != null) {
-                        energyContainer.extract(fireState ? ModConfig.general.mekaBowEnergyUsageFire.get() : ModConfig.general.mekaBowEnergyUsage.get(), Action.EXECUTE, AutomationType.MANUAL);
+                        energyContainer.extract(WeaponsConfig.general.mekaBowEnergyUsage.get(), Action.EXECUTE, AutomationType.MANUAL);
                     }
                     if (noConsume || player.isCreative() && (ammo.getItem() == Items.SPECTRAL_ARROW || ammo.getItem() == Items.TIPPED_ARROW)) {
                         arrowEntity.pickup = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
@@ -140,14 +134,6 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
         }
     }
 
-    public void setFireState(ItemStack stack, boolean state) {
-        ItemDataUtils.setBoolean(stack, NBTConstants.MODE, state);
-    }
-
-    public boolean getFireState(ItemStack stack) {
-        return ItemDataUtils.getBoolean(stack, NBTConstants.MODE);
-    }
-
     public void setAutoFire(ItemStack stack, boolean state) {
         ItemDataUtils.setBoolean(stack, NBTConstants.MODE, state);
     }
@@ -158,8 +144,7 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
 
     @Override
     public void addHUDStrings(List<ITextComponent> list, PlayerEntity player, ItemStack stack, EquipmentSlotType slotType) {
-        list.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.PINK, OnOff.of(getAutoFire(stack))));
-        list.add(MekanismLang.FIRE_MODE.translateColored(EnumColor.PINK, OnOff.of(getFireState(stack))));
+        list.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.YELLOW, OnOff.of(getAutoFire(stack))));
         StorageUtils.addStoredEnergy(stack, list, true, MekanismLang.STORED_ENERGY);
     }
 
@@ -194,25 +179,12 @@ public class ItemMekaBow extends BowItem implements IModeItem, IItemHUDProvider 
     @Override
     public void changeMode(@Nonnull PlayerEntity player, @Nonnull ItemStack stack, int shift, boolean displayChangeMessage) {
         if (Math.abs(shift) % 2 == 1) {
-            boolean newState = !getFireState(stack);
-            setFireState(stack, newState);
-            if (displayChangeMessage) {
-                player.sendMessage(MekanismUtils.logFormat(MekanismLang.FIRE_MODE.translate(OnOff.of(newState, true))), Util.NIL_UUID);
-            }
-        }
-        if (player.isShiftKeyDown()) {
             boolean newState = !getAutoFire(stack);
             setAutoFire(stack, newState);
             if (displayChangeMessage) {
                 player.sendMessage(MekanismUtils.logFormat(WeaponsLang.AUTOFIRE_MODE.translate(OnOff.of(newState, true))), Util.NIL_UUID);
             }
         }
-    }
-
-    @Nonnull
-    @Override
-    public ITextComponent getScrollTextComponent(@Nonnull ItemStack stack) {
-        return MekanismLang.FIRE_MODE.translateColored(EnumColor.PINK, OnOff.of(getFireState(stack), true));
     }
 
     @Override
