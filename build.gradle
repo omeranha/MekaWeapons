@@ -1,12 +1,7 @@
 buildscript {
     repositories {
-        maven {
-            url = 'https://maven.minecraftforge.net'
-        }
-        maven {
-            name = 'parchment'
-            url = 'https://maven.parchmentmc.org'
-        }
+        maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://maven.parchmentmc.org' }
         mavenCentral()
     }
     dependencies {
@@ -65,17 +60,11 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-repositories {
-    maven { url 'https://cursemaven.com/' }
-    maven { url 'https://maven.theillusivec4.top/' }
-    maven { url 'https://maven.covers1624.net/' }
-}
+repositories { maven { url 'https://cursemaven.com/' } }
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.16.5-36.2.22'
 
-    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.16.5-4.0.5.3")
-    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.16.5-4.0.5.3:api")
     compileOnly fg.deobf("curse.maven:Mekanism-268560:3577006")
     runtimeOnly fg.deobf("curse.maven:Mekanism-268560:3577006")
     runtimeOnly fg.deobf("curse.maven:JEI-238222:3564654")

@@ -1,33 +1,24 @@
-
 modLoader="javafml"
 loaderVersion="[36,)"
 license="MIT"
 [[mods]]
 modId="mekaweapons"
-version="${file.jarVersion}"
-displayName="Meka-Weapons"
-logoFile="mekaweapons.png"
+version="1.0"
+displayName="Mekanism Weapons"
 authors="oMeranha"
-description='''Weapons for Mekanism!'''
-[[dependencies.mekaweapons]]
-    modId="forge"
-    mandatory=true
-    versionRange="[36,)"
-    ordering="NONE"
-    side="BOTH"
+description='''Weapons for Mekanism.'''
 [[dependencies.mekaweapons]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.5,1.17)"
-    ordering="NONE"
+    versionRange="${mc_version}"
+    side="BOTH"
+[[dependencies.mekaweapons]]
+    modId="forge"
+    mandatory=true
+    versionRange="36.2.22"
     side="BOTH"
 [[dependencies.mekaweapons]]
     modId="mekanism"
     mandatory=true
-    versionRange="10.1.0.455"
-    ordering="AFTER"
+    versionRange="10.1.0"
     side="BOTH"
-[[dependencies.mekaweapons]]
-    modId = "curios"
-    mandatory =false
-    versionRange = "[1.16.5-4.0.5.2,)"

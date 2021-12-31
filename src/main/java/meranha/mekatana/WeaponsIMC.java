@@ -7,15 +7,7 @@ public class WeaponsIMC {
 
     private WeaponsIMC() { }
 
-    /**
-     * This method registers a module or modules as supporting the Meka-Tool. The body of the message should either be an {@link IModuleDataProvider} or an array of
-     * {@link IModuleDataProvider}s. {@link #addMekaTanaModules(IModuleDataProvider[])} can be used as a helper to send properly structured messages of this type.
-     */
     public static final String ADD_MEKA_TANA_MODULES = "add_meka_tana_modules";
-    /**
-     * This method registers a module or modules as supporting the Meka-Tool. The body of the message should either be an {@link IModuleDataProvider} or an array of
-     * {@link IModuleDataProvider}s. {@link #addMekaBowModules(IModuleDataProvider[])} can be used as a helper to send properly structured messages of this type.
-     */
     public static final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
 
     public static void addModulesToAll(IModuleDataProvider<?>... moduleDataProviders) {

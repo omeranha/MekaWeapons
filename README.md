@@ -5,8 +5,7 @@ Both highly configurable in config file.
 
 Meka-Tana and Meka-Bow
 
-self explanatory, right?
+self-explanatory, right?
 
-TO-DO
-Add suport for modules in weapons, couldn't manage to work because the rewrite of ModuleHandler in v10.1
-personal goal: render both meka weapons behind player model using an api or something that i don't know how to.
+TO-DO:
+Add support for modules in weapons.

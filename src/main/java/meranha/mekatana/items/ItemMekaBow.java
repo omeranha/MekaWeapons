@@ -20,7 +20,7 @@ import mekanism.common.util.ItemDataUtils;
 import mekanism.common.util.MekanismUtils;
 import mekanism.common.util.StorageUtils;
 import mekanism.common.util.text.BooleanStateDisplay.OnOff;
-import meranha.mekatana.client.WeaponsConfig;
+import meranha.mekatana.MekaWeapons;
 import meranha.mekatana.WeaponsLang;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -55,15 +55,11 @@ public class ItemMekaBow extends BowItem implements IModeItem, IModuleContainerI
 
     public void onUseTick(@Nonnull World world, @Nonnull LivingEntity player, @Nonnull ItemStack stack, int count) {
         boolean autoFire = getAutoFire(stack);
-        if (autoFire && getUseDuration(stack) - count >= getChargeTicks()) {
+        if (autoFire && getUseDuration(stack) - player.getUseItemRemainingTicks() == 20.0F) {
             player.stopUsingItem();
             stack.releaseUsing(world, player, 0);
             player.startUsingItem(player.getUsedItemHand());
         }
-    }
-
-    public static int getChargeTicks() {
-        return (int)Math.ceil(20.0F);
     }
 
     @Override
@@ -73,7 +69,7 @@ public class ItemMekaBow extends BowItem implements IModeItem, IModuleContainerI
             IEnergyContainer energyContainer = null;
             if (!player.isCreative()) {
                 energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-                FloatingLong energyNeeded = WeaponsConfig.general.mekaBowEnergyUsage.get();
+                FloatingLong energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get();
                 if (energyContainer == null || energyContainer.extract(energyNeeded, Action.SIMULATE, AutomationType.MANUAL).smallerThan(energyNeeded)) {
                     return;
                 }
@@ -101,7 +97,7 @@ public class ItemMekaBow extends BowItem implements IModeItem, IModuleContainerI
                     if (velocity == 1) {
                         arrowEntity.setCritArrow(true);
                     }
-                    int damage = WeaponsConfig.general.mekaBowDamage.get();
+                    int damage = MekaWeapons.general.mekaBowDamage.get();
                     arrowEntity.setBaseDamage(damage);
                     int power = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, stack);
                     if (power > 0) {
@@ -115,7 +111,7 @@ public class ItemMekaBow extends BowItem implements IModeItem, IModuleContainerI
                         arrowEntity.setSecondsOnFire(100);
                     }
                     if (!player.isCreative() && energyContainer != null) {
-                        energyContainer.extract(WeaponsConfig.general.mekaBowEnergyUsage.get(), Action.EXECUTE, AutomationType.MANUAL);
+                        energyContainer.extract(MekaWeapons.general.mekaBowEnergyUsage.get(), Action.EXECUTE, AutomationType.MANUAL);
                     }
                     if (noConsume || player.isCreative() && (ammo.getItem() == Items.SPECTRAL_ARROW || ammo.getItem() == Items.TIPPED_ARROW)) {
                         arrowEntity.pickup = AbstractArrowEntity.PickupStatus.CREATIVE_ONLY;
