@@ -2,18 +2,17 @@ package meranha.mekatana;
 
 import mekanism.api.text.ILangEntry;
 import mekanism.common.Mekanism;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 public enum WeaponsLang implements ILangEntry {
     AUTOFIRE_MODE("tooltip", "autofire_mode"),
-    ;
-
-    private final String key;
+    ARROWENERGY_MODE("tooltip", "arrowenergy_mode");
 
     WeaponsLang(String type, String path) {
         this(Util.makeDescriptionId(type, Mekanism.rl(path)));
     }
 
+    private final String key;
     WeaponsLang(String key) {
         this.key = key;
     }

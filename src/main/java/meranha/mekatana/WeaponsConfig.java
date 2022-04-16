@@ -7,7 +7,7 @@ import mekanism.common.config.value.CachedIntValue;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 
-public class MekaWeaponsConfig extends BaseMekanismConfig {
+public class WeaponsConfig extends BaseMekanismConfig {
 
     private final ForgeConfigSpec configSpec;
 
@@ -21,7 +21,7 @@ public class MekaWeaponsConfig extends BaseMekanismConfig {
     public final CachedFloatingLongValue mekaBowEnergyUsageFire;
     public final CachedIntValue mekaBowDamage;
 
-    MekaWeaponsConfig() {
+    WeaponsConfig() {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
         builder.comment("MekaWeapons Settings. This config is synced from server to client.").push("weapons");

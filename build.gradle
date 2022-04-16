@@ -17,10 +17,10 @@ version = '1.0'
 group = 'meranha'
 archivesBaseName = 'mekatana'
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
-    mappings channel: 'parchment', version: '2021.08.29-1.16.5'
+    mappings channel: 'parchment', version: '2022.03.13-1.18.2'
     runs {
         client {
             workingDirectory project.file('run')
@@ -60,15 +60,18 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-repositories { maven { url 'https://cursemaven.com/' } }
+repositories {
+    maven { url 'https://cursemaven.com/' }
+    maven { url "https://maven.theillusivec4.top/" }
+}
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.16.5-36.2.22'
-
-    compileOnly fg.deobf("curse.maven:Mekanism-268560:3577006")
-    runtimeOnly fg.deobf("curse.maven:Mekanism-268560:3577006")
-    runtimeOnly fg.deobf("curse.maven:JEI-238222:3564654")
-    runtimeOnly fg.deobf("curse.maven:MmmMmmMmmMmm-225738:3279930")
+    minecraft 'net.minecraftforge:forge:1.18.2-40.0.46'
+    compileOnly fg.deobf("curse.maven:Mekanism-268560:3743835")
+    runtimeOnly fg.deobf("curse.maven:Mekanism-268560:3743835")
+    runtimeOnly fg.deobf("curse.maven:JEI-238222:3735570")
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.0")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.0:api")
 }
 
 jar {
@@ -78,7 +81,7 @@ jar {
             "Specification-Vendor": "oMeranha",
             "Specification-Version": "1",
             "Implementation-Title": "mekaweapons",
-            "Implementation-Version": "${version}",
+            "Implementation-Version": "1.0",
             "Implementation-Vendor" :"oMeranha",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])

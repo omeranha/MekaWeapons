@@ -22,3 +22,8 @@ description='''Weapons for Mekanism.'''
     mandatory=true
     versionRange="10.1.0"
     side="BOTH"
+[[dependencies.mekaweapons]]
+    modId="curios"
+    mandatory=true
+    versionRange="[1.18.2-5.0.6.3,)"
+    ordering="AFTER"
