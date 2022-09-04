@@ -17,10 +17,12 @@ version = '1.0'
 group = 'meranha'
 archivesBaseName = 'mekatana'
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of("17")
+}
 
 minecraft {
-    mappings channel: 'parchment', version: '2022.03.13-1.18.2'
+    mappings channel: 'parchment', version: '2022.08.21-1.19.2'
     runs {
         client {
             workingDirectory project.file('run')
@@ -66,12 +68,12 @@ repositories {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.2-40.0.46'
-    compileOnly fg.deobf("curse.maven:Mekanism-268560:3743835")
-    runtimeOnly fg.deobf("curse.maven:Mekanism-268560:3743835")
-    runtimeOnly fg.deobf("curse.maven:JEI-238222:3735570")
-    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.0")
-    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.0:api")
+    minecraft 'net.minecraftforge:forge:1.18.2-40.1.68'
+    compileOnly fg.deobf("curse.maven:Mekanism-268560:3875976")
+    runtimeOnly fg.deobf("curse.maven:Mekanism-268560:3875976")
+    runtimeOnly fg.deobf("curse.maven:JEI-238222:3940240")
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.1")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.1:api")
 }
 
 jar {

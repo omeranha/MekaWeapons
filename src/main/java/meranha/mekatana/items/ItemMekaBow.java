@@ -18,7 +18,6 @@ import mekanism.common.util.text.BooleanStateDisplay;
 import meranha.mekatana.MekaWeapons;
 import meranha.mekatana.WeaponsLang;
 import meranha.mekatana.WeaponsModules;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -170,14 +169,6 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
     @Override
     public int getBarColor(@Nonnull ItemStack stack) {
         return MekanismConfig.client.energyColor.get();
-    }
-
-    @Override
-    public void fillItemCategory(@Nonnull CreativeModeTab group, @Nonnull NonNullList<ItemStack> items) {
-        super.fillItemCategory(group, items);
-        if (allowdedIn(group)) {
-            items.add(StorageUtils.getFilledEnergyVariant(new ItemStack(this), MekanismConfig.gear.mekaToolBaseEnergyCapacity.get()));
-        }
     }
 
     @Override

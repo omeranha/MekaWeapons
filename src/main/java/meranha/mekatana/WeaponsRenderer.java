@@ -2,7 +2,6 @@ package meranha.mekatana;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
-import meranha.mekatana.MekaWeapons;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -24,7 +23,7 @@ public class WeaponsRenderer implements ICurioRenderer {
                 ms.mulPose(Vector3f.XP.rotationDegrees(180));
                 ms.translate(0, 0.25, -0.1);
                 ms.scale(0.60f, -0.60f, -2f);
-                Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemTransforms.TransformType.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, player.getId());
+                Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemTransforms.TransformType.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, 1);
                 ms.popPose();
             }
 
@@ -35,7 +34,7 @@ public class WeaponsRenderer implements ICurioRenderer {
                 ms.mulPose(Vector3f.XP.rotationDegrees(180));
                 ms.translate(-0.2, -0.75, -0.2);
                 ms.scale(1f, -1f, -1f);
-                Minecraft.getInstance().getItemRenderer().renderStatic(katana, ItemTransforms.TransformType.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, player.getId());
+                Minecraft.getInstance().getItemRenderer().renderStatic(katana, ItemTransforms.TransformType.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, 1);
                 ms.popPose();
             }
 
@@ -46,7 +45,7 @@ public class WeaponsRenderer implements ICurioRenderer {
                 ms.mulPose(Vector3f.XP.rotationDegrees(180));
                 ms.translate(-0.3, -0.07, -0.2);
                 ms.scale(1f, -1f, -1f);
-                Minecraft.getInstance().getItemRenderer().renderStatic(bow, ItemTransforms.TransformType.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, player.getId());
+                Minecraft.getInstance().getItemRenderer().renderStatic(bow, ItemTransforms.TransformType.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, 1);
                 ms.popPose();
             }
         }

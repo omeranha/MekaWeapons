@@ -1,11 +1,8 @@
-# Mekanism: Weapons
-Add 2 weapons for [Mekanism](https://www.curseforge.com/minecraft/mc-mods/mekanism).
+# Mekanism: Weapons (and tools)
+Add 2 weapons and 2 tools for [Mekanism](https://www.curseforge.com/minecraft/mc-mods/mekanism),
+highly configurables in config file (mekaweapons.toml).
 
-Both highly configurable in config file.
-
-Meka-Tana and Meka-Bow
-
-self-explanatory, right?
+Meka-Tana, Meka-Bow, Meka-Drill and Meka-Saw.
 
 TO-DO:
-Add support for modules in weapons.
+Add support for modules in tools (not possible at the moment, requires mekanism api changes).

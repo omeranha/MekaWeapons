@@ -21,10 +21,14 @@ public class WeaponsConfig extends BaseMekanismConfig {
     public final CachedFloatingLongValue mekaBowEnergyUsageFire;
     public final CachedIntValue mekaBowDamage;
 
+    public final CachedFloatingLongValue mekaDrillEnergyCapacity;
+    public final CachedFloatingLongValue mekaDrillEnergyUsage;
+    public final CachedFloatingLongValue mekaDrillChargeRate;
+
     WeaponsConfig() {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
-        builder.comment("MekaWeapons Settings. This config is synced from server to client.").push("weapons");
+        builder.comment("MekaWeapons Settings. This config is synced from server to client. Joules to FE conversion: 1FE = 2.5J").push("weapons");
 
         builder.comment("Meka-tana Settings.").push("mekatana");
         mekaTanaMinDamage = CachedIntValue.wrap(this, builder.comment("Meka-Tana min damage.").define("mekaTanaMinDamage", 10));
@@ -35,10 +39,14 @@ public class WeaponsConfig extends BaseMekanismConfig {
         builder.pop();
 
         builder.comment("Meka-Bow Settings.").push("mekabow");
-        mekaBowEnergyUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Bow.", "energyUsage", FloatingLong.createConst(120));
-        mekaBowEnergyUsageFire = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Bow with flame mode active.", "energyUsageFire", FloatingLong.createConst(1_200));
+        mekaBowEnergyUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Bow.", "energyUsage", FloatingLong.createConst(2000));
+        mekaBowEnergyUsageFire = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Bow with flame mode active.", "energyUsageFire", FloatingLong.createConst(4000));
         mekaBowDamage = CachedIntValue.wrap(this, builder.comment("Be careful! The final damage of Meka-Bow is based on how fast the arrow is going when hits.").define("mekaBowDamage", 25));
         builder.pop(2);
+
+        mekaDrillEnergyCapacity = CachedFloatingLongValue.define(this, builder, "Energy capacity in Joules of the Meka-Drill.", "energyCapacity", FloatingLong.createConst(125000));
+        mekaDrillEnergyUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Drill.", "energyUsage", FloatingLong.createConst(1000));
+        mekaDrillChargeRate = CachedFloatingLongValue.define(this, builder, "Energy charge rate in Joules of the Meka-Drill.", "chargeRate", FloatingLong.createConst(25000));
 
         this.configSpec = builder.build();
     }

@@ -1,7 +1,6 @@
 package meranha.mekatana;
 
 import mekanism.api.MekanismIMC;
-import mekanism.api.gear.ModuleData;
 import mekanism.client.ClientRegistrationUtil;
 import mekanism.common.Mekanism;
 import mekanism.common.config.MekanismConfigHelper;
@@ -10,8 +9,11 @@ import mekanism.common.item.ItemModule;
 import mekanism.common.registration.impl.ItemDeferredRegister;
 import mekanism.common.registration.impl.ItemRegistryObject;
 import meranha.mekatana.items.ItemMekaBow;
+import meranha.mekatana.items.ItemMekaDrill;
+import meranha.mekatana.items.ItemMekaSaw;
 import meranha.mekatana.items.ItemMekaTana;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -38,7 +40,11 @@ public class MekaWeapons {
 
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("mekatana", ItemMekaTana::new);
     public static final ItemRegistryObject<ItemMekaBow> MEKA_BOW = ITEMS.registerUnburnable("mekabow", ItemMekaBow::new);
+    public static final ItemRegistryObject<ItemMekaDrill> MEKA_DRILL = ITEMS.registerUnburnable("mekadrill", ItemMekaDrill::new);
+    public static final ItemRegistryObject<ItemMekaSaw> MEKA_SAW = ITEMS.registerUnburnable("mekasaw", ItemMekaSaw::new);
     public static final ItemRegistryObject<Item> MAGNETIZER = ITEMS.registerUnburnable("magnetizer");
+    public static final ItemRegistryObject<Item> DRILL_HEAD = ITEMS.register("drill_head", Rarity.COMMON);
+    public static final ItemRegistryObject<Item> SAW_BLADE = ITEMS.register("saw_blade", Rarity.COMMON);
     public static final ItemRegistryObject<ItemModule> MODULE_ARROWENERGY = ITEMS.registerModule(WeaponsModules.ARROWENERGY_UNIT);
     public static final ItemRegistryObject<ItemModule> MODULE_AUTOFIRE = ITEMS.registerModule(WeaponsModules.AUTOFIRE_UNIT);
 
@@ -53,7 +59,6 @@ public class MekaWeapons {
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
         hooks.sendIMCMessages(event);
-        MekanismIMC.addMekaToolModules(WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.AUTOFIRE_UNIT);
         InterModComms.sendTo(CuriosApi.MODID, SlotTypeMessage.REGISTER_TYPE, () -> SlotTypePreset.BACK.getMessageBuilder().build());
     }
 
