@@ -1,8 +1,9 @@
-package meranha.mekatana;
+package meranha.mekaweapons;
 
 import mekanism.api.text.ILangEntry;
 import mekanism.common.Mekanism;
 import net.minecraft.Util;
+import org.jetbrains.annotations.NotNull;
 
 public enum WeaponsLang implements ILangEntry {
     AUTOFIRE_MODE("tooltip", "autofire_mode"),
@@ -18,7 +19,7 @@ public enum WeaponsLang implements ILangEntry {
     }
 
     @Override
-    public String getTranslationKey() {
+    public @NotNull String getTranslationKey() {
         return key;
     }
 }

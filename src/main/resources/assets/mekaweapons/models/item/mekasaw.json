@@ -1,7 +1,7 @@
 {
   "parent": "item/handheld",
   "textures": {
-    "layer0": "mekaweapons:items/mekasaw"
+    "layer0": "mekaweapons:item/mekasaw"
   },
   "display": {
     "thirdperson_righthand": {

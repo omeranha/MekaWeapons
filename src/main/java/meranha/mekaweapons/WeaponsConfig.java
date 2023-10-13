@@ -1,4 +1,4 @@
-package meranha.mekatana;
+package meranha.mekaweapons;
 
 import mekanism.api.math.FloatingLong;
 import mekanism.common.config.BaseMekanismConfig;

@@ -1,6 +1,6 @@
 {
   "parent":"minecraft:item/generated",
   "textures":{
-    "layer0":"mekaweapons:items/module_arrow_energy_unit"
+    "layer0":"mekaweapons:item/module_arrowenergy_unit"
   }
 }

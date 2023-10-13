@@ -1,9 +1,11 @@
-package meranha.mekatana.items;
+package meranha.mekaweapons.items;
 
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.energy.IEnergyContainer;
+import mekanism.api.gear.IModule;
 import mekanism.api.math.FloatingLong;
+import mekanism.api.math.FloatingLongSupplier;
 import mekanism.api.text.EnumColor;
 import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
@@ -12,12 +14,14 @@ import mekanism.common.capabilities.ItemCapabilityWrapper;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
 import mekanism.common.capabilities.energy.item.RateLimitEnergyHandler;
 import mekanism.common.config.MekanismConfig;
+import mekanism.common.config.value.CachedFloatingLongValue;
 import mekanism.common.content.gear.IModuleContainerItem;
+import mekanism.common.content.gear.shared.ModuleEnergyUnit;
+import mekanism.common.registries.MekanismModules;
 import mekanism.common.util.StorageUtils;
 import mekanism.common.util.text.BooleanStateDisplay;
-import meranha.mekatana.MekaWeapons;
-import meranha.mekatana.WeaponsLang;
-import meranha.mekatana.WeaponsModules;
+import meranha.mekaweapons.MekaWeapons;
+import meranha.mekaweapons.WeaponsLang;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -52,14 +56,14 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
             addModuleDetails(stack, tooltip);
         } else {
             StorageUtils.addStoredEnergy(stack, tooltip, true);
-            tooltip.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, WeaponsModules.AUTOFIRE_UNIT))));
-            tooltip.add(WeaponsLang.ARROWENERGY_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, WeaponsModules.ARROWENERGY_UNIT))));
+            tooltip.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT))));
+            tooltip.add(WeaponsLang.ARROWENERGY_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.ARROWENERGY_UNIT))));
             tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
         }
     }
 
     public void onUseTick(@Nonnull Level world, @Nonnull LivingEntity player, @Nonnull ItemStack stack, int timeLeft) {
-        if (isInfinite((Player) player, stack) && !player.getProjectile(stack).isEmpty() && isModuleEnabled(stack, WeaponsModules.AUTOFIRE_UNIT) && getUseDuration(stack) - timeLeft == 20.0F) {
+        if (isInfinite((Player) player, stack) && isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT) && getUseDuration(stack) - timeLeft == 20.0F) {
             player.stopUsingItem();
             stack.releaseUsing(world, player, 0);
             player.startUsingItem(player.getUsedItemHand());
@@ -95,7 +99,7 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
             int charge = ForgeEventFactory.onArrowLoose(stack, world, player, getUseDuration(stack) - timeLeft, isInfinite(player, stack));
             if (charge < 0) return;
 
-            boolean noConsume = player.isCreative() || (ammo.getItem() instanceof ArrowItem arrow && arrow.isInfinite(ammo, stack, player) || isModuleEnabled(stack, WeaponsModules.ARROWENERGY_UNIT));
+            boolean noConsume = player.isCreative() || (ammo.getItem() instanceof ArrowItem arrow && arrow.isInfinite(ammo, stack, player) || isModuleEnabled(stack, MekaWeapons.ARROWENERGY_UNIT));
             if (!ammo.isEmpty() || isInfinite(player, stack)) {
                 float velocity = getPowerForTime(charge);
                 if (velocity < 0.1) {
@@ -153,7 +157,7 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
     }
 
     public boolean isInfinite(Player player, ItemStack stack) {
-        return player.isCreative() || !player.getProjectile(stack).isEmpty() || EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, stack) > 0 || isModuleEnabled(stack, WeaponsModules.ARROWENERGY_UNIT);
+        return player.isCreative() || !player.getProjectile(stack).isEmpty() || EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, stack) > 0 || isModuleEnabled(stack, MekaWeapons.ARROWENERGY_UNIT);
     }
 
     @Override
@@ -173,7 +177,9 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
 
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, CompoundTag nbt) {
-        return new ItemCapabilityWrapper(stack, RateLimitEnergyHandler.create(MekanismConfig.gear.mekaToolBaseChargeRate, MekanismConfig.gear.mekaToolBaseEnergyCapacity, BasicEnergyContainer.manualOnly, BasicEnergyContainer.alwaysTrue));
+        IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
+        @NotNull FloatingLongSupplier maxEnergy = () -> (module == null ? MekanismConfig.gear.mekaToolBaseEnergyCapacity.get() : module.getCustomInstance().getEnergyCapacity(module));
+        return new ItemCapabilityWrapper(stack, RateLimitEnergyHandler.create(MekanismConfig.gear.mekaToolBaseChargeRate, maxEnergy, BasicEnergyContainer.manualOnly, BasicEnergyContainer.alwaysTrue));
     }
 
     @Override

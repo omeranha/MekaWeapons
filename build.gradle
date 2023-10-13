@@ -1,61 +1,52 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        maven { url = 'https://maven.parchmentmc.org' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath 'org.parchmentmc:librarian:1.+'
-    }
-}
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'maven-publish'
-apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
-version = '1.0'
-group = 'meranha'
-archivesBaseName = 'mekatana'
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.neoforged.gradle' version '[6.0.18,6.2)'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+}
+
+
+group = "mekaweapons"
+version = "1.20.1-1.0"
+
+base {
+    archivesName = "mekaweapons"
+}
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of("17")
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
 }
 
 minecraft {
-    mappings channel: 'parchment', version: '2022.08.21-1.19.2'
+    mappings channel: 'parchment', version: '2023.06.26-1.20.1'
+    copyIdeResources = true
     runs {
-        client {
+        configureEach {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             mods {
-                mekatana {
+                "mekaweapons" {
                     source sourceSets.main
                 }
             }
         }
 
+        client { property 'forge.enabledGameTestNamespaces', "mekaweapons" }
+
         server {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                mekatana {
-                    source sourceSets.main
-                }
-            }
+            property 'forge.enabledGameTestNamespaces', "mekaweapons"
+            args '--nogui'
+        }
+
+        gameTestServer {
+            property 'forge.enabledGameTestNamespaces', "mekaweapons"
         }
 
         data {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            args '--mod', 'mekatana', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-            mods {
-                mekatana {
-                    source sourceSets.main
-                }
-            }
+            workingDirectory project.file('run-data')
+            args '--mod', "mekaweapons", '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
         }
     }
 }
@@ -63,31 +54,56 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    maven { url 'https://cursemaven.com/' }
-    maven { url "https://maven.theillusivec4.top/" }
-}
+    maven {
+        name = "Modmaven"
+        url = uri("https://modmaven.dev/")
 
-dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.2-40.1.68'
-    compileOnly fg.deobf("curse.maven:Mekanism-268560:3875976")
-    runtimeOnly fg.deobf("curse.maven:Mekanism-268560:3875976")
-    runtimeOnly fg.deobf("curse.maven:JEI-238222:3940240")
-    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.1")
-    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.7.1:api")
-}
-
-jar {
-    manifest {
-        attributes([
-            "Specification-Title": "mekaweapons",
-            "Specification-Vendor": "oMeranha",
-            "Specification-Version": "1",
-            "Implementation-Title": "mekaweapons",
-            "Implementation-Version": "1.0",
-            "Implementation-Vendor" :"oMeranha",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-        ])
+        content {
+            includeGroup("mekanism")
+        }
+    }
+    maven {
+        url = "https://maven.theillusivec4.top/"
     }
 }
 
-jar.finalizedBy('reobfJar')
+dependencies {
+    minecraft "net.neoforged:forge:${minecraft_version}-${forge_version}"
+    compileOnly(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:api"))
+    implementation(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}"))
+    compileOnly(fg.deobf("top.theillusivec4.curios:curios-forge:${"5.3.5+1.20.1"}:api"))
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
+            forge_version: forge_version, forge_version_range: forge_version_range,
+            loader_version_range: loader_version_range,
+            mod_id: "mekaweapons", mod_name: "Meka Weapons", mod_license: "MIT", mod_version: "1.0",
+            mod_authors: "oMeranha", mod_description: "Weapons for Mekanism.",
+    ]
+
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                "Specification-Title": "mekaweapons",
+                "Specification-Vendor": "oMeranha",
+                "Specification-Version": "1",
+                "Implementation-Title": "mekaweapons",
+                "Implementation-Version": "1.0",
+                "Implementation-Vendor" :"oMeranha",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+    finalizedBy 'reobfJar'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

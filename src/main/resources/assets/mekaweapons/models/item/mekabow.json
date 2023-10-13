@@ -1,15 +1,15 @@
 {
     "credit": "Made with Blockbench",
     "textures": {
-        "0": "mekaweapons:items/mekabow/bow_black",
-        "1": "mekaweapons:items/mekabow/bow_body",
-        "4": "mekaweapons:items/mekabow/bow_green",
-        "5": "mekaweapons:items/mekabow/bow_blackwhite",
-        "6": "mekaweapons:items/mekabow/bow_gray",
-        "7": "mekaweapons:items/mekabow/bow_darkgray",
-        "8": "mekaweapons:items/mekabow/bow_blackgray",
-        "10": "mekaweapons:items/mekabow/bow_graygray",
-        "particle": "mekaweapons:items/mekabow/bow_green"
+        "0": "mekaweapons:item/mekabow/bow_black",
+        "1": "mekaweapons:item/mekabow/bow_body",
+        "4": "mekaweapons:item/mekabow/bow_green",
+        "5": "mekaweapons:item/mekabow/bow_blackwhite",
+        "6": "mekaweapons:item/mekabow/bow_gray",
+        "7": "mekaweapons:item/mekabow/bow_darkgray",
+        "8": "mekaweapons:item/mekabow/bow_blackgray",
+        "10": "mekaweapons:item/mekabow/bow_graygray",
+        "particle": "mekaweapons:item/mekabow/bow_green"
     },
     "elements": [
         {

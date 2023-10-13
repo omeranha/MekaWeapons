@@ -8,7 +8,7 @@
 	"item.mekaweapons.saw_blade": "Saw Blade",
 	"tooltip.mekanism.autofire_mode": "Auto Fire Mode: %s",
 	"tooltip.mekanism.arrowenergy_mode": "Energy Arrows Mode: %s",
-	"module.mekaweapons.arrow_energy_unit": "Energy Arrows Unit",
+	"module.mekaweapons.arrowenergy_unit": "Energy Arrows Unit",
 	"module.mekaweapons.autofire_unit": "Auto Fire Unit",
 	"description.mekaweapons.arrow_energy_unit": "Fire arrows made of pure energy. Removes the need for ammunition.",
 	"description.mekaweapons.autofire_unit": "Fires automatically when Meka-Bow is fully charged."

@@ -2,11 +2,11 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
-		"1": "mekaweapons:items/mekatana/base",
-		"3": "mekaweapons:items/mekatana/handle",
-		"5": "mekaweapons:items/mekatana/blade",
-		"6": "mekaweapons:items/mekatana/part",
-		"particle": "mekaweapons:items/mekatana/base"
+		"1": "mekaweapons:item/mekatana/base",
+		"3": "mekaweapons:item/mekatana/handle",
+		"5": "mekaweapons:item/mekatana/blade",
+		"6": "mekaweapons:item/mekatana/part",
+		"particle": "mekaweapons:item/mekatana/base"
 	},
 	"elements": [
 		{
