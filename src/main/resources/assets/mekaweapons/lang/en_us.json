@@ -11,5 +11,6 @@
 	"module.mekaweapons.arrowenergy_unit": "Energy Arrows Unit",
 	"module.mekaweapons.autofire_unit": "Auto Fire Unit",
 	"description.mekaweapons.arrow_energy_unit": "Fire arrows made of pure energy. Removes the need for ammunition.",
-	"description.mekaweapons.autofire_unit": "Fires automatically when Meka-Bow is fully charged."
+	"description.mekaweapons.autofire_unit": "Fires automatically when Meka-Bow is fully charged.",
+	"curios.identifier.magnetizer": "Magnetizer"
 }

@@ -15,6 +15,15 @@ import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.client.ICurioRenderer;
 
 public class WeaponsRenderer implements ICurioRenderer {
+    public boolean contains(Player player, ItemStack stack) {
+        for(ItemStack item : player.getInventory().items) {
+            if (!item.isEmpty() && ItemStack.isSameItem(stack, item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack stack, SlotContext slotContext, PoseStack ms, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource buffer, int light, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
         if (slotContext.entity() instanceof Player player) {
             if (!stack.isEmpty()) {
@@ -23,29 +32,29 @@ public class WeaponsRenderer implements ICurioRenderer {
                 ms.mulPose(Axis.XP.rotationDegrees(180));
                 ms.translate(0, 0.25, -0.1);
                 ms.scale(0.60f, -0.60f, -2f);
-                Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, null, 1);
+                Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, player.level(), 1);
                 ms.popPose();
             }
 
             ItemStack katana = MekaWeapons.MEKA_TANA.getItemStack();
-            if (player.getInventory().contains(katana) && !player.isHolding(MekaWeapons.MEKA_TANA.get())) {
+            if (contains(player, katana) && !player.isHolding(MekaWeapons.MEKA_TANA.get())) {
                 ms.pushPose();
                 ms.mulPose(Axis.ZN.rotationDegrees(45));
                 ms.mulPose(Axis.XP.rotationDegrees(180));
                 ms.translate(-0.2, -0.75, -0.2);
                 ms.scale(1f, -1f, -1f);
-                Minecraft.getInstance().getItemRenderer().renderStatic(katana, ItemDisplayContext.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, null, 1);
+                Minecraft.getInstance().getItemRenderer().renderStatic(katana, ItemDisplayContext.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, player.level(), 1);
                 ms.popPose();
             }
 
             ItemStack bow = MekaWeapons.MEKA_BOW.getItemStack();
-            if (player.getInventory().contains(bow) && !player.isHolding(MekaWeapons.MEKA_BOW.get())) {
+            if (contains(player, bow) && !player.isHolding(MekaWeapons.MEKA_BOW.get())) {
                 ms.pushPose();
                 ms.mulPose(Axis.ZN.rotationDegrees(45));
                 ms.mulPose(Axis.XP.rotationDegrees(180));
                 ms.translate(-0.3, -0.07, -0.2);
                 ms.scale(1f, -1f, -1f);
-                Minecraft.getInstance().getItemRenderer().renderStatic(bow, ItemDisplayContext.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, null, 1);
+                Minecraft.getInstance().getItemRenderer().renderStatic(bow, ItemDisplayContext.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, player.level(), 1);
                 ms.popPose();
             }
         }
