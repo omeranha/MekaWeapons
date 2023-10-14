@@ -1,0 +1,12 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "result":{
+    "item":"mekaweapons:katana_blade"
+  },
+  "pattern":[ "  s", "as ", "oa " ],
+  "key":{
+    "o":{"tag":"forge:ingots/refined_obsidian"},
+    "s":{"tag":"forge:ingots/steel"},
+    "a":{"item":"mekanism:alloy_atomic"}
+  }
+}

@@ -19,8 +19,6 @@ import mekanism.common.registries.MekanismCreativeTabs;
 import mekanism.common.registries.MekanismItems;
 import mekanism.common.registries.MekanismModules;
 import meranha.mekaweapons.items.ItemMekaBow;
-import meranha.mekaweapons.items.ItemMekaDrill;
-import meranha.mekaweapons.items.ItemMekaSaw;
 import meranha.mekaweapons.items.ItemMekaTana;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -38,7 +36,6 @@ import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotTypeMessage;
-import top.theillusivec4.curios.api.SlotTypePreset;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 
 import java.lang.reflect.Field;
@@ -60,11 +57,10 @@ public class MekaWeapons {
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("mekatana", ItemMekaTana::new);
     public static final ItemRegistryObject<ItemMekaBow> MEKA_BOW = ITEMS.registerUnburnable("mekabow", ItemMekaBow::new);
-    public static final ItemRegistryObject<ItemMekaDrill> MEKA_DRILL = ITEMS.registerUnburnable("mekadrill", ItemMekaDrill::new);
-    public static final ItemRegistryObject<ItemMekaSaw> MEKA_SAW = ITEMS.registerUnburnable("mekasaw", ItemMekaSaw::new);
     public static final ItemRegistryObject<Item> MAGNETIZER = ITEMS.registerUnburnable("magnetizer");
-    public static final ItemRegistryObject<Item> DRILL_HEAD = ITEMS.register("drill_head", Rarity.COMMON);
-    public static final ItemRegistryObject<Item> SAW_BLADE = ITEMS.register("saw_blade", Rarity.COMMON);
+    public static final ItemRegistryObject<Item> KATANA_BLADE = ITEMS.register("katana_blade");
+    public static final ItemRegistryObject<Item> BOW_RISER = ITEMS.register("bow_riser");
+    public static final ItemRegistryObject<Item> BOW_LIMB = ITEMS.register("bow_limb");
     public static final ItemRegistryObject<ItemModule> MODULE_ARROWENERGY = ITEMS.registerModule(MekaWeapons.ARROWENERGY_UNIT);
     public static final ItemRegistryObject<ItemModule> MODULE_AUTOFIRE = ITEMS.registerModule(MekaWeapons.AUTOFIRE_UNIT);
 
