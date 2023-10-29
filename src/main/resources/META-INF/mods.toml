@@ -3,7 +3,7 @@ loaderVersion="[47,)"
 license="MIT"
 [[mods]]
 modId="mekaweapons"
-version="1.0"
+version="${mod_version}"
 displayName="Mekanism: Weapons"
 authors="oMeranha"
 description='''Weapons for Mekanism.'''
@@ -23,11 +23,5 @@ description='''Weapons for Mekanism.'''
 	modId="mekanism"
 	mandatory=true
 	versionRange="10.4.0.14"
-	ordering="AFTER"
-	side="BOTH"
-[[dependencies.mekaweapons]]
-	modId="curios"
-	mandatory=true
-	versionRange="5.3.5+1.20.1"
 	ordering="AFTER"
 	side="BOTH"

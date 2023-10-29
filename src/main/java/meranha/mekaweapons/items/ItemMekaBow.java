@@ -14,8 +14,8 @@ import mekanism.common.capabilities.ItemCapabilityWrapper;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
 import mekanism.common.capabilities.energy.item.RateLimitEnergyHandler;
 import mekanism.common.config.MekanismConfig;
-import mekanism.common.config.value.CachedFloatingLongValue;
 import mekanism.common.content.gear.IModuleContainerItem;
+import mekanism.common.content.gear.mekatool.ModuleAttackAmplificationUnit;
 import mekanism.common.content.gear.shared.ModuleEnergyUnit;
 import mekanism.common.registries.MekanismModules;
 import mekanism.common.util.StorageUtils;
@@ -56,8 +56,12 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
             addModuleDetails(stack, tooltip);
         } else {
             StorageUtils.addStoredEnergy(stack, tooltip, true);
-            tooltip.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT))));
-            tooltip.add(WeaponsLang.ARROWENERGY_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.ARROWENERGY_UNIT))));
+            if (hasModule(stack, MekaWeapons.AUTOFIRE_UNIT)) {
+                tooltip.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT))));
+            }
+            if (hasModule(stack, MekaWeapons.ARROWENERGY_UNIT)) {
+                tooltip.add(WeaponsLang.ARROWENERGY_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.ARROWENERGY_UNIT))));
+            }
             tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
         }
     }
@@ -117,8 +121,11 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
                     if (velocity >= 1) {
                         arrowEntity.setCritArrow(true);
                     }
-
-                    int damage = MekaWeapons.general.mekaBowDamage.get();
+                    IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
+                    int damage = MekaWeapons.general.mekaBowBaseDamage.get();
+                    if (attackAmplificationUnit != null && attackAmplificationUnit.isEnabled()) {
+                        damage = damage * attackAmplificationUnit.getInstalledCount();
+                    }
                     arrowEntity.setBaseDamage(damage);
                     int power = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, stack);
                     if (power > 0) {
@@ -178,8 +185,8 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, CompoundTag nbt) {
         IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
-        @NotNull FloatingLongSupplier maxEnergy = () -> (module == null ? MekanismConfig.gear.mekaToolBaseEnergyCapacity.get() : module.getCustomInstance().getEnergyCapacity(module));
-        return new ItemCapabilityWrapper(stack, RateLimitEnergyHandler.create(MekanismConfig.gear.mekaToolBaseChargeRate, maxEnergy, BasicEnergyContainer.manualOnly, BasicEnergyContainer.alwaysTrue));
+        @NotNull FloatingLongSupplier maxEnergy = () -> (module == null ? MekaWeapons.general.mekaBowBaseEnergyCapacity.get() : module.getCustomInstance().getEnergyCapacity(module));
+        return new ItemCapabilityWrapper(stack, RateLimitEnergyHandler.create(MekaWeapons.general.mekaBowBaseChargeRate, maxEnergy, BasicEnergyContainer.manualOnly, BasicEnergyContainer.alwaysTrue));
     }
 
     @Override
