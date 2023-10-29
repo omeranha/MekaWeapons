@@ -18,6 +18,7 @@ import mekanism.common.registration.impl.ModuleRegistryObject;
 import mekanism.common.registries.MekanismCreativeTabs;
 import mekanism.common.registries.MekanismItems;
 import mekanism.common.registries.MekanismModules;
+import meranha.mekaweapons.items.ItemMagnetizer;
 import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaTana;
 import net.minecraft.resources.ResourceLocation;
@@ -28,6 +29,7 @@ import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -37,6 +39,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotTypeMessage;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
+import ad_astra_giselle_addon.common.compat.mekanism.AddonMekanismModules;
 
 import java.lang.reflect.Field;
 import java.util.IdentityHashMap;
@@ -57,15 +60,15 @@ public class MekaWeapons {
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("mekatana", ItemMekaTana::new);
     public static final ItemRegistryObject<ItemMekaBow> MEKA_BOW = ITEMS.registerUnburnable("mekabow", ItemMekaBow::new);
-    public static final ItemRegistryObject<Item> MAGNETIZER = ITEMS.registerUnburnable("magnetizer");
+    public static final ItemRegistryObject<Item> MAGNETIZER = ITEMS.registerUnburnable("magnetizer", ItemMagnetizer::new);
     public static final ItemRegistryObject<Item> KATANA_BLADE = ITEMS.register("katana_blade");
     public static final ItemRegistryObject<Item> BOW_RISER = ITEMS.register("bow_riser");
     public static final ItemRegistryObject<Item> BOW_LIMB = ITEMS.register("bow_limb");
     public static final ItemRegistryObject<ItemModule> MODULE_ARROWENERGY = ITEMS.registerModule(MekaWeapons.ARROWENERGY_UNIT);
     public static final ItemRegistryObject<ItemModule> MODULE_AUTOFIRE = ITEMS.registerModule(MekaWeapons.AUTOFIRE_UNIT);
 
-    private final Map<Item, Set<ModuleData<?>>> supportedWModules = new Reference2ObjectArrayMap<>(7);
-    private final Map<ModuleData<?>, Set<Item>> supportedWContainers = new IdentityHashMap<>();
+    private final Map<Item, Set<ModuleData<?>>> supportedModules = new Reference2ObjectArrayMap<>(7);
+    private final Map<ModuleData<?>, Set<Item>> supportedContainers = new IdentityHashMap<>();
     public static final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
     public static final String ADD_MEKATANA_MODULES = "add_mekatana_modules";
 
@@ -96,7 +99,7 @@ public class MekaWeapons {
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
         InterModComms.sendTo(CuriosApi.MODID, SlotTypeMessage.REGISTER_TYPE, () -> new SlotTypeMessage.Builder("magnetizer").icon(new ResourceLocation(MekaWeapons.MODID, "slot/magnetizer_slot")).build());
-        addMekaBowModules(MekanismModules.ENERGY_UNIT, MekaWeapons.AUTOFIRE_UNIT, MekaWeapons.ARROWENERGY_UNIT);
+        addMekaBowModules(MekanismModules.ENERGY_UNIT, MekanismModules.ATTACK_AMPLIFICATION_UNIT, MekaWeapons.AUTOFIRE_UNIT, MekaWeapons.ARROWENERGY_UNIT);
         addMekaTanaModules(MekanismModules.ENERGY_UNIT, MekanismModules.ATTACK_AMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT);
 
         addMekaSuitModules(MekanismModules.ENERGY_UNIT, MekanismModules.COLOR_MODULATION_UNIT, MekanismModules.LASER_DISSIPATION_UNIT, MekanismModules.RADIATION_SHIELDING_UNIT);
@@ -104,6 +107,12 @@ public class MekaWeapons {
         addMekaSuitBodyarmorModules(MekanismModules.JETPACK_UNIT, MekanismModules.GRAVITATIONAL_MODULATING_UNIT, MekanismModules.CHARGE_DISTRIBUTION_UNIT, MekanismModules.DOSIMETER_UNIT, MekanismModules.GEIGER_UNIT, MekanismModules.ELYTRA_UNIT);
         addMekaSuitPantsModules(MekanismModules.LOCOMOTIVE_BOOSTING_UNIT, MekanismModules.GYROSCOPIC_STABILIZATION_UNIT, MekanismModules.HYDROSTATIC_REPULSOR_UNIT, MekanismModules.MOTORIZED_SERVO_UNIT);
         addMekaSuitBootsModules(MekanismModules.HYDRAULIC_PROPULSION_UNIT, MekanismModules.MAGNETIC_ATTRACTION_UNIT, MekanismModules.FROST_WALKER_UNIT);
+        if (ModList.get().isLoaded("ad_astra_giselle_addon")) {
+            addMekaSuitHelmetModules(AddonMekanismModules.SPACE_BREATHING_UNIT);
+            addMekaSuitBodyarmorModules(AddonMekanismModules.SPACE_FIRE_PROOF_UNIT);
+            addMekaSuitPantsModules(AddonMekanismModules.ACID_RAIN_PROOF_UNIT);
+            addMekaSuitBootsModules(AddonMekanismModules.GRAVITY_NORMALIZING_UNIT);
+        }
         addMekaToolModules(MekanismModules.ENERGY_UNIT, MekanismModules.ATTACK_AMPLIFICATION_UNIT, MekanismModules.SILK_TOUCH_UNIT, MekanismModules.FORTUNE_UNIT, MekanismModules.BLASTING_UNIT, MekanismModules.VEIN_MINING_UNIT, MekanismModules.FARMING_UNIT, MekanismModules.SHEARING_UNIT, MekanismModules.TELEPORTATION_UNIT, MekanismModules.EXCAVATION_ESCALATION_UNIT);
     }
 
@@ -117,7 +126,7 @@ public class MekaWeapons {
         mapSupportedModules(event, MekaWeapons.ADD_MEKA_BOW_MODULES, MekaWeapons.MEKA_BOW, supportedContainersBuilderMap);
         mapSupportedModules(event, MekaWeapons.ADD_MEKATANA_MODULES, MekaWeapons.MEKA_TANA, supportedContainersBuilderMap);
         for (Map.Entry<ModuleData<?>, ImmutableSet.Builder<Item>> entry : supportedContainersBuilderMap.entrySet()) {
-            supportedWContainers.put(entry.getKey(), entry.getValue().build());
+            supportedContainers.put(entry.getKey(), entry.getValue().build());
         }
 
         Field modulesField;
@@ -131,8 +140,8 @@ public class MekaWeapons {
         modulesField.setAccessible(true);
         containersField.setAccessible(true);
         try {
-            modulesField.set(ModuleHelper.INSTANCE, supportedWModules);
-            containersField.set(ModuleHelper.INSTANCE, supportedWContainers);
+            modulesField.set(ModuleHelper.INSTANCE, supportedModules);
+            containersField.set(ModuleHelper.INSTANCE, supportedContainers);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -144,20 +153,20 @@ public class MekaWeapons {
             Object body = message.messageSupplier().get();
             if (body instanceof IModuleDataProvider<?> moduleDataProvider) {
                 supportedModulesBuilder.add(moduleDataProvider.getModuleData());
-                Mekanism.logger.debug("Received IMC message '{}' from '{}' for module '{}'.", imcMethod, message.senderModId(), moduleDataProvider.getRegistryName());
+                Mekanism.logger.debug("Weapons: Received IMC message '{}' from '{}' for module '{}'.", imcMethod, message.senderModId(), moduleDataProvider.getRegistryName());
             } else if (body instanceof IModuleDataProvider<?>[] providers) {
                 for (IModuleDataProvider<?> moduleDataProvider : providers) {
                     supportedModulesBuilder.add(moduleDataProvider.getModuleData());
-                    Mekanism.logger.debug("Received IMC message '{}' from '{}' for module '{}'.", imcMethod, message.senderModId(), moduleDataProvider.getRegistryName());
+                    Mekanism.logger.debug("Weapons: Received IMC message '{}' from '{}' for module '{}'.", imcMethod, message.senderModId(), moduleDataProvider.getRegistryName());
                 }
             } else {
-                Mekanism.logger.warn("Received IMC message for '{}' from mod '{}' with an invalid body.", imcMethod, message.senderModId());
+                Mekanism.logger.warn("Weapons: Received IMC message for '{}' from mod '{}' with an invalid body.", imcMethod, message.senderModId());
             }
         });
         Set<ModuleData<?>> supported = supportedModulesBuilder.build();
         if (!supported.isEmpty()) {
             Item item = moduleContainer.asItem();
-            supportedWModules.put(item, supported);
+            supportedModules.put(item, supported);
             for (ModuleData<?> data : supported) {
                 supportedContainersBuilderMap.computeIfAbsent(data, d -> ImmutableSet.builder()).add(item);
             }
@@ -174,25 +183,21 @@ public class MekaWeapons {
     public static void addMekaBowModules(IModuleDataProvider<?>... moduleDataProviders) {
         sendModuleIMC(MekaWeapons.ADD_MEKA_BOW_MODULES, moduleDataProviders);
     }
-
     public static void addMekaTanaModules(IModuleDataProvider<?>... moduleDataProviders) {
         sendModuleIMC(MekaWeapons.ADD_MEKATANA_MODULES, moduleDataProviders);
     }
-
     public static void addMekaSuitModules(IModuleDataProvider<?>... moduleDataProviders) {
         addMekaSuitHelmetModules(moduleDataProviders);
         addMekaSuitBodyarmorModules(moduleDataProviders);
         addMekaSuitPantsModules(moduleDataProviders);
         addMekaSuitBootsModules(moduleDataProviders);
     }
-
     public static void addMekaToolModules(IModuleDataProvider<?>... moduleDataProviders) {
         sendModuleIMC(MekanismIMC.ADD_MEKA_TOOL_MODULES, moduleDataProviders);
     }
     public static void addMekaSuitHelmetModules(IModuleDataProvider<?>... moduleDataProviders) {
         sendModuleIMC(MekanismIMC.ADD_MEKA_SUIT_HELMET_MODULES, moduleDataProviders);
     }
-
     public static void addMekaSuitBodyarmorModules(IModuleDataProvider<?>... moduleDataProviders) {
         sendModuleIMC(MekanismIMC.ADD_MEKA_SUIT_BODYARMOR_MODULES, moduleDataProviders);
     }

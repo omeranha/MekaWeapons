@@ -3,7 +3,7 @@
   "result":{
     "item":"mekaweapons:bow_riser"
   },
-  "pattern":[ "csc", "oao", "  " ],
+  "pattern":[ "   ", "csc", "oao" ],
   "key":{
     "o":{ "tag":"forge:ingots/refined_obsidian" },
     "s":{ "tag":"forge:ingots/steel" },
