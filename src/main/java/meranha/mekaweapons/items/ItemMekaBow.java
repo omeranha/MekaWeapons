@@ -124,7 +124,9 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
                     IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
                     int damage = MekaWeapons.general.mekaBowBaseDamage.get();
                     if (attackAmplificationUnit != null && attackAmplificationUnit.isEnabled()) {
-                        damage = damage * attackAmplificationUnit.getInstalledCount();
+                        for (int i = 0; i < attackAmplificationUnit.getInstalledCount(); i++) {
+                            damage += MekaWeapons.general.mekaBowBaseDamage.get();
+                        }
                     }
                     arrowEntity.setBaseDamage(damage);
                     int power = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, stack);

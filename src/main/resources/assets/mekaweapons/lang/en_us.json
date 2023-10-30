@@ -10,7 +10,7 @@
 	"tooltip.mekaweapons.magnetizer": "Displays the Meka-Bow and the Meka-Tana in player's back if they are in inventory. (Curios needed)",
 	"module.mekaweapons.arrowenergy_unit": "Energy Arrows Unit",
 	"module.mekaweapons.autofire_unit": "Auto Fire Unit",
-	"description.mekaweapons.arrow_energy_unit": "Fire arrows made of pure energy. Removes the need for ammunition.",
+	"description.mekaweapons.arrowenergy_unit": "Fire arrows made of pure energy. Removes the need for ammunition.",
 	"description.mekaweapons.autofire_unit": "Fires automatically when Meka-Bow is fully charged.",
 	"curios.identifier.magnetizer": "Magnetizer"
 }

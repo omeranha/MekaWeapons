@@ -92,7 +92,10 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
         IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
         if (attackAmplificationUnit != null && attackAmplificationUnit.isEnabled()) {
-            int unitDamage = MekaWeapons.general.mekaTanaBaseDamage.get() * attackAmplificationUnit.getInstalledCount();
+            int unitDamage = MekaWeapons.general.mekaTanaBaseDamage.get();
+            for (int i = 0; i < attackAmplificationUnit.getInstalledCount(); i++) {
+                unitDamage += MekaWeapons.general.mekaTanaBaseDamage.get();
+            }
             if (unitDamage > 0) {
                 IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
                 if (energyContainer != null && !energyContainer.isEmpty()) {
@@ -107,28 +110,26 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@NotNull EquipmentSlot slot, @NotNull ItemStack stack) {
         if (slot == EquipmentSlot.MAINHAND) {
-            int unitDamage = 0;
+            int unitDamage = MekaWeapons.general.mekaTanaBaseDamage.get();
             IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
             if (attackAmplificationUnit != null && attackAmplificationUnit.isEnabled()) {
-                unitDamage = MekaWeapons.general.mekaTanaBaseDamage.get() * attackAmplificationUnit.getInstalledCount();
+                for (int i = 0; i < attackAmplificationUnit.getInstalledCount(); i++) {
+                    unitDamage += MekaWeapons.general.mekaTanaBaseDamage.get();
+                }
                 if (unitDamage > 0) {
-                    FloatingLong energyCost = MekaWeapons.general.mekaTanaEnergyUsage.get().multiply(unitDamage / 4D);
+                    FloatingLong energyCost = MekaWeapons.general.mekaTanaEnergyUsage.get();
                     IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
                     FloatingLong energy = energyContainer == null ? FloatingLong.ZERO : energyContainer.getEnergy();
                     if (energy.smallerThan(energyCost)) {
-                        double bonusDamage = unitDamage * energy.divideToLevel(energyCost);
-                        if (bonusDamage > 0) {
-                            ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
-                            builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", MekaWeapons.general.mekaTanaBaseDamage.get() + bonusDamage, Operation.ADDITION));
-                            builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", MekaWeapons.general.mekaTanaAttackSpeed.get(), Operation.ADDITION));
-                            return builder.build();
-                        }
-                        unitDamage = 0;
+                        ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
+                        builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", MekaWeapons.general.mekaTanaBaseDamage.get(), Operation.ADDITION));
+                        builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", MekaWeapons.general.mekaTanaAttackSpeed.get(), Operation.ADDITION));
+                        return builder.build();
                     }
                 }
             }
             return attributeCaches.computeIfAbsent(unitDamage, damage -> new AttributeCache(builder -> {
-                builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", MekaWeapons.general.mekaTanaBaseDamage.get() + damage, Operation.ADDITION));
+                builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, Operation.ADDITION));
                 builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", MekaWeapons.general.mekaTanaAttackSpeed.get(), Operation.ADDITION));
             }, MekaWeapons.general.mekaTanaBaseDamage, MekaWeapons.general.mekaTanaAttackSpeed)).get();
         }

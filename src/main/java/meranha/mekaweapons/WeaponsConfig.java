@@ -32,7 +32,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
         builder.comment("MekaWeapons Settings. Joules to FE conversion: 2.5J = 1FE").push("weapons");
 
         builder.comment("Meka-tana Settings").push("mekatana");
-        mekaTanaBaseDamage = CachedIntValue.wrap(this, builder.comment("Base damage of the Meka-Tana.").define("baseDamage", 5));
+        mekaTanaBaseDamage = CachedIntValue.wrap(this, builder.comment("Base damage of the Meka-Tana, multiply it with Attack Amplification Units.").define("baseDamage", 50));
         mekaTanaAttackSpeed = CachedDoubleValue.wrap(this, builder.comment("Attack speed of the Meka-Tana.").defineInRange("attackSpeed", -2.4, -Attributes.ATTACK_SPEED.getDefaultValue(), 100));
         mekaTanaEnergyUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Tana to deal damage.", "energyUsage", FloatingLong.createConst(625_000));
         mekaTanaTeleportUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Tana to teleport 10 blocks.", "teleportEnergyUsage", FloatingLong.createConst(5_000));
@@ -42,7 +42,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
         builder.pop();
 
         builder.comment("Meka-Bow Settings").push("mekabow");
-        mekaBowBaseDamage = CachedIntValue.wrap(this, builder.comment("Attention: The final damage of Meka-Bow is based on how fast the arrow is going when hits, stacks with multiplier.").define("baseDamage", 5));
+        mekaBowBaseDamage = CachedIntValue.wrap(this, builder.comment("Attention: The final damage of Meka-Bow is based on how fast the arrow is going when hits, multiply it with Attack Amplification Units.").define("baseDamage", 50));
         mekaBowEnergyUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Bow.", "energyUsage", FloatingLong.createConst(625_000));
         mekaBowFireModeEnergyUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Bow with flame mode active.", "fireModeEnergyUsage", FloatingLong.createConst(825_000));
         mekaBowBaseEnergyCapacity = CachedFloatingLongValue.define(this, builder, "Base energy capacity of Meka-Bow.", "baseEnergyCapacity", FloatingLong.createConst(16_000_000));
