@@ -1,8 +1,12 @@
 package meranha.mekaweapons;
 
+import ad_astra_giselle_addon.common.compat.mekanism.AddonMekanismModules;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import mekanism.api.MekanismIMC;
+import mekanism.api.gear.ICustomModule;
+import mekanism.api.gear.IModule;
+import mekanism.api.gear.IModuleHelper;
 import mekanism.api.gear.ModuleData;
 import mekanism.api.providers.IItemProvider;
 import mekanism.api.providers.IModuleDataProvider;
@@ -11,20 +15,20 @@ import mekanism.common.Mekanism;
 import mekanism.common.config.MekanismConfigHelper;
 import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.item.ItemModule;
-import mekanism.common.registration.impl.ItemDeferredRegister;
-import mekanism.common.registration.impl.ItemRegistryObject;
-import mekanism.common.registration.impl.ModuleDeferredRegister;
-import mekanism.common.registration.impl.ModuleRegistryObject;
+import mekanism.common.registration.impl.*;
 import mekanism.common.registries.MekanismCreativeTabs;
 import mekanism.common.registries.MekanismItems;
 import mekanism.common.registries.MekanismModules;
-import meranha.mekaweapons.items.ItemMagnetizer;
-import meranha.mekaweapons.items.ItemMekaBow;
-import meranha.mekaweapons.items.ItemMekaTana;
+import mekanism.generators.common.registries.GeneratorsModules;
+import meranha.mekaweapons.items.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -39,8 +43,8 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotTypeMessage;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
-import ad_astra_giselle_addon.common.compat.mekanism.AddonMekanismModules;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -56,6 +60,9 @@ public class MekaWeapons {
     public static final ModuleDeferredRegister MODULES =  new ModuleDeferredRegister(MekaWeapons.MODID);
     public static final ModuleRegistryObject<?> ARROWENERGY_UNIT = MODULES.registerMarker("arrowenergy_unit", () -> MekaWeapons.MODULE_ARROWENERGY.asItem(), builder -> builder.rarity(Rarity.RARE));
     public static final ModuleRegistryObject<?> AUTOFIRE_UNIT = MODULES.registerMarker("autofire_unit", () -> MekaWeapons.MODULE_AUTOFIRE.asItem(), builder -> builder.rarity(Rarity.RARE));
+    public static final ModuleRegistryObject<?> DRAWSPEED_UNIT = MODULES.registerMarker("drawspeed_unit", () -> MekaWeapons.MODULE_DRAWSPEED.asItem(), builder -> builder.maxStackSize(3).rarity(Rarity.RARE));
+    public static final ModuleRegistryObject<?> GRAVITYDAMPENER_UNIT = MODULES.registerMarker("gravitydampener_unit", () -> MekaWeapons.MODULE_GRAVITYDAMPENER.asItem(), builder -> builder.rarity(Rarity.EPIC));
+    //public static final ModuleRegistryObject<?> ARROWVELOCITY_UNIT = MODULES.registerMarker("arrowvelocity_unit", () -> MekaWeapons.MODULE_ARROWVELOCITY.asItem(), builder -> builder.maxStackSize(8).rarity(Rarity.RARE));
 
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("mekatana", ItemMekaTana::new);
@@ -66,6 +73,12 @@ public class MekaWeapons {
     public static final ItemRegistryObject<Item> BOW_LIMB = ITEMS.register("bow_limb");
     public static final ItemRegistryObject<ItemModule> MODULE_ARROWENERGY = ITEMS.registerModule(MekaWeapons.ARROWENERGY_UNIT);
     public static final ItemRegistryObject<ItemModule> MODULE_AUTOFIRE = ITEMS.registerModule(MekaWeapons.AUTOFIRE_UNIT);
+    public static final ItemRegistryObject<ItemModule> MODULE_DRAWSPEED = ITEMS.registerModule(MekaWeapons.DRAWSPEED_UNIT);
+    public static final ItemRegistryObject<ItemModule> MODULE_GRAVITYDAMPENER = ITEMS.registerModule(MekaWeapons.GRAVITYDAMPENER_UNIT);
+    //public static final ItemRegistryObject<ItemModule> MODULE_ARROWVELOCITY = ITEMS.registerModule(MekaWeapons.ARROWVELOCITY_UNIT);
+
+    public static final EntityTypeDeferredRegister ENTITY_TYPES = new EntityTypeDeferredRegister(MekaWeapons.MODID);
+    public static final EntityTypeRegistryObject<MekaArrowEntity> MEKA_ARROW = ENTITY_TYPES.register("meka_arrow", EntityType.Builder.<MekaArrowEntity>of(MekaArrowEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20));
 
     private final Map<Item, Set<ModuleData<?>>> supportedModules = new Reference2ObjectArrayMap<>(7);
     private final Map<ModuleData<?>, Set<Item>> supportedContainers = new IdentityHashMap<>();
@@ -76,10 +89,12 @@ public class MekaWeapons {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         MekaWeapons.ITEMS.register(modEventBus);
         MekaWeapons.MODULES.register(modEventBus);
+        MekaWeapons.ENTITY_TYPES.register(modEventBus);
         MekanismConfigHelper.registerConfig(ModLoadingContext.get().getActiveContainer(), general);
         modEventBus.addListener(this::buildCreativeModeTabContents);
         modEventBus.addListener(this::enqueueIMC);
         modEventBus.addListener(this::processIMC);
+        modEventBus.addListener(this::registerRenderers);
     }
 
     private void buildCreativeModeTabContents(BuildCreativeModeTabContentsEvent event) {
@@ -90,16 +105,28 @@ public class MekaWeapons {
 
     @SubscribeEvent
     public static void init(FMLClientSetupEvent event) {
-        CuriosRendererRegistry.register(MekaWeapons.MAGNETIZER.get(), WeaponsRenderer::new);
+        if (ModList.get().isLoaded("curios")) {
+            CuriosRendererRegistry.register(MekaWeapons.MAGNETIZER.get(), WeaponsRenderer::new);
+        }
         event.enqueueWork(() -> {
-            ClientRegistrationUtil.setPropertyOverride(MekaWeapons.MEKA_BOW, Mekanism.rl("pull"), (stack, world, entity, seed) -> entity != null && entity.getUseItem() == stack ? (stack.getUseDuration() - entity.getUseItemRemainingTicks()) / 20.0F : 0);
+            ClientRegistrationUtil.setPropertyOverride(MekaWeapons.MEKA_BOW, Mekanism.rl("pull"), (stack, world, entity, seed) -> {
+                if (entity != null && entity.getUseItem() == stack && stack.getItem() instanceof ItemMekaBow bow) {
+                    return (stack.getUseDuration() - entity.getUseItemRemainingTicks()) / bow.getUseTick(stack);
+                }
+                return 0;
+            });
             ClientRegistrationUtil.setPropertyOverride(MekaWeapons.MEKA_BOW, Mekanism.rl("pulling"), (stack, world, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
         });
     }
 
+    public void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(MekaWeapons.MEKA_ARROW.get(), MekaArrowRenderer::new);
+    }
+
     private void enqueueIMC(final InterModEnqueueEvent event) {
         InterModComms.sendTo(CuriosApi.MODID, SlotTypeMessage.REGISTER_TYPE, () -> new SlotTypeMessage.Builder("magnetizer").icon(new ResourceLocation(MekaWeapons.MODID, "slot/magnetizer_slot")).build());
-        addMekaBowModules(MekanismModules.ENERGY_UNIT, MekanismModules.ATTACK_AMPLIFICATION_UNIT, MekaWeapons.AUTOFIRE_UNIT, MekaWeapons.ARROWENERGY_UNIT);
+        addMekaToolModules(MekanismModules.ENERGY_UNIT, MekanismModules.ATTACK_AMPLIFICATION_UNIT, MekanismModules.SILK_TOUCH_UNIT, MekanismModules.FORTUNE_UNIT, MekanismModules.BLASTING_UNIT, MekanismModules.VEIN_MINING_UNIT, MekanismModules.FARMING_UNIT, MekanismModules.SHEARING_UNIT, MekanismModules.TELEPORTATION_UNIT, MekanismModules.EXCAVATION_ESCALATION_UNIT);
+        addMekaBowModules(MekanismModules.ENERGY_UNIT, MekanismModules.ATTACK_AMPLIFICATION_UNIT, MekaWeapons.AUTOFIRE_UNIT, MekaWeapons.ARROWENERGY_UNIT, MekaWeapons.DRAWSPEED_UNIT, MekaWeapons.GRAVITYDAMPENER_UNIT); // MekaWeapons.ARROWVELOCITY_UNIT
         addMekaTanaModules(MekanismModules.ENERGY_UNIT, MekanismModules.ATTACK_AMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT);
 
         addMekaSuitModules(MekanismModules.ENERGY_UNIT, MekanismModules.COLOR_MODULATION_UNIT, MekanismModules.LASER_DISSIPATION_UNIT, MekanismModules.RADIATION_SHIELDING_UNIT);
@@ -113,7 +140,10 @@ public class MekaWeapons {
             addMekaSuitPantsModules(AddonMekanismModules.ACID_RAIN_PROOF_UNIT);
             addMekaSuitBootsModules(AddonMekanismModules.GRAVITY_NORMALIZING_UNIT);
         }
-        addMekaToolModules(MekanismModules.ENERGY_UNIT, MekanismModules.ATTACK_AMPLIFICATION_UNIT, MekanismModules.SILK_TOUCH_UNIT, MekanismModules.FORTUNE_UNIT, MekanismModules.BLASTING_UNIT, MekanismModules.VEIN_MINING_UNIT, MekanismModules.FARMING_UNIT, MekanismModules.SHEARING_UNIT, MekanismModules.TELEPORTATION_UNIT, MekanismModules.EXCAVATION_ESCALATION_UNIT);
+        if (ModList.get().isLoaded("mekanismgenerators")) {
+            addMekaSuitHelmetModules(GeneratorsModules.SOLAR_RECHARGING_UNIT);
+            addMekaSuitPantsModules(GeneratorsModules.GEOTHERMAL_GENERATOR_UNIT);
+        }
     }
 
     public void processIMC(InterModProcessEvent event) {

@@ -70,6 +70,7 @@ dependencies {
     minecraft "net.neoforged:forge:${minecraft_version}-${forge_version}"
     implementation(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}"))
     compileOnly(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:api"))
+    compileOnly(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:generators"))
     compileOnly(fg.deobf("top.theillusivec4.curios:curios-forge:5.3.5+1.20.1:api"))
     compileOnly(fg.deobf("curse.maven:ad-astra-giselle-addon-714958:4819646"))
 }

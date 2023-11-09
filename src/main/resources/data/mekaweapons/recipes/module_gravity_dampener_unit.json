@@ -1,0 +1,15 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "result":{
+    "item":"mekaweapons:module_gravitydampener_unit"
+  },
+  "pattern":[ "uwu", "cmc", "pap" ],
+  "key":{
+    "m":{ "item": "mekanism:module_base" },
+    "u":{ "item": "mekanism:alloy_atomic" },
+    "w":{ "item": "minecraft:arrow" },
+    "a":{ "item": "mekanism:pellet_antimatter" },
+    "p":{ "item":"mekanism:pellet_polonium" },
+    "c":{ "item":"mekanism:ultimate_control_circuit" }
+  }
+}

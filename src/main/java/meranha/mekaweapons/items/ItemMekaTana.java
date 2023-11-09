@@ -57,7 +57,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem {
-
     private final Int2ObjectMap<AttributeCache> attributeCaches = new Int2ObjectArrayMap<>(ModuleAttackAmplificationUnit.AttackDamage.values().length);
     public ItemMekaTana(Properties properties) {
         super(MekaWeapons.general.mekaTanaBaseChargeRate, MekaWeapons.general.mekaTanaBaseEnergyCapacity, properties.rarity(Rarity.EPIC).setNoRepair());

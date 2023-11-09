@@ -8,7 +8,8 @@ import org.jetbrains.annotations.NotNull;
 public enum WeaponsLang implements ILangEntry {
     AUTOFIRE_MODE("tooltip", "autofire_mode"),
     ARROWENERGY_MODE("tooltip", "arrowenergy_mode"),
-    MAGNETIZER("tooltip", "magnetizer");
+    MAGNETIZER("tooltip", "magnetizer"),
+    ATTACKDAMAGE("tooltip", "attackdamage");
 
     WeaponsLang(String type, String path) {
         this(Util.makeDescriptionId(type, new ResourceLocation(MekaWeapons.MODID, path)));
