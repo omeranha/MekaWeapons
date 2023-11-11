@@ -66,7 +66,7 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
                 tooltip.add(WeaponsLang.ARROWENERGY_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.ARROWENERGY_UNIT))));
             }
             tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
-            tooltip.add(Component.translatable(WeaponsLang.ATTACKDAMAGE.toString(), getDamage(stack)).withStyle(ChatFormatting.DARK_GREEN));
+            tooltip.add(Component.translatable("tooltip.mekaweapons.attackdamage", getDamage(stack)).withStyle(ChatFormatting.DARK_GREEN));
         }
     }
 
