@@ -1,0 +1,23 @@
+{
+	"item.mekaweapons.mekatana": "Meka武士刀",
+	"item.mekaweapons.mekabow": "Meka科技弓",
+	"item.mekaweapons.magnetizer": "磁化器",
+	"item.mekaweapons.katana_blade": "原型刀胚",
+	"item.mekaweapons.bow_riser": "原型弓柄",
+	"item.mekaweapons.bow_limb": "玻璃纤维弓弦",
+	"tooltip.mekaweapons.autofire_mode": "自动射击模式: %s",
+	"tooltip.mekaweapons.arrowenergy_mode": "能量箭模式: %s",
+	"tooltip.mekaweapons.magnetizer": "当物品栏中有Meka武士刀或Meka科技弓时，将其显示在背上。(需要Curios)",
+	"tooltip.mekaweapons.attackdamage": " %s 攻击伤害",
+	"module.mekaweapons.arrowenergy_unit": "能量箭单元",
+	"module.mekaweapons.autofire_unit": "自动射击单元",
+	"module.mekaweapons.drawspeed_unit": "快速充能单元",
+	"module.mekaweapons.gravitydampener_unit": "重力抵抗单元",
+	"module.mekaweapons.arrowvelocity_unit": "破风单元",
+	"description.mekaweapons.arrowenergy_unit": "Meka科技弓使用由能量产生的箭矢，而无需实体箭矢。",
+	"description.mekaweapons.autofire_unit": "Meka科技弓完全充能后将自动持续射击。",
+	"description.mekaweapons.drawspeed_unit": "提高Meka科技弓的蓄力速度。",
+	"description.mekaweapons.gravitydampener_unit": "用反物质的力量对抗重力，Meka科技弓完全充能后射出的箭矢将无视重力的影响而笔直飞行。",
+	"description.mekaweapons.arrowvelocity_unit": "减少空气阻力，提高Meka科技弓射出的箭矢飞行速度。",
+	"curios.identifier.magnetizer": "磁化器"
+}
