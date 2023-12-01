@@ -1,0 +1,23 @@
+{
+	"item.mekaweapons.mekatana": "메카-타나",
+	"item.mekaweapons.mekabow": "메카-보우",
+	"item.mekaweapons.magnetizer": "자화기",
+	"item.mekaweapons.katana_blade": "카타나 날",
+	"item.mekaweapons.bow_riser": "활대",
+	"item.mekaweapons.bow_limb": "유리섬유 시위",
+	"tooltip.mekaweapons.autofire_mode": "자동 발사 모드: %s",
+	"tooltip.mekaweapons.arrowenergy_mode": "에너지 화살 모드: %s",
+	"tooltip.mekaweapons.magnetizer": "인벤토리에 메카-보우나 메카-타나가 있다면 플레이어의 등에 표시합니다. (Curios 필요)",
+	"tooltip.mekaweapons.attackdamage": " %s 공격 피해",
+	"module.mekaweapons.arrowenergy_unit": "에너지 화살 기구",
+	"module.mekaweapons.autofire_unit": "자동 발사 기구",
+	"module.mekaweapons.drawspeed_unit": "당김 속도 기구",
+	"module.mekaweapons.gravitydampener_unit": "중력 완충 기구",
+	"module.mekaweapons.arrowvelocity_unit": "화살 속도 기구",
+	"description.mekaweapons.arrowenergy_unit": "순수하게 에너지로만 만들어진 화살을 발사합니다. 탄약이 필요하지 않게 합니다",
+	"description.mekaweapons.autofire_unit": "메카-보우가 최대로 충전되면 자동으로 발사시킵니다.",
+	"description.mekaweapons.drawspeed_unit": "메카-보우의 시위를 당기는 속도를 증가시킵니다.",
+	"description.mekaweapons.gravitydampener_unit": "반물질의 힘으로 중력을 조종합니다. 최대로 충전된 화살은 목표를 향해 일직선으로 날아갑니다.",
+	"description.mekaweapons.arrowvelocity_unit": "화살의 속도를 증가시킵니다.",
+	"curios.identifier.magnetizer": "자화기"
+}
