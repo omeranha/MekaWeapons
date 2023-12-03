@@ -5,7 +5,7 @@
   },
   "pattern":[ "sis", "ibi", "sis" ],
   "key":{
-    "s":{ "item":"forge:ingots/steel" },
+    "s":{ "tag":"forge:ingots/steel" },
     "i":{ "tag":"forge:ingots/iron" },
     "b":{ "tag":"forge:circuits/basic" }
   }
