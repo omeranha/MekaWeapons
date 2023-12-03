@@ -6,6 +6,7 @@
 	"item.mekaweapons.bow_riser": "原型弓柄",
 	"item.mekaweapons.bow_limb": "玻璃纤维弓弦",
 	"tooltip.mekaweapons.autofire_mode": "自动射击模式: %s",
+	"tooltip.mekaweapons.autofire_mode_change": "自动射击模式",
 	"tooltip.mekaweapons.arrowenergy_mode": "能量箭模式: %s",
 	"tooltip.mekaweapons.magnetizer": "当物品栏中有Meka武士刀或Meka科技弓时，将其显示在背上。(需要Curios)",
 	"tooltip.mekaweapons.attackdamage": " %s 攻击伤害",

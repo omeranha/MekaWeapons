@@ -6,6 +6,7 @@
 	"item.mekaweapons.bow_riser": "활대",
 	"item.mekaweapons.bow_limb": "유리섬유 시위",
 	"tooltip.mekaweapons.autofire_mode": "자동 발사 모드: %s",
+	"tooltip.mekaweapons.autofire_mode_change": "자동 발사 모드",
 	"tooltip.mekaweapons.arrowenergy_mode": "에너지 화살 모드: %s",
 	"tooltip.mekaweapons.magnetizer": "인벤토리에 메카-보우나 메카-타나가 있다면 플레이어의 등에 표시합니다. (Curios 필요)",
 	"tooltip.mekaweapons.attackdamage": " %s 공격 피해",

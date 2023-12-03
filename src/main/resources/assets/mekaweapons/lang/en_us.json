@@ -6,6 +6,7 @@
 	"item.mekaweapons.bow_riser": "Bow Riser",
 	"item.mekaweapons.bow_limb": "Fiberglass Bow Limb",
 	"tooltip.mekaweapons.autofire_mode": "Auto Fire Mode: %s",
+	"tooltip.mekaweapons.autofire_mode_change": "Auto Fire Mode",
 	"tooltip.mekaweapons.arrowenergy_mode": "Energy Arrows Mode: %s",
 	"tooltip.mekaweapons.magnetizer": "Displays the Meka-Bow and the Meka-Tana in player's back if they are in inventory. (Curios needed)",
 	"tooltip.mekaweapons.attackdamage": " %s Attack Damage",

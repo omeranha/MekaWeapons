@@ -17,6 +17,7 @@ import mekanism.common.config.MekanismConfig;
 import mekanism.common.content.gear.IModuleContainerItem;
 import mekanism.common.content.gear.mekatool.ModuleAttackAmplificationUnit;
 import mekanism.common.content.gear.shared.ModuleEnergyUnit;
+import mekanism.common.item.interfaces.IModeItem;
 import mekanism.common.registries.MekanismModules;
 import mekanism.common.util.StorageUtils;
 import mekanism.common.util.text.BooleanStateDisplay;
@@ -46,7 +47,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 @SuppressWarnings("deprecation")
-public class ItemMekaBow extends BowItem implements IModuleContainerItem {
+public class ItemMekaBow extends BowItem implements IModuleContainerItem, IModeItem {
     public boolean isFullChargeShot = false;
 
     public ItemMekaBow(Properties properties) {
@@ -201,6 +202,14 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
     @Override
     public boolean isFoil(@Nonnull ItemStack stack) {
         return false;
+    }
+
+    @Override
+    public void changeMode(@NotNull Player player, @NotNull ItemStack stack, int shift, IModeItem.DisplayChange displayChange) {
+        IModule<?> autoFireUnit = getModule(stack, MekaWeapons.AUTOFIRE_UNIT);
+        if (autoFireUnit != null) {
+            autoFireUnit.toggleEnabled(player, WeaponsLang.AUTOFIRE_MODE_CHANGE.translateColored(EnumColor.WHITE));
+        }
     }
 
     public int getDamage(@Nonnull ItemStack stack) {
