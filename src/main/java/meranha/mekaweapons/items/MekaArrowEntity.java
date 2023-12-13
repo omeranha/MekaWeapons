@@ -48,9 +48,9 @@ public class MekaArrowEntity extends AbstractArrow {
         }
 
         BlockPos blockpos = this.blockPosition();
-        BlockState blockstate = this.level().getBlockState(blockpos);
+        BlockState blockstate = this.level.getBlockState(blockpos);
         if (!blockstate.isAir() && !flag) {
-            VoxelShape voxelshape = blockstate.getCollisionShape(this.level(), blockpos);
+            VoxelShape voxelshape = blockstate.getCollisionShape(this.level, blockpos);
             if (!voxelshape.isEmpty()) {
                 Vec3 vec31 = this.position();
 
@@ -74,7 +74,7 @@ public class MekaArrowEntity extends AbstractArrow {
         if (this.inGround && !flag) {
             if (this.lastState != blockstate && this.shouldFall()) {
                 this.startFalling();
-            } else if (!this.level().isClientSide) {
+            } else if (!this.level.isClientSide) {
                 this.tickDespawn();
             }
 
@@ -83,7 +83,7 @@ public class MekaArrowEntity extends AbstractArrow {
             this.inGroundTime = 0;
             Vec3 vec32 = this.position();
             Vec3 vec33 = vec32.add(vec3);
-            HitResult hitresult = this.level().clip(new ClipContext(vec32, vec33, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+            HitResult hitresult = this.level.clip(new ClipContext(vec32, vec33, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
             if (hitresult.getType() != HitResult.Type.MISS) {
                 vec33 = hitresult.getLocation();
             }
@@ -124,7 +124,7 @@ public class MekaArrowEntity extends AbstractArrow {
             double d1 = vec3.z;
             if (this.isCritArrow()) {
                 for(int i = 0; i < 4; ++i) {
-                    this.level().addParticle(ParticleTypes.CRIT, this.getX() + d5 * (double)i / 4.0D, this.getY() + d6 * (double)i / 4.0D, this.getZ() + d1 * (double)i / 4.0D, -d5, -d6 + 0.2D, -d1);
+                    this.level.addParticle(ParticleTypes.CRIT, this.getX() + d5 * (double)i / 4.0D, this.getY() + d6 * (double)i / 4.0D, this.getZ() + d1 * (double)i / 4.0D, -d5, -d6 + 0.2D, -d1);
                 }
             }
 
@@ -144,7 +144,7 @@ public class MekaArrowEntity extends AbstractArrow {
             float f = 0.99F;
             if (this.isInWater()) {
                 for(int j = 0; j < 4; ++j) {
-                    this.level().addParticle(ParticleTypes.BUBBLE, d7 - d5 * 0.25D, d2 - d6 * 0.25D, d3 - d1 * 0.25D, d5, d6, d1);
+                    this.level.addParticle(ParticleTypes.BUBBLE, d7 - d5 * 0.25D, d2 - d6 * 0.25D, d3 - d1 * 0.25D, d5, d6, d1);
                 }
 
                 f = this.getWaterInertia();
@@ -171,7 +171,7 @@ public class MekaArrowEntity extends AbstractArrow {
     }
 
     private boolean shouldFall() {
-        return this.inGround && this.level().noCollision((new AABB(this.position(), this.position())).inflate(0.06D));
+        return this.inGround && this.level.noCollision((new AABB(this.position(), this.position())).inflate(0.06D));
     }
 
     private void startFalling() {

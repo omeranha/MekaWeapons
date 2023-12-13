@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[47,)"
+loaderVersion="[43,)"
 license="MIT"
 [[mods]]
 modId="mekaweapons"
@@ -10,18 +10,18 @@ description='''Weapons for Mekanism.'''
 [[dependencies.mekaweapons]]
 	modId="forge"
 	mandatory=true
-	versionRange="[47,)"
+	versionRange="[43,)"
 	ordering="NONE"
 	side="BOTH"
 [[dependencies.mekaweapons]]
 	modId="minecraft"
 	mandatory=true
-	versionRange="[1.20.1,1.21)"
+	versionRange="1.19.2"
 	ordering="NONE"
 	side="BOTH"
 [[dependencies.mekaweapons]]
 	modId="mekanism"
 	mandatory=true
-	versionRange="10.4.0.14"
+	versionRange="10.3.9.13"
 	ordering="AFTER"
 	side="BOTH"

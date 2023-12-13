@@ -2,7 +2,9 @@ package meranha.mekaweapons.items;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
+import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -11,8 +13,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 public class MekaArrowRenderer extends EntityRenderer<MekaArrowEntity> {
     public MekaArrowRenderer(EntityRendererProvider.Context pContext) {
@@ -21,15 +21,15 @@ public class MekaArrowRenderer extends EntityRenderer<MekaArrowEntity> {
 
     public void render(MekaArrowEntity pEntity, float pEntityYaw, float pPartialTicks, PoseStack pMatrixStack, @NotNull MultiBufferSource pBuffer, int pPackedLight) {
         pMatrixStack.pushPose();
-        pMatrixStack.mulPose(Axis.YP.rotationDegrees(Mth.lerp(pPartialTicks, pEntity.yRotO, pEntity.getYRot()) - 90.0F));
-        pMatrixStack.mulPose(Axis.ZP.rotationDegrees(Mth.lerp(pPartialTicks, pEntity.xRotO, pEntity.getXRot())));
+        pMatrixStack.mulPose(Vector3f.YP.rotationDegrees(Mth.lerp(pPartialTicks, pEntity.yRotO, pEntity.getYRot()) - 90.0F));
+        pMatrixStack.mulPose(Vector3f.ZP.rotationDegrees(Mth.lerp(pPartialTicks, pEntity.xRotO, pEntity.getXRot())));
         float f9 = (float)pEntity.shakeTime - pPartialTicks;
         if (f9 > 0.0F) {
             float f10 = -Mth.sin(f9 * 3.0F) * f9;
-            pMatrixStack.mulPose(Axis.ZP.rotationDegrees(f10));
+            pMatrixStack.mulPose(Vector3f.ZP.rotationDegrees(f10));
         }
 
-        pMatrixStack.mulPose(Axis.XP.rotationDegrees(45.0F));
+        pMatrixStack.mulPose(Vector3f.XP.rotationDegrees(45.0F));
         pMatrixStack.scale(0.05625F, 0.05625F, 0.05625F);
         pMatrixStack.translate(-4.0F, 0.0F, 0.0F);
         VertexConsumer vertexconsumer = pBuffer.getBuffer(RenderType.entityCutout(this.getTextureLocation(pEntity)));
@@ -46,7 +46,7 @@ public class MekaArrowRenderer extends EntityRenderer<MekaArrowEntity> {
         this.vertex(matrix4f, matrix3f, vertexconsumer, -7, -2, -2, 0.0F, 0.3125F, 1, 0, 0, pPackedLight);
 
         for(int j = 0; j < 4; ++j) {
-            pMatrixStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+            pMatrixStack.mulPose(Vector3f.XP.rotationDegrees(90.0F));
             this.vertex(matrix4f, matrix3f, vertexconsumer, -8, -2, 0, 0.0F, 0.0F, 0, 1, 0, pPackedLight);
             this.vertex(matrix4f, matrix3f, vertexconsumer, 8, -2, 0, 0.5F, 0.0F, 0, 1, 0, pPackedLight);
             this.vertex(matrix4f, matrix3f, vertexconsumer, 8, 2, 0, 0.5F, 0.15625F, 0, 1, 0, pPackedLight);

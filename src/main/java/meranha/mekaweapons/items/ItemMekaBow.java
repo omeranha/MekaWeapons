@@ -205,7 +205,7 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IModeI
     }
 
     @Override
-    public void changeMode(@NotNull Player player, @NotNull ItemStack stack, int shift, IModeItem.DisplayChange displayChange) {
+    public void changeMode(@NotNull Player player, @NotNull ItemStack stack, int shift, boolean displayChangeMessage) {
         IModule<?> autoFireUnit = getModule(stack, MekaWeapons.AUTOFIRE_UNIT);
         if (autoFireUnit != null) {
             autoFireUnit.toggleEnabled(player, WeaponsLang.AUTOFIRE_MODE_CHANGE.translateColored(EnumColor.WHITE));
@@ -238,9 +238,9 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IModeI
     public @NotNull AbstractArrow customArrow(AbstractArrow arrow) {
         Entity owner = arrow.getOwner();
         if (!(owner instanceof LivingEntity)) {
-            return new MekaArrowEntity(MekaWeapons.MEKA_ARROW.getEntityType(), arrow.level());
+            return new MekaArrowEntity(MekaWeapons.MEKA_ARROW.getEntityType(), arrow.level);
         }
-        return new MekaArrowEntity((LivingEntity) arrow.getOwner(), arrow.level());
+        return new MekaArrowEntity((LivingEntity) arrow.getOwner(), arrow.level);
     }
 
     public boolean isGravityDampenerEnabled(@Nonnull ItemStack stack) {
