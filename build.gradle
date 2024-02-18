@@ -19,7 +19,7 @@ java {
 }
 
 minecraft {
-    mappings channel: 'parchment', version: '2023.06.26-1.20.1'
+    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
     copyIdeResources = true
     runs {
         configureEach {
@@ -75,7 +75,7 @@ dependencies {
     compileOnly(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:api"))
     compileOnly(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:generators"))
     compileOnly(fg.deobf("top.theillusivec4.curios:curios-forge:5.3.5+1.20.1:api"))
-    compileOnly(fg.deobf("curse.maven:ad-astra-giselle-addon-714958:4819646"))
+    compileOnly(fg.deobf("curse.maven:ad-astra-giselle-addon-714958:5047970"))
 
     runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.2.0.27")
 }

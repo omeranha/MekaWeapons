@@ -135,10 +135,10 @@ public class MekaWeapons {
         addMekaSuitPantsModules(MekanismModules.LOCOMOTIVE_BOOSTING_UNIT, MekanismModules.GYROSCOPIC_STABILIZATION_UNIT, MekanismModules.HYDROSTATIC_REPULSOR_UNIT, MekanismModules.MOTORIZED_SERVO_UNIT);
         addMekaSuitBootsModules(MekanismModules.HYDRAULIC_PROPULSION_UNIT, MekanismModules.MAGNETIC_ATTRACTION_UNIT, MekanismModules.FROST_WALKER_UNIT);
         if (ModList.get().isLoaded("ad_astra_giselle_addon")) {
-            addMekaSuitHelmetModules(AddonMekanismModules.SPACE_BREATHING_UNIT);
-            addMekaSuitBodyarmorModules(AddonMekanismModules.SPACE_FIRE_PROOF_UNIT);
+            addMekaSuitHelmetModules(AddonMekanismModules.OXYGEN_PROOF_UNIT);
+            addMekaSuitBodyarmorModules(AddonMekanismModules.HOT_TEMPERATURE_PROOF_UNIT);
             addMekaSuitPantsModules(AddonMekanismModules.ACID_RAIN_PROOF_UNIT);
-            addMekaSuitBootsModules(AddonMekanismModules.GRAVITY_NORMALIZING_UNIT);
+            addMekaSuitBootsModules(AddonMekanismModules.GRAVITY_PROOF_UNIT);
         }
         if (ModList.get().isLoaded("mekanismgenerators")) {
             addMekaSuitHelmetModules(GeneratorsModules.SOLAR_RECHARGING_UNIT);
