@@ -4,6 +4,7 @@ plugins {
     id 'idea'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 
@@ -16,6 +17,11 @@ base {
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
+
+mixin {
+    add sourceSets.main, 'mekaweapons.refmap.json'
+    config 'mekaweapons.mixins.json'
 }
 
 minecraft {
@@ -78,6 +84,9 @@ dependencies {
     compileOnly(fg.deobf("curse.maven:ad-astra-giselle-addon-714958:4819640"))
 
     runtimeOnly fg.deobf("mezz.jei:jei-1.19.2-forge:11.6.0.1018")
+    runtimeOnly(fg.deobf("top.theillusivec4.curios:curios-forge:1.19.2-5.1.4.3"))
+
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
 tasks.named('processResources', ProcessResources).configure {
