@@ -5,13 +5,13 @@ import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.value.CachedDoubleValue;
 import mekanism.common.config.value.CachedFloatingLongValue;
 import mekanism.common.config.value.CachedIntValue;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.config.ModConfig.Type;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 public class WeaponsConfig extends BaseMekanismConfig {
 
-    private final ForgeConfigSpec configSpec;
+    private final ModConfigSpec configSpec;
 
     public final CachedIntValue mekaTanaBaseDamage;
     public final CachedDoubleValue mekaTanaAttackSpeed;
@@ -28,12 +28,12 @@ public class WeaponsConfig extends BaseMekanismConfig {
     public final CachedFloatingLongValue mekaBowBaseChargeRate;
 
     WeaponsConfig() {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.comment("MekaWeapons Settings. Joules to FE conversion: 2.5J = 1FE").push("weapons");
 
         builder.comment("Meka-tana Settings").push("mekatana");
         mekaTanaBaseDamage = CachedIntValue.wrap(this, builder.comment("Base damage of the Meka-Tana, multiply it with Attack Amplification Units.").define("baseDamage", 50));
-        mekaTanaAttackSpeed = CachedDoubleValue.wrap(this, builder.comment("Attack speed of the Meka-Tana.").defineInRange("attackSpeed", -2.4, -Attributes.ATTACK_SPEED.getDefaultValue(), 100));
+        mekaTanaAttackSpeed = CachedDoubleValue.wrap(this, builder.comment("Attack speed of the Meka-Tana.").defineInRange("attackSpeed", -2.4, -Attributes.ATTACK_SPEED.value().getDefaultValue(), 100));
         mekaTanaEnergyUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Tana to deal damage.", "energyUsage", FloatingLong.createConst(625_000));
         mekaTanaTeleportUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using the Meka-Tana to teleport 10 blocks.", "teleportEnergyUsage", FloatingLong.createConst(5_000));
         mekaTanaMaxTeleportReach = CachedIntValue.wrap(this, builder.comment("Maximum distance a player can teleport with the Meka-Tana.").defineInRange("maxTeleportReach", 100, 3, 1_024));
@@ -56,12 +56,12 @@ public class WeaponsConfig extends BaseMekanismConfig {
     }
 
     @Override
-    public ForgeConfigSpec getConfigSpec() {
+    public ModConfigSpec getConfigSpec() {
         return this.configSpec;
     }
 
     @Override
-    public ModConfig.Type getConfigType() {
-        return ModConfig.Type.SERVER;
+    public Type getConfigType() {
+        return Type.SERVER;
     }
 }

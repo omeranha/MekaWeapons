@@ -13,7 +13,7 @@ public enum WeaponsLang implements ILangEntry {
     ATTACKDAMAGE("tooltip", "attackdamage");
 
     WeaponsLang(String type, String path) {
-        this(Util.makeDescriptionId(type, new ResourceLocation(MekaWeapons.MODID, path)));
+        this(Util.makeDescriptionId(type, ResourceLocation.fromNamespaceAndPath(MekaWeapons.MODID, path)));
     }
 
     private final String key;
