@@ -9,7 +9,6 @@
 	"tooltip.mekaweapons.autofire_mode_change": "自动射击模式",
 	"tooltip.mekaweapons.arrowenergy_mode": "能量箭模式: %s",
 	"tooltip.mekaweapons.magnetizer": "当物品栏中有Meka武士刀或Meka科技弓时，将其显示在背上。(需要Curios)",
-	"tooltip.mekaweapons.attackdamage": " %s 攻击伤害",
 	"module.mekaweapons.arrowenergy_unit": "能量箭单元",
 	"module.mekaweapons.autofire_unit": "自动射击单元",
 	"module.mekaweapons.drawspeed_unit": "快速充能单元",

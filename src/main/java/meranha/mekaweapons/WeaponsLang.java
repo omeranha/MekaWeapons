@@ -9,8 +9,7 @@ public enum WeaponsLang implements ILangEntry {
     AUTOFIRE_MODE("tooltip", "autofire_mode"),
     AUTOFIRE_MODE_CHANGE("tooltip", "autofire_mode_change"),
     ARROWENERGY_MODE("tooltip", "arrowenergy_mode"),
-    MAGNETIZER("tooltip", "magnetizer"),
-    ATTACKDAMAGE("tooltip", "attackdamage");
+    MAGNETIZER("tooltip", "magnetizer");
 
     WeaponsLang(String type, String path) {
         this(Util.makeDescriptionId(type, ResourceLocation.fromNamespaceAndPath(MekaWeapons.MODID, path)));

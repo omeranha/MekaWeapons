@@ -27,11 +27,11 @@ public class WeaponsRenderer implements ICurioRenderer {
         }
 
         renderItem(stack, ms, buffer, player, -180, 180, 0, 0.25, -0.1, 0.60f, -0.60f, -2f); // magnetizer
-        if (contains(player, katana) && !player.isHolding(katana.getItem())) {
+        if (!player.isHolding(katana.getItem()) && contains(player, katana)) {
             renderItem(katana, ms, buffer, player, 45, 180, -0.2, -0.75, -0.2, 1f, -1f, -1f);
         }
 
-        if (contains(player, bow) && !player.isHolding(bow.getItem())) {
+        if (!player.isHolding(bow.getItem()) && contains(player, bow)) {
             renderItem(bow, ms, buffer, player, 45, 180, -0.3, -0.07, -0.2, 1f, -1f, -1f);
         }
     }

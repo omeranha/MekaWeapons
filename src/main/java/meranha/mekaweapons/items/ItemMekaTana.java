@@ -43,9 +43,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem {
     public ItemMekaTana(Properties properties) {
@@ -65,31 +64,30 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
     @Override
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
         IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
-        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 0;
+        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
         int baseDamage = MekaWeapons.general.mekaTanaBaseDamage.get();
-        int totalDamage = baseDamage * (1 + installedModules);
+        int totalDamage = baseDamage * (installedModules);
 
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-        if (totalDamage > baseDamage && energyContainer != null) {
-            energyContainer.extract(MekaWeapons.general.mekaTanaEnergyUsage.get().multiply(totalDamage / 4D), Action.EXECUTE, AutomationType.MANUAL);
+        if (totalDamage > baseDamage && energyContainer != null && attacker instanceof Player player && !player.isCreative()) {
+            energyContainer.extract(MekaWeapons.general.mekaTanaEnergyUsage.get().multiply(installedModules), Action.EXECUTE, AutomationType.MANUAL);
         }
         return true;
     }
 
+    @Override
     public void adjustAttributes(ItemAttributeModifierEvent event) {
         ItemStack stack = event.getItemStack();
         IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
-        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 0;
-        int totalDamage = MekaWeapons.general.mekaTanaBaseDamage.get() * (1 + installedModules);
+        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
+        int totalDamage = MekaWeapons.general.mekaTanaBaseDamage.get() * (installedModules);
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
         FloatingLong currentEnergy = (energyContainer != null) ? energyContainer.getEnergy(): FloatingLong.ZERO;
-
         if (currentEnergy.smallerThan(MekaWeapons.general.mekaTanaEnergyUsage.get())) {
-            event.clearModifiers();
-            return;
+            totalDamage = MekaWeapons.general.mekaTanaBaseDamage.get();
         }
-        event.clearModifiers();
-        event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+
+        event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage - 1, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, MekaWeapons.general.mekaTanaAttackSpeed.get(), Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
     }
 

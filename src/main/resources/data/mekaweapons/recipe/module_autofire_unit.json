@@ -1,7 +1,7 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "item":"mekaweapons:module_autofire_unit"
+    "id":"mekaweapons:module_autofire_unit"
   },
   "pattern":[ "aca", "eme", "ppp" ],
   "key":{

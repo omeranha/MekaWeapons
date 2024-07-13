@@ -8,6 +8,7 @@ import mekanism.common.attachments.containers.ContainerType;
 import mekanism.common.attachments.containers.energy.ComponentBackedNoClampEnergyContainer;
 import mekanism.common.attachments.containers.energy.EnergyContainersBuilder;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
+import mekanism.common.config.IMekanismConfig;
 import mekanism.common.config.MekanismConfig;
 import mekanism.common.config.MekanismConfigHelper;
 import mekanism.common.content.gear.shared.ModuleEnergyUnit;
@@ -23,8 +24,10 @@ import mekanism.common.registries.MekanismModules;
 import meranha.mekaweapons.items.*;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -41,6 +44,9 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingGetProjectileEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 import net.neoforged.bus.api.IEventBus;
@@ -51,14 +57,18 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings({"Convert2MethodRef", "unused", "forremoval"})
 @Mod(MekaWeapons.MODID)
 public class MekaWeapons {
     public static final String MODID = "mekaweapons";
     public static final WeaponsConfig general = new WeaponsConfig();
+    private static final Map<IConfigSpec, IMekanismConfig> KNOWN_CONFIGS = new HashMap<>();
 
     public static final ModuleDeferredRegister MODULES =  new ModuleDeferredRegister(MekaWeapons.MODID);
     public static final ModuleRegistryObject<?> ARROWENERGY_UNIT = MODULES.registerMarker("arrowenergy_unit", () -> MekaWeapons.MODULE_ARROWENERGY.asItem());
@@ -92,19 +102,19 @@ public class MekaWeapons {
     public static final ItemRegistryObject<ItemModule> MODULE_GRAVITYDAMPENER = ITEMS.registerModule(MekaWeapons.GRAVITYDAMPENER_UNIT, Rarity.EPIC);
     //public static final ItemRegistryObject<ItemModule> MODULE_ARROWVELOCITY = ITEMS.registerModule(MekaWeapons.ARROWVELOCITY_UNIT);
 
-    public static final EntityTypeDeferredRegister ENTITY_TYPES = new EntityTypeDeferredRegister(MekaWeapons.MODID);
+    public static final EntityTypeDeferredRegister ENTITY_TYPES = new EntityTypeDeferredRegister(MODID);
+    public static final DeferredHolder<EntityType<?>, EntityType<MekaArrowEntity>> MEKA_ARROW = ENTITY_TYPES.register("meka_arrow", () -> EntityType.Builder.<MekaArrowEntity>of(MekaArrowEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20).build(MODID + ":meka_arrow"));
 
-    //public static final MekanismDeferredHolder<EntityType<?>, EntityType<MekaArrowEntity>> MEKA_ARROW = ENTITY_TYPES.registerBuilder("meka_arrow", () -> EntityType.Builder.of(MekaArrowEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).eyeHeight(0.13F).clientTrackingRange(4).updateInterval(20));
-    
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
         MekaWeapons.ITEMS.register(modEventBus);
         MekaWeapons.MODULES.register(modEventBus);
         MekaWeapons.ENTITY_TYPES.register(modEventBus);
-        MekanismConfigHelper.registerConfig(ModLoadingContext.get().getActiveContainer(), general);
+        MekanismConfigHelper.registerConfig(KNOWN_CONFIGS, modContainer, general);
         modEventBus.addListener(this::buildCreativeModeTabContents);
         modEventBus.addListener(this::sendCustomModules);
+        modEventBus.addListener(this::registerRenderers);
         NeoForge.EVENT_BUS.addListener(this::mekaBowEnergyArrows);
-        //modEventBus.addListener(this::registerRenderers);
+        NeoForge.EVENT_BUS.addListener(this::disableMekaBowAttack);
     }
 
     private void buildCreativeModeTabContents(BuildCreativeModeTabContentsEvent event) {
@@ -129,18 +139,27 @@ public class MekaWeapons {
 
         ItemStack stack = event.getProjectileWeaponItemStack();
         if (stack.getItem() instanceof ProjectileWeaponItem bow && stack.getItem() instanceof ItemMekaBow mekaBow) {
-            if (mekaBow.hasModule(stack, ARROWENERGY_UNIT)) {
+            if (mekaBow.isModuleEnabled(stack, ARROWENERGY_UNIT)) {
                 ItemStack defaultCreativeAmmo = bow.getDefaultCreativeAmmo(player, stack);
                 event.setProjectileItemStack(defaultCreativeAmmo);
             }
         }
     }
 
-    /*
+    // small trick to prevent players from using the mekabow to attack entities. This allows the tooltip to show attack damage without enabling actual damage.
+    private void disableMekaBowAttack(AttackEntityEvent event) {
+        if (!(event.getEntity() instanceof Player player) || !(player.level() instanceof ServerLevel)) {
+            return;
+        }
+
+        if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ItemMekaBow) {
+            event.setCanceled(true);
+        }
+    }
+
     public void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(MekaWeapons.MEKA_ARROW.get(), MekaArrowRenderer::new);
     }
-    */
 
     @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
