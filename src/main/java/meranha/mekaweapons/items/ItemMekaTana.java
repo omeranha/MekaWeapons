@@ -6,7 +6,7 @@ import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.event.MekanismTeleportEvent;
 import mekanism.api.gear.IModule;
 import mekanism.api.gear.IModuleHelper;
-import mekanism.api.math.FloatingLong;
+import mekanism.api.math.MathUtils;
 import mekanism.api.text.EnumColor;
 import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
@@ -70,7 +70,7 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
 
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
         if (totalDamage > baseDamage && energyContainer != null && attacker instanceof Player player && !player.isCreative()) {
-            energyContainer.extract(MekaWeapons.general.mekaTanaEnergyUsage.get().multiply(installedModules), Action.EXECUTE, AutomationType.MANUAL);
+            energyContainer.extract(MekaWeapons.general.mekaTanaEnergyUsage.get() * installedModules, Action.EXECUTE, AutomationType.MANUAL);
         }
         return true;
     }
@@ -82,8 +82,8 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
         int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
         int totalDamage = MekaWeapons.general.mekaTanaBaseDamage.get() * (installedModules);
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-        FloatingLong currentEnergy = (energyContainer != null) ? energyContainer.getEnergy(): FloatingLong.ZERO;
-        if (currentEnergy.smallerThan(MekaWeapons.general.mekaTanaEnergyUsage.get())) {
+        long currentEnergy = (energyContainer != null) ? energyContainer.getEnergy(): 0;
+        if (currentEnergy < MekaWeapons.general.mekaTanaEnergyUsage.get()) {
             totalDamage = MekaWeapons.general.mekaTanaBaseDamage.get();
         }
 
@@ -107,8 +107,8 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
                             return InteractionResultHolder.pass(stack);
                         }
                         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-                        FloatingLong energyNeeded = MekaWeapons.general.mekaTanaTeleportUsage.get().multiply(distance / 10D);
-                        if (energyContainer == null || energyContainer.getEnergy().smallerThan(energyNeeded)) {
+                        long energyNeeded = MathUtils.ceilToLong(MekaWeapons.general.mekaTanaTeleportUsage.get() * (distance / 10D));
+                        if (energyContainer == null || energyContainer.getEnergy() < energyNeeded) {
                             return InteractionResultHolder.fail(stack);
                         }
                         double targetX = pos.getX() + 0.5;

@@ -9,7 +9,6 @@ import mekanism.api.AutomationType;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.gear.IModule;
 import mekanism.api.gear.IModuleHelper;
-import mekanism.api.math.FloatingLong;
 import mekanism.api.text.EnumColor;
 import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
@@ -83,8 +82,8 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
     public void releaseUsing(@NotNull ItemStack bow, @NotNull Level world, @NotNull LivingEntity entity, int timeLeft) {
         if (entity instanceof Player player && !player.isCreative()) {
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
-            FloatingLong energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get();
-            if (energyContainer == null || energyContainer.extract(energyNeeded, Action.SIMULATE, AutomationType.MANUAL).smallerThan(energyNeeded)) {
+            long energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get();
+            if (energyContainer == null || energyContainer.extract(energyNeeded, Action.SIMULATE, AutomationType.MANUAL) < energyNeeded) {
                 return;
             }
         }
@@ -99,7 +98,7 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
             IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(bow, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
             int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
             if (energyContainer != null) {
-                FloatingLong energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get().multiply(installedModules);
+                long energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get() * installedModules;
                 energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
             }
         }
