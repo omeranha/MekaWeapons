@@ -1,5 +1,11 @@
 package meranha.mekaweapons;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import mekanism.api.MekanismIMC;
 import mekanism.client.ClientRegistrationUtil;
 import mekanism.common.Mekanism;
@@ -11,10 +17,18 @@ import mekanism.common.config.IMekanismConfig;
 import mekanism.common.config.MekanismConfigHelper;
 import mekanism.common.content.gear.shared.ModuleEnergyUnit;
 import mekanism.common.item.ItemModule;
-import mekanism.common.registration.impl.*;
+import mekanism.common.registration.impl.EntityTypeDeferredRegister;
+import mekanism.common.registration.impl.ItemDeferredRegister;
+import mekanism.common.registration.impl.ItemRegistryObject;
+import mekanism.common.registration.impl.ModuleDeferredRegister;
+import mekanism.common.registration.impl.ModuleRegistryObject;
 import mekanism.common.registries.MekanismCreativeTabs;
 import mekanism.common.registries.MekanismModules;
-import meranha.mekaweapons.items.*;
+import meranha.mekaweapons.items.ItemMagnetizer;
+import meranha.mekaweapons.items.ItemMekaBow;
+import meranha.mekaweapons.items.ItemMekaTana;
+import meranha.mekaweapons.items.MekaArrowEntity;
+import meranha.mekaweapons.items.MekaArrowRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -26,13 +40,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.Rarity;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.event.entity.living.LivingGetProjectileEvent;
-import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -42,8 +49,13 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
-import java.util.HashMap;
-import java.util.Map;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingGetProjectileEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 
 @SuppressWarnings({"Convert2MethodRef", "unused", "forremoval"})
 @Mod(MekaWeapons.MODID)
@@ -99,6 +111,8 @@ public class MekaWeapons {
         NeoForge.EVENT_BUS.addListener(this::disableMekaBowAttack);
     }
 
+    @NotNull
+    @Contract("_ -> new")
     public static ResourceLocation rl(String path) {
         return ResourceLocation.fromNamespaceAndPath(MekaWeapons.MODID, path);
     }
@@ -118,7 +132,7 @@ public class MekaWeapons {
         MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, MekanismModules.ATTACK_AMPLIFICATION_UNIT, MekaWeapons.AUTOFIRE_UNIT, MekaWeapons.ARROWENERGY_UNIT, MekaWeapons.DRAWSPEED_UNIT, MekaWeapons.GRAVITYDAMPENER_UNIT);
     }
 
-    private void mekaBowEnergyArrows(final LivingGetProjectileEvent event) {
+    private void mekaBowEnergyArrows(final @NotNull LivingGetProjectileEvent event) {
         if (!(event.getEntity() instanceof Player player) || !(player.level() instanceof ServerLevel)) {
             return;
         }
@@ -133,7 +147,7 @@ public class MekaWeapons {
     }
 
     // small trick to prevent players from using the meka-bow to attack entities. This allows the tooltip to show attack damage without enabling actual damage.
-    private void disableMekaBowAttack(AttackEntityEvent event) {
+    private void disableMekaBowAttack(@NotNull AttackEntityEvent event) {
         if (!(event.getEntity() instanceof Player player) || !(player.level() instanceof ServerLevel)) {
             return;
         }
@@ -143,11 +157,11 @@ public class MekaWeapons {
         }
     }
 
-    public void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+    public void registerRenderers(@NotNull RegisterRenderers event) {
         event.registerEntityRenderer(MekaWeapons.MEKA_ARROW.get(), MekaArrowRenderer::new);
     }
 
-    @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MekaWeapons.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {

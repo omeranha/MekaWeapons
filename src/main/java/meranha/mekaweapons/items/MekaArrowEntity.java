@@ -15,7 +15,7 @@ public class MekaArrowEntity extends AbstractArrow {
     }
 
     public MekaArrowEntity(Level level, double x, double y, double z, ItemStack itemStack, boolean noGravity, int damage) {
-        super(MekaWeapons.MEKA_ARROW.get(), x, y, z, level, itemStack, (ItemStack)null);
+        super(MekaWeapons.MEKA_ARROW.get(), x, y, z, level, itemStack, null);
         this.setNoGravity(noGravity);
         this.setBaseDamage(damage);
     }
@@ -32,7 +32,8 @@ public class MekaArrowEntity extends AbstractArrow {
         }
     }
 
-    protected @NotNull ItemStack getDefaultPickupItem() {
+    @NotNull
+    protected ItemStack getDefaultPickupItem() {
         return new ItemStack(Items.ARROW);
     }
 }

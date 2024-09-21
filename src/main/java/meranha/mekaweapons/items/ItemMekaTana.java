@@ -1,5 +1,9 @@
 package meranha.mekaweapons.items;
 
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.energy.IEnergyContainer;
@@ -43,15 +47,12 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
-import java.util.List;
-import org.jetbrains.annotations.NotNull;
 
 public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem {
-    public ItemMekaTana(Properties properties) {
+    public ItemMekaTana(@NotNull Properties properties) {
         super(IModuleHelper.INSTANCE.applyModuleContainerProperties(properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1)));
     }
 
-    @Override
     public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         if (MekKeyHandler.isKeyPressed(MekanismKeyHandler.detailsKey)) {
             addModuleDetails(stack, tooltip);
@@ -61,7 +62,6 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
         }
     }
 
-    @Override
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
         IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
         int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
@@ -75,8 +75,7 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
         return true;
     }
 
-    @Override
-    public void adjustAttributes(ItemAttributeModifierEvent event) {
+    public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
         ItemStack stack = event.getItemStack();
         IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
         int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
@@ -92,7 +91,6 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
     }
 
     @NotNull
-    @Override
     public InteractionResultHolder<ItemStack> use(@NotNull Level world, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!world.isClientSide()) {
@@ -135,18 +133,16 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
         return InteractionResultHolder.pass(stack);
     }
 
-    private boolean isValidDestinationBlock(Level world, BlockPos pos) {
+    private boolean isValidDestinationBlock(@NotNull Level world, BlockPos pos) {
         BlockState blockState = world.getBlockState(pos);
         return blockState.isAir() || MekanismUtils.isLiquidBlock(blockState.getBlock());
     }
 
-    @Override
     public boolean isEnchantable(@NotNull ItemStack stack) {
         return false;
     }
 
-    @Override
-    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
+    public boolean isBookEnchantable(@NotNull ItemStack stack, @NotNull ItemStack book) {
         return false;
     }
 }

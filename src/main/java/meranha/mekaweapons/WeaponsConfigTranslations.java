@@ -1,10 +1,11 @@
 package meranha.mekaweapons;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import mekanism.common.config.IConfigTranslation;
 import mekanism.common.config.TranslationPreset;
 import net.minecraft.Util;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public enum WeaponsConfigTranslations implements IConfigTranslation {
 
@@ -30,7 +31,7 @@ public enum WeaponsConfigTranslations implements IConfigTranslation {
     @Nullable
     private final String button;
 
-    WeaponsConfigTranslations(TranslationPreset preset, String type) {
+    WeaponsConfigTranslations(@NotNull TranslationPreset preset, String type) {
         this(preset.path(type), preset.title(type), preset.tooltip(type));
     }
 
@@ -50,23 +51,19 @@ public enum WeaponsConfigTranslations implements IConfigTranslation {
     }
 
     @NotNull
-    @Override
     public String getTranslationKey() {
         return key;
     }
 
-    @Override
     public String title() {
         return title;
     }
 
-    @Override
     public String tooltip() {
         return tooltip;
     }
 
     @Nullable
-    @Override
     public String button() {
         return button;
     }

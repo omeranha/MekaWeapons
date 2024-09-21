@@ -1,9 +1,10 @@
 package meranha.mekaweapons;
 
+import org.jetbrains.annotations.NotNull;
+
 import mekanism.api.text.ILangEntry;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.NotNull;
 
 public enum WeaponsLang implements ILangEntry {
     AUTOFIRE_MODE("tooltip", "autofire_mode"),
@@ -11,11 +12,12 @@ public enum WeaponsLang implements ILangEntry {
     ARROWENERGY_MODE("tooltip", "arrowenergy_mode"),
     MAGNETIZER("tooltip", "magnetizer");
 
+    private final String key;
+
     WeaponsLang(String type, String path) {
         this(Util.makeDescriptionId(type, ResourceLocation.fromNamespaceAndPath(MekaWeapons.MODID, path)));
     }
 
-    private final String key;
     WeaponsLang(String key) {
         this.key = key;
     }

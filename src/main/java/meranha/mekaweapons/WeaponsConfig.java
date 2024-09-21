@@ -2,11 +2,11 @@ package meranha.mekaweapons;
 
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.value.CachedDoubleValue;
-import mekanism.common.config.value.CachedLongValue;
 import mekanism.common.config.value.CachedIntValue;
+import mekanism.common.config.value.CachedLongValue;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.neoforged.fml.config.ModConfig.Type;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 
 public class WeaponsConfig extends BaseMekanismConfig {
 
@@ -51,22 +51,18 @@ public class WeaponsConfig extends BaseMekanismConfig {
         this.configSpec = builder.build();
     }
 
-    @Override
     public String getFileName() {
         return "mekaweapons";
     }
 
-    @Override
     public String getTranslation() {
         return "Mekanism Weapons";
     }
 
-    @Override
     public ModConfigSpec getConfigSpec() {
         return this.configSpec;
     }
 
-    @Override
     public Type getConfigType() {
         return Type.SERVER;
     }
