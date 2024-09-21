@@ -15,8 +15,8 @@ import mekanism.api.text.EnumColor;
 import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
 import mekanism.common.MekanismLang;
-import mekanism.common.content.gear.IModuleContainerItem;
-import mekanism.common.content.gear.mekatool.ModuleAttackAmplificationUnit;
+import mekanism.common.content.gear.IRadialModuleContainerItem;
+import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.content.gear.mekatool.ModuleTeleportationUnit;
 import mekanism.common.item.ItemEnergized;
 import mekanism.common.network.PacketUtils;
@@ -25,17 +25,21 @@ import mekanism.common.registries.MekanismModules;
 import mekanism.common.util.MekanismUtils;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.MekaWeapons;
+import meranha.mekaweapons.MekaWeaponsUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -48,9 +52,16 @@ import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 
-public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem {
+public class ItemMekaTana extends ItemEnergized implements IRadialModuleContainerItem {
+
+    private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_tana");
+
     public ItemMekaTana(@NotNull Properties properties) {
         super(IModuleHelper.INSTANCE.applyModuleContainerProperties(properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1)));
+    }
+
+    public void onDestroyed(@NotNull ItemEntity item, @NotNull DamageSource damageSource) {
+        ModuleHelper.INSTANCE.dropModuleContainerContents(item, damageSource);
     }
 
     public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
@@ -62,32 +73,33 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
         }
     }
 
-    public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
-        IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
-        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
-        int baseDamage = MekaWeapons.general.mekaTanaBaseDamage.get();
-        int totalDamage = baseDamage * (installedModules);
+    private boolean hasEnoughEnergy(IEnergyContainer energyContainer) {
+        return energyContainer != null && energyContainer.getEnergy() >= MekaWeapons.general.mekaTanaEnergyUsage.get();
+    }
 
-        IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-        if (totalDamage > baseDamage && energyContainer != null && attacker instanceof Player player && !player.isCreative()) {
-            energyContainer.extract(MekaWeapons.general.mekaTanaEnergyUsage.get() * installedModules, Action.EXECUTE, AutomationType.MANUAL);
+    public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
+        if(attacker instanceof Player player && !player.isCreative()) {
+            IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
+            if(!hasEnoughEnergy(energyContainer)) {
+                // todo warn no energy
+                return false;
+            }
+
+            IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+            long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(attackAmplificationUnit, MekaWeapons.general.mekaTanaEnergyUsage.get());
+            energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
         }
         return true;
     }
 
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
         ItemStack stack = event.getItemStack();
-        IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
-        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
-        int totalDamage = MekaWeapons.general.mekaTanaBaseDamage.get() * (installedModules);
-        IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-        long currentEnergy = (energyContainer != null) ? energyContainer.getEnergy(): 0;
-        if (currentEnergy < MekaWeapons.general.mekaTanaEnergyUsage.get()) {
-            totalDamage = MekaWeapons.general.mekaTanaBaseDamage.get();
-        }
+        IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+        double totalDamage = MekaWeaponsUtils.getTotalDamage(stack, attackAmplificationUnit, MekaWeapons.general.mekaTanaBaseDamage.get(), MekaWeapons.general.mekaTanaEnergyUsage.get());
 
-        event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage - 1, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+        event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, MekaWeapons.general.mekaTanaAttackSpeed.get(), Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+        IRadialModuleContainerItem.super.adjustAttributes(event);
     }
 
     @NotNull
@@ -144,5 +156,9 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
 
     public boolean isBookEnchantable(@NotNull ItemStack stack, @NotNull ItemStack book) {
         return false;
+    }
+
+    public ResourceLocation getRadialIdentifier() {
+        return RADIAL_ID;
     }
 }

@@ -11,26 +11,30 @@ import mekanism.api.AutomationType;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.gear.IModule;
 import mekanism.api.gear.IModuleHelper;
+import mekanism.api.math.MathUtils;
 import mekanism.api.text.EnumColor;
 import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
 import mekanism.common.MekanismLang;
 import mekanism.common.config.MekanismConfig;
-import mekanism.common.content.gear.IModuleContainerItem;
-import mekanism.common.content.gear.mekatool.ModuleAttackAmplificationUnit;
-import mekanism.common.registries.MekanismModules;
+import mekanism.common.content.gear.IRadialModuleContainerItem;
+import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.util.StorageUtils;
 import mekanism.common.util.text.BooleanStateDisplay;
 import meranha.mekaweapons.MekaWeapons;
+import meranha.mekaweapons.MekaWeaponsUtils;
 import meranha.mekaweapons.WeaponsLang;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.BowItem;
@@ -41,9 +45,16 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 
-public class ItemMekaBow extends BowItem implements IModuleContainerItem {
+public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
+
+    private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_bow");
+
     public ItemMekaBow(@NotNull Properties properties) {
         super(IModuleHelper.INSTANCE.applyModuleContainerProperties(properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1)));
+    }
+
+    public void onDestroyed(@NotNull ItemEntity item, @NotNull DamageSource damageSource) {
+        ModuleHelper.INSTANCE.dropModuleContainerContents(item, damageSource);
     }
 
     public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
@@ -64,8 +75,12 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
 
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
         ItemStack stack = event.getItemStack();
-        event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, getDamage(stack) - 1, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+        IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+        double totalDamage = MekaWeaponsUtils.getTotalDamage(stack, attackAmplificationUnit, MekaWeapons.general.mekaBowBaseDamage.get(), MekaWeapons.general.mekaBowEnergyUsage.get());
+
+        event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         //event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, (5 * installedModules) -9, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND); todo?
+        IRadialModuleContainerItem.super.adjustAttributes(event);
     }
 
     public void onUseTick(@NotNull Level world, @NotNull LivingEntity player, @NotNull ItemStack stack, int timeLeft) {
@@ -87,28 +102,34 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
         super.releaseUsing(bow, world, entity, timeLeft);
     }
 
+    private boolean hasEnoughEnergy(IEnergyContainer energyContainer) {
+        return energyContainer != null && energyContainer.getEnergy() >= MekaWeapons.general.mekaBowEnergyUsage.get();
+    }
+
     protected void shoot(@NotNull ServerLevel world, @NotNull LivingEntity entity, @NotNull InteractionHand hand, @NotNull ItemStack bow, @NotNull List<ItemStack> potentialAmmo, float velocity, float inaccuracy, boolean critical, @Nullable LivingEntity target) {
         super.shoot(world, entity, hand, bow, potentialAmmo, velocity, inaccuracy, critical, target);
-        if (entity instanceof Player player && !player.isCreative() && (!potentialAmmo.isEmpty() || isModuleEnabled(bow, MekaWeapons.ARROWENERGY_UNIT))) {
+        if(entity instanceof Player player && !player.isCreative()) {
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
-            IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(bow, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
-            int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
-            if (energyContainer != null) {
-                long energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get() * installedModules;
-                energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
+            if (!hasEnoughEnergy(energyContainer)) {
+                // todo warn no energy
+                return;
             }
+            if(potentialAmmo.isEmpty() && !isModuleEnabled(bow, MekaWeapons.ARROWENERGY_UNIT)) {
+                // todo warn no ammo
+                return;
+            }
+
+            IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(bow, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+            long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(attackAmplificationUnit, MekaWeapons.general.mekaBowEnergyUsage.get());
+            energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
         }
     }
 
     @NotNull
     public AbstractArrow customArrow(@NotNull AbstractArrow arrow, @NotNull ItemStack projectileStack, @NotNull ItemStack weaponStack) {
-        return new MekaArrowEntity(arrow.level(), arrow.getX(), arrow.getY(), arrow.getZ(), projectileStack, isModuleEnabled(weaponStack, MekaWeapons.GRAVITYDAMPENER_UNIT), getDamage(weaponStack));
-    }
-
-    public int getDamage(@NotNull ItemStack stack) {
-        IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
-        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
-        return MekaWeapons.general.mekaBowBaseDamage.get() * (installedModules);
+        IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+        long totalDamage = MekaWeaponsUtils.getTotalDamage(weaponStack, attackAmplificationUnit, MekaWeapons.general.mekaBowBaseDamage.get(), MekaWeapons.general.mekaBowEnergyUsage.get());
+        return new MekaArrowEntity(arrow.level(), arrow.getX(), arrow.getY(), arrow.getZ(), projectileStack, isModuleEnabled(weaponStack, MekaWeapons.GRAVITYDAMPENER_UNIT), MathUtils.clampToInt(totalDamage));
     }
 
     public boolean shouldCauseReequipAnimation(@NotNull ItemStack oldStack, @NotNull ItemStack newStack, boolean slotChanged) {
@@ -142,5 +163,9 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
             useTick -= 5.0f * drawSpeedUnit.getInstalledCount();
         }
         return useTick;
+    }
+
+    public ResourceLocation getRadialIdentifier() {
+        return RADIAL_ID;
     }
 }

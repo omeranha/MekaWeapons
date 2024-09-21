@@ -10,7 +10,14 @@ public enum WeaponsLang implements ILangEntry {
     AUTOFIRE_MODE("tooltip", "autofire_mode"),
     AUTOFIRE_MODE_CHANGE("tooltip", "autofire_mode_change"),
     ARROWENERGY_MODE("tooltip", "arrowenergy_mode"),
-    MAGNETIZER("tooltip", "magnetizer");
+    MAGNETIZER("tooltip", "magnetizer"),
+    RADIAL_ATTACK_DAMAGE("radial", "attack_damage"),
+    RADIAL_ATTACK_DAMAGE_OFF("radial", "attack_damage.off"),
+    RADIAL_ATTACK_DAMAGE_LOW("radial", "attack_damage.low"),
+    RADIAL_ATTACK_DAMAGE_MEDIUM("radial", "attack_damage.medium"),
+    RADIAL_ATTACK_DAMAGE_HIGH("radial", "attack_damage.high"),
+    RADIAL_ATTACK_DAMAGE_SUPER("radial", "attack_damage.super_high"),
+    RADIAL_ATTACK_DAMAGE_EXTREME("radial", "attack_damage.extreme");
 
     private final String key;
 
