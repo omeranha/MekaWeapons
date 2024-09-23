@@ -67,27 +67,23 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
     public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         if (MekKeyHandler.isKeyPressed(MekanismKeyHandler.detailsKey)) {
             addModuleDetails(stack, tooltip);
-        } else {
-            StorageUtils.addStoredEnergy(stack, tooltip, true);
-            tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
+            return;
         }
+
+        StorageUtils.addStoredEnergy(stack, tooltip, true);
+        tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
     }
 
-    private boolean hasEnoughEnergy(IEnergyContainer energyContainer) {
-        return energyContainer != null && energyContainer.getEnergy() >= MekaWeapons.general.mekaTanaEnergyUsage.get();
-    }
 
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
         if(attacker instanceof Player player && !player.isCreative()) {
-            IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-            if(!hasEnoughEnergy(energyContainer)) {
-                // todo warn no energy
-                return false;
-            }
-
             IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-            long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(attackAmplificationUnit, MekaWeapons.general.mekaTanaEnergyUsage.get());
-            energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
+            long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(attackAmplificationUnit, MekaWeapons.general.mekaTanaEnergyUsage);
+
+            IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
+            if(energyContainer != null) {
+                energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
+            }
         }
         return true;
     }
@@ -95,7 +91,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
         ItemStack stack = event.getItemStack();
         IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-        double totalDamage = MekaWeaponsUtils.getTotalDamage(stack, attackAmplificationUnit, MekaWeapons.general.mekaTanaBaseDamage.get(), MekaWeapons.general.mekaTanaEnergyUsage.get());
+        double totalDamage = MekaWeaponsUtils.getTotalDamage(stack, attackAmplificationUnit, MekaWeapons.general.mekaTanaBaseDamage, MekaWeapons.general.mekaTanaEnergyUsage);
 
         event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, MekaWeapons.general.mekaTanaAttackSpeed.get(), Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
@@ -143,6 +139,14 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
             }
         }
         return InteractionResultHolder.pass(stack);
+    }
+
+    public boolean isBarVisible(@NotNull ItemStack stack) {
+        return true;
+    }
+
+    public int getBarColor(@NotNull ItemStack stack) {
+        return MekaWeaponsUtils.getBarCustomColor(stack, MekaWeapons.general.mekaTanaEnergyUsage);
     }
 
     private boolean isValidDestinationBlock(@NotNull Level world, BlockPos pos) {

@@ -3,6 +3,7 @@ package meranha.mekaweapons.items;
 import org.jetbrains.annotations.NotNull;
 
 import meranha.mekaweapons.MekaWeapons;
+import meranha.mekaweapons.MekaWeaponsUtils;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
@@ -14,9 +15,10 @@ public class MekaArrowEntity extends AbstractArrow {
         super(entityType, level);
     }
 
-    public MekaArrowEntity(Level level, double x, double y, double z, ItemStack itemStack, boolean noGravity, int damage) {
-        super(MekaWeapons.MEKA_ARROW.get(), x, y, z, level, itemStack, null);
-        this.setNoGravity(noGravity);
+    public MekaArrowEntity(Level level, double x, double y, double z, ItemStack projectileStack, ItemStack weaponStack, int damage) {
+        super(MekaWeapons.MEKA_ARROW.get(), x, y, z, level, projectileStack, null);
+        this.setPickup(!MekaWeaponsUtils.isModuleEnabled(weaponStack, MekaWeapons.ARROWENERGY_UNIT));
+        this.setNoGravity(MekaWeaponsUtils.isModuleEnabled(weaponStack, MekaWeapons.GRAVITYDAMPENER_UNIT));
         this.setBaseDamage(damage);
     }
 
@@ -30,6 +32,10 @@ public class MekaArrowEntity extends AbstractArrow {
         if (this.tickCount > 200 && !this.inGround) {
             this.setNoGravity(false);
         }
+    }
+
+    public void setPickup(boolean pickup) {
+        this.pickup = pickup ? Pickup.ALLOWED : Pickup.CREATIVE_ONLY;
     }
 
     @NotNull
