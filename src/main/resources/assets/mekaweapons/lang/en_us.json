@@ -9,6 +9,7 @@
 	"tooltip.mekaweapons.autofire_mode_change": "Auto Fire Mode",
 	"tooltip.mekaweapons.arrowenergy_mode": "Energy Arrows Mode: %s",
 	"tooltip.mekaweapons.magnetizer": "Displays the Meka-Bow and the Meka-Tana in player's back if they are in inventory. (Curios needed)",
+	"radial.mekaweapons.attack_damage": "Attack Damage",
 	"radial.mekaweapons.attack_damage.extreme": "Extreme",
 	"radial.mekaweapons.attack_damage.high": "High",
 	"radial.mekaweapons.attack_damage.low": "Low",

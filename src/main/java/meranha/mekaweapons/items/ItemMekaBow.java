@@ -73,12 +73,9 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     }
 
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
-        ItemStack stack = event.getItemStack();
-        IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-        double totalDamage = MekaWeaponsUtils.getTotalDamage(stack, attackAmplificationUnit, MekaWeapons.general.mekaBowBaseDamage, MekaWeapons.general.mekaBowEnergyUsage);
-
+        long totalDamage = MekaWeaponsUtils.getTotalDamage(event.getItemStack(), MekaWeapons.general.mekaBowBaseDamage, MekaWeapons.general.mekaBowEnergyUsage);
         event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
-        //event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, (5 * installedModules) -9, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND); todo?
+        // event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, (5 * installedModules) -9, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND); todo?
         IRadialModuleContainerItem.super.adjustAttributes(event);
     }
 
@@ -104,9 +101,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     protected void shoot(@NotNull ServerLevel world, @NotNull LivingEntity entity, @NotNull InteractionHand hand, @NotNull ItemStack bow, @NotNull List<ItemStack> potentialAmmo, float velocity, float inaccuracy, boolean critical, @Nullable LivingEntity target) {
         super.shoot(world, entity, hand, bow, potentialAmmo, velocity, inaccuracy, critical, target);
         if(entity instanceof Player player && !player.isCreative()) {
-            IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(bow, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-            long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(attackAmplificationUnit, MekaWeapons.general.mekaBowEnergyUsage);
-
+            long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(bow, MekaWeapons.general.mekaBowEnergyUsage);
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
             if(energyContainer != null) {
                 energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
@@ -116,8 +111,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
 
     @NotNull
     public AbstractArrow customArrow(@NotNull AbstractArrow arrow, @NotNull ItemStack projectileStack, @NotNull ItemStack weaponStack) {
-        IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-        long totalDamage = MekaWeaponsUtils.getTotalDamage(weaponStack, attackAmplificationUnit, MekaWeapons.general.mekaBowBaseDamage, MekaWeapons.general.mekaBowEnergyUsage);
+        long totalDamage = MekaWeaponsUtils.getTotalDamage(weaponStack, MekaWeapons.general.mekaBowBaseDamage, MekaWeapons.general.mekaBowEnergyUsage);
         return new MekaArrowEntity(arrow.level(), arrow.getX(), arrow.getY(), arrow.getZ(), projectileStack, weaponStack, MathUtils.clampToInt(totalDamage));
     }
 

@@ -77,9 +77,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
 
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
         if(attacker instanceof Player player && !player.isCreative()) {
-            IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-            long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(attackAmplificationUnit, MekaWeapons.general.mekaTanaEnergyUsage);
-
+            long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(stack, MekaWeapons.general.mekaTanaEnergyUsage);
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
             if(energyContainer != null) {
                 energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
@@ -89,10 +87,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
     }
 
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
-        ItemStack stack = event.getItemStack();
-        IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-        double totalDamage = MekaWeaponsUtils.getTotalDamage(stack, attackAmplificationUnit, MekaWeapons.general.mekaTanaBaseDamage, MekaWeapons.general.mekaTanaEnergyUsage);
-
+        long totalDamage = MekaWeaponsUtils.getTotalDamage(event.getItemStack(), MekaWeapons.general.mekaTanaBaseDamage, MekaWeapons.general.mekaTanaEnergyUsage);
         event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, MekaWeapons.general.mekaTanaAttackSpeed.get(), Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         IRadialModuleContainerItem.super.adjustAttributes(event);
@@ -141,17 +136,17 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
         return InteractionResultHolder.pass(stack);
     }
 
+    private boolean isValidDestinationBlock(@NotNull Level world, BlockPos pos) {
+        BlockState blockState = world.getBlockState(pos);
+        return blockState.isAir() || MekanismUtils.isLiquidBlock(blockState.getBlock());
+    }
+
     public boolean isBarVisible(@NotNull ItemStack stack) {
         return true;
     }
 
     public int getBarColor(@NotNull ItemStack stack) {
         return MekaWeaponsUtils.getBarCustomColor(stack, MekaWeapons.general.mekaTanaEnergyUsage);
-    }
-
-    private boolean isValidDestinationBlock(@NotNull Level world, BlockPos pos) {
-        BlockState blockState = world.getBlockState(pos);
-        return blockState.isAir() || MekanismUtils.isLiquidBlock(blockState.getBlock());
     }
 
     public boolean isEnchantable(@NotNull ItemStack stack) {
