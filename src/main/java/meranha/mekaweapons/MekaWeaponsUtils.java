@@ -14,6 +14,7 @@ import mekanism.common.config.value.CachedIntValue;
 import mekanism.common.config.value.CachedLongValue;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.items.ModuleWeaponAttackAmplificationUnit;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public class MekaWeaponsUtils {
@@ -26,9 +27,17 @@ public class MekaWeaponsUtils {
     }
 
     public static long getTotalDamage(@NotNull ItemStack weapon, @Nullable IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit, int baseDamage, long energyUsage) {
+        boolean isCreative = weapon.getItemHolder() instanceof Player player && player.isCreative();
+        // TODO I was trying to check if the holder is a creative mode player,
+        // but this seems not to be a player when called from this method, as the log below prints false.
+        MekaWeapons.logger.info("Holder is Player: {}", weapon.getItemHolder() instanceof Player);
+        if(weapon.getItemHolder() instanceof Player player) {
+            MekaWeapons.logger.info("Creative: {}", player.isCreative());
+        }
+        
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(weapon, 0);
         long energy = energyContainer != null ? energyContainer.getEnergy() : 0;
-        if(energy < energyUsage) {
+        if(energy < energyUsage && !isCreative) {
             return -1;
         }
 
@@ -38,8 +47,7 @@ public class MekaWeaponsUtils {
             if (unitDamage > 0) {
                 long additionalDamage = MathUtils.clampToLong(baseDamage * attackAmplificationUnit.getCustomInstance().getDamageMultiplicator());
                 long energyCost = getEnergyNeeded(unitDamage, energyUsage);
-                // todo always max damage if in creative
-                if (energy < energyCost) {
+                if (energy < energyCost && !isCreative) {
                     //If we don't have enough power use it at a reduced power level (this will be false the majority of the time)
                     damage += Math.round(additionalDamage * MathUtils.divideToLevel(energy - energyUsage, energyCost - energyUsage));
                 } else {
