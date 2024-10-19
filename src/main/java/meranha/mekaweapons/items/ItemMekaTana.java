@@ -1,5 +1,7 @@
 package meranha.mekaweapons.items;
 
+import static meranha.mekaweapons.MekaWeaponsUtils.*;
+
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +27,6 @@ import mekanism.common.registries.MekanismModules;
 import mekanism.common.util.MekanismUtils;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.MekaWeapons;
-import meranha.mekaweapons.MekaWeaponsUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -77,7 +78,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
 
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
         if(attacker instanceof Player player && !player.isCreative()) {
-            long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(stack, MekaWeapons.general.mekaTanaEnergyUsage);
+            long energyNeeded = getEnergyNeeded(stack);
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
             if(energyContainer != null) {
                 energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
@@ -87,7 +88,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
     }
 
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
-        long totalDamage = MekaWeaponsUtils.getTotalDamage(event.getItemStack(), MekaWeapons.general.mekaTanaBaseDamage, MekaWeapons.general.mekaTanaEnergyUsage);
+        long totalDamage = getTotalDamage(event.getItemStack());
         event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, MekaWeapons.general.mekaTanaAttackSpeed.get(), Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         IRadialModuleContainerItem.super.adjustAttributes(event);
@@ -146,7 +147,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
     }
 
     public int getBarColor(@NotNull ItemStack stack) {
-        return MekaWeaponsUtils.getBarCustomColor(stack, MekaWeapons.general.mekaTanaEnergyUsage);
+        return getBarCustomColor(stack);
     }
 
     public boolean isEnchantable(@NotNull ItemStack stack) {

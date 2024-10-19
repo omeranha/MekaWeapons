@@ -1,5 +1,6 @@
 package meranha.mekaweapons;
 
+import lombok.Getter;
 import mekanism.common.config.BaseMekanismConfig;
 import mekanism.common.config.value.CachedDoubleValue;
 import mekanism.common.config.value.CachedIntValue;
@@ -10,7 +11,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class WeaponsConfig extends BaseMekanismConfig {
 
-    private final ModConfigSpec configSpec;
+    private final @Getter ModConfigSpec configSpec;
 
     public final CachedIntValue mekaTanaBaseDamage;
     public final CachedDoubleValue mekaTanaAttackSpeed;
@@ -57,10 +58,6 @@ public class WeaponsConfig extends BaseMekanismConfig {
 
     public String getTranslation() {
         return "Mekanism Weapons";
-    }
-
-    public ModConfigSpec getConfigSpec() {
-        return this.configSpec;
     }
 
     public Type getConfigType() {

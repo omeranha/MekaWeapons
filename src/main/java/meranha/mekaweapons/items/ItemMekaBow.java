@@ -1,5 +1,7 @@
 package meranha.mekaweapons.items;
 
+import static meranha.mekaweapons.MekaWeaponsUtils.*;
+
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -21,7 +23,6 @@ import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.util.StorageUtils;
 import mekanism.common.util.text.BooleanStateDisplay;
 import meranha.mekaweapons.MekaWeapons;
-import meranha.mekaweapons.MekaWeaponsUtils;
 import meranha.mekaweapons.WeaponsLang;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -73,7 +74,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     }
 
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
-        long totalDamage = MekaWeaponsUtils.getTotalDamage(event.getItemStack(), MekaWeapons.general.mekaBowBaseDamage, MekaWeapons.general.mekaBowEnergyUsage);
+        long totalDamage = getTotalDamage(event.getItemStack());
         event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         // event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, (5 * installedModules) -9, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND); todo?
         IRadialModuleContainerItem.super.adjustAttributes(event);
@@ -91,7 +92,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         if (entity instanceof Player player && !player.isCreative()) {
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
             long energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get();
-            if (energyContainer == null || energyContainer.extract(energyNeeded, Action.SIMULATE, AutomationType.MANUAL) < energyNeeded) {
+            if (hasNotEnoughEnergy(energyContainer, energyNeeded) || getTotalDamage(bow) < 0) {
                 return;
             }
         }
@@ -101,7 +102,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     protected void shoot(@NotNull ServerLevel world, @NotNull LivingEntity entity, @NotNull InteractionHand hand, @NotNull ItemStack bow, @NotNull List<ItemStack> potentialAmmo, float velocity, float inaccuracy, boolean critical, @Nullable LivingEntity target) {
         super.shoot(world, entity, hand, bow, potentialAmmo, velocity, inaccuracy, critical, target);
         if(entity instanceof Player player && !player.isCreative()) {
-            long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(bow, MekaWeapons.general.mekaBowEnergyUsage);
+            long energyNeeded = getEnergyNeeded(bow);
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
             if(energyContainer != null) {
                 energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
@@ -111,7 +112,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
 
     @NotNull
     public AbstractArrow customArrow(@NotNull AbstractArrow arrow, @NotNull ItemStack projectileStack, @NotNull ItemStack weaponStack) {
-        long totalDamage = MekaWeaponsUtils.getTotalDamage(weaponStack, MekaWeapons.general.mekaBowBaseDamage, MekaWeapons.general.mekaBowEnergyUsage);
+        long totalDamage = getTotalDamage(weaponStack);
         return new MekaArrowEntity(arrow.level(), arrow.getX(), arrow.getY(), arrow.getZ(), projectileStack, weaponStack, MathUtils.clampToInt(totalDamage));
     }
 
@@ -132,7 +133,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     }
 
     public int getBarColor(@NotNull ItemStack stack) {
-        return MekaWeaponsUtils.getBarCustomColor(stack, MekaWeapons.general.mekaBowEnergyUsage);
+        return getBarCustomColor(stack);
     }
 
     public boolean shouldCauseBlockBreakReset(@NotNull ItemStack oldStack, @NotNull ItemStack newStack) {

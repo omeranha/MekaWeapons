@@ -1,5 +1,7 @@
 package meranha.mekaweapons.items;
 
+import static meranha.mekaweapons.MekaWeaponsUtils.*;
+
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
@@ -12,6 +14,7 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import lombok.Getter;
 import mekanism.api.IIncrementalEnum;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.annotations.ParametersAreNotNullByDefault;
@@ -79,11 +82,9 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     public <MODE extends IRadialMode> MODE getMode(IModule<ModuleWeaponAttackAmplificationUnit> module, ItemStack stack, RadialData<MODE> radialData) {
-        if (radialData == getRadialData(module)) {
-            return (MODE) attackDamage;
-        }
-        return null;
+        return radialData == getRadialData(module) ? (MODE) attackDamage : null;
     }
 
     public <MODE extends IRadialMode> boolean setMode(IModule<ModuleWeaponAttackAmplificationUnit> module, Player player, IModuleContainer moduleContainer, ItemStack stack, RadialData<MODE> radialData, MODE mode) {
@@ -91,6 +92,7 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
             AttackDamage newMode = (AttackDamage) mode;
             if (attackDamage != newMode) {
                 moduleContainer.replaceModuleConfig(player.level().registryAccess(), stack, module.getData(), module.<AttackDamage>getConfigOrThrow(ATTACK_DAMAGE).with(newMode));
+                return true;
             }
         }
         return false;
@@ -98,7 +100,7 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
 
     @NotNull
     public Component getModeScrollComponent(IModule<ModuleWeaponAttackAmplificationUnit> module, ItemStack stack) {
-        return MekanismLang.GENERIC_WITH_PARENTHESIS.translateColored(EnumColor.INDIGO, attackDamage.sliceName(), EnumColor.AQUA, attackDamage.getDamage());
+        return MekanismLang.GENERIC_WITH_PARENTHESIS.translateColored(EnumColor.INDIGO, attackDamage.sliceName(), EnumColor.AQUA, getCurrentMaxDamage(stack));
     }
 
     public void changeMode(IModule<ModuleWeaponAttackAmplificationUnit> module, Player player, IModuleContainer moduleContainer, ItemStack stack, int shift, boolean displayChangeMessage) {
@@ -113,47 +115,42 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
 
     public void addHUDStrings(IModule<ModuleWeaponAttackAmplificationUnit> module, IModuleContainer moduleContainer, ItemStack stack, Player player, Consumer<Component> hudStringAdder) {
         if (module.isEnabled()) {
-            hudStringAdder.accept(MekanismLang.MODULE_DAMAGE.translateColored(EnumColor.DARK_GRAY, EnumColor.INDIGO, getDamage()));
+            hudStringAdder.accept(MekanismLang.MODULE_DAMAGE.translateColored(EnumColor.DARK_GRAY, EnumColor.INDIGO, getCurrentMaxDamage(stack)));
         }
     }
 
-    public int getDamage() {
-        return attackDamage.getDamage();
-    }
-
-    public double getDamageMultiplicator() {
-        return attackDamage.getDamageMultiplicator();
+    public int getCurrentUnit() {
+        return attackDamage.ordinal();
     }
 
     @NothingNullByDefault
     public enum AttackDamage implements IIncrementalEnum<AttackDamage>, IHasTextComponent, TranslatableEnum, IRadialMode, StringRepresentable {
-        OFF(WeaponsLang.RADIAL_ATTACK_DAMAGE_OFF, 0, EnumColor.WHITE, "damage_off"),
-        LOW(WeaponsLang.RADIAL_ATTACK_DAMAGE_LOW, 4, EnumColor.PINK, "damage_low"),
-        MED(WeaponsLang.RADIAL_ATTACK_DAMAGE_MEDIUM, 8, EnumColor.BRIGHT_GREEN, "damage_medium"),
-        HIGH(WeaponsLang.RADIAL_ATTACK_DAMAGE_HIGH, 16, EnumColor.YELLOW, "damage_high"),
-        SUPER_HIGH(WeaponsLang.RADIAL_ATTACK_DAMAGE_SUPER, 24, EnumColor.ORANGE, "damage_super"),
-        EXTREME(WeaponsLang.RADIAL_ATTACK_DAMAGE_EXTREME, 32, EnumColor.RED, "damage_extreme");
+        OFF(WeaponsLang.RADIAL_ATTACK_DAMAGE_OFF, EnumColor.WHITE, "damage_off"),
+        LOW(WeaponsLang.RADIAL_ATTACK_DAMAGE_LOW, EnumColor.PINK, "damage_low"),
+        MED(WeaponsLang.RADIAL_ATTACK_DAMAGE_MEDIUM, EnumColor.BRIGHT_GREEN, "damage_medium"),
+        HIGH(WeaponsLang.RADIAL_ATTACK_DAMAGE_HIGH, EnumColor.YELLOW, "damage_high"),
+        SUPER_HIGH(WeaponsLang.RADIAL_ATTACK_DAMAGE_SUPER, EnumColor.ORANGE, "damage_super"),
+        EXTREME(WeaponsLang.RADIAL_ATTACK_DAMAGE_EXTREME, EnumColor.RED, "damage_extreme");
 
         public static final Codec<AttackDamage> CODEC = StringRepresentable.fromEnum(AttackDamage::values);
         public static final IntFunction<AttackDamage> BY_ID = ByIdMap.continuous(AttackDamage::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
         public static final StreamCodec<ByteBuf, AttackDamage> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, AttackDamage::ordinal);
 
-        private final String serializedName;
+        private final @Getter String serializedName;
         private final ResourceLocation icon;
-        private final ILangEntry langEntry;
+        // Unused for now
+        // private final ILangEntry langEntry;
         private final Component label;
-        private final EnumColor color;
-        private final int damage;
+        private final @Getter EnumColor color;
 
         private final Component sliceNamePreCalc;
 
-        AttackDamage(ILangEntry langEntry, int damage, EnumColor color, String texture) {
+        AttackDamage(ILangEntry langEntry, EnumColor color, String texture) {
             this.serializedName = name().toLowerCase(Locale.ROOT);
-            this.langEntry = langEntry;
-            this.damage = damage;
+            // this.langEntry = langEntry;
             this.color = color;
             this.icon = MekaWeapons.getResource(MekanismUtils.ResourceType.GUI_RADIAL, texture + ".png");
-            this.label = TextComponentUtil.getString(Integer.toString(damage));
+            this.label = TextComponentUtil.getString(Integer.toString(this.ordinal()));
 
             this.sliceNamePreCalc = langEntry.translateColored(color);
         }
@@ -170,10 +167,6 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
             return sliceName();
         }
 
-        public int getDamage() {
-            return damage;
-        }
-
         public Component sliceName() {
             return sliceNamePreCalc;
         }
@@ -181,18 +174,10 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
         public ResourceLocation icon() {
             return icon;
         }
+    }
 
-        public EnumColor color() {
-            return color;
-        }
-
-        public String getSerializedName() {
-            return serializedName;
-        }
-
-        public double getDamageMultiplicator() {
-            double potentialDamageRatio = (double) damage / AttackDamage.EXTREME.damage;
-            return  (values().length - 2) * potentialDamageRatio;
-        }
+    // Convenience method
+    private int getCurrentMaxDamage(ItemStack stack) {
+        return getBaseDamage(stack) * getCurrentUnit();
     }
 }

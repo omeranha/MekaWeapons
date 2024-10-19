@@ -1,9 +1,10 @@
 package meranha.mekaweapons.items;
 
+import static meranha.mekaweapons.MekaWeaponsUtils.*;
+
 import org.jetbrains.annotations.NotNull;
 
 import meranha.mekaweapons.MekaWeapons;
-import meranha.mekaweapons.MekaWeaponsUtils;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
@@ -17,8 +18,8 @@ public class MekaArrowEntity extends AbstractArrow {
 
     public MekaArrowEntity(Level level, double x, double y, double z, ItemStack projectileStack, ItemStack weaponStack, int damage) {
         super(MekaWeapons.MEKA_ARROW.get(), x, y, z, level, projectileStack, null);
-        this.setPickup(!MekaWeaponsUtils.isModuleEnabled(weaponStack, MekaWeapons.ARROWENERGY_UNIT));
-        this.setNoGravity(MekaWeaponsUtils.isModuleEnabled(weaponStack, MekaWeapons.GRAVITYDAMPENER_UNIT));
+        this.setPickup(!isModuleEnabled(weaponStack, MekaWeapons.ARROWENERGY_UNIT));
+        this.setNoGravity(isModuleEnabled(weaponStack, MekaWeapons.GRAVITYDAMPENER_UNIT));
         this.setBaseDamage(damage);
     }
 
