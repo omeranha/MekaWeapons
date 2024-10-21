@@ -3,6 +3,8 @@ package meranha.mekaweapons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import mekanism.api.Action;
+import mekanism.api.AutomationType;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.gear.ICustomModule;
 import mekanism.api.gear.IModule;
@@ -16,12 +18,11 @@ import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaTana;
 import meranha.mekaweapons.items.ModuleWeaponAttackAmplificationUnit;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class MekaWeaponsUtils {
-    public static int getBaseDamage(ItemStack stack) {
+    public static int getBaseDamage(@NotNull ItemStack stack) {
         Item weapon = stack.getItem();
         CachedIntValue value;
 
@@ -35,7 +36,7 @@ public class MekaWeaponsUtils {
         return value != null ? value.get() : 0;
     }
 
-    public static long getBaseEnergyUsage(ItemStack stack) {
+    public static long getBaseEnergyUsage(@NotNull ItemStack stack) {
         Item weapon = stack.getItem();
         CachedLongValue value;
 
@@ -53,25 +54,10 @@ public class MekaWeaponsUtils {
     public static long getTotalDamage(@NotNull ItemStack weapon) {
         return getTotalDamage(weapon, getEnabledModule(weapon, MekaWeapons.ATTACKAMPLIFICATION_UNIT), getBaseDamage(weapon), getBaseEnergyUsage(weapon));
     }
-    
-    public static long getTotalDamage(@NotNull ItemStack weapon, @Nullable IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit, @NotNull CachedIntValue baseDamage, @NotNull CachedLongValue energyUsage) {
-        return getTotalDamage(weapon, attackAmplificationUnit, baseDamage.get(), energyUsage.get());
-    }
 
     public static long getTotalDamage(@NotNull ItemStack weapon, @Nullable IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit, int baseDamage, long energyUsage) {
-        boolean isCreative = weapon.getItemHolder() instanceof Player player && player.isCreative();
-        // TODO I was trying to check if the holder is a creative mode player,
-        // but this seems not to be a player when called from this method, as the log below prints false.
-        /*
-        MekaWeapons.logger.info("Holder is Player: {}", weapon.getItemHolder() instanceof Player);
-        if(weapon.getItemHolder() instanceof Player player) {
-            MekaWeapons.logger.info("Creative: {}", player.isCreative());
-        }
-        */
-        
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(weapon, 0);
-        long energy = energyContainer != null ? energyContainer.getEnergy() : 0;
-        if(energy < energyUsage && !isCreative) {
+        if(hasNotEnoughEnergy(energyContainer, energyUsage)) {
             return -1;
         }
 
@@ -79,11 +65,11 @@ public class MekaWeaponsUtils {
         if (attackAmplificationUnit != null) {
             int unitDamage = attackAmplificationUnit.getCustomInstance().getCurrentUnit(), additionalDamage = (unitDamage - 1) * baseDamage;
             long energyCost = getEnergyNeeded(unitDamage, energyUsage);
-            if (energy >= energyCost || isCreative) {
-                damage += additionalDamage;
-            } else {
+            if (hasNotEnoughEnergy(energyContainer, energyCost)) {
                 //If we don't have enough power use it at a reduced power level (this will be false the majority of the time)
-                damage += Math.round(additionalDamage * MathUtils.divideToLevel(energy - energyUsage, energyCost - energyUsage));
+                damage += Math.round(additionalDamage * MathUtils.divideToLevel(energyContainer.getEnergy() - energyUsage, energyCost - energyUsage));
+            } else {
+                damage += additionalDamage;
             }
         }
 
@@ -122,7 +108,7 @@ public class MekaWeaponsUtils {
     }
 
     public static boolean hasNotEnoughEnergy(@Nullable IEnergyContainer energyContainer, long minEnergy) {
-        return energyContainer == null || energyContainer.getEnergy() < minEnergy;
+        return energyContainer == null || energyContainer.extract(minEnergy, Action.SIMULATE, AutomationType.MANUAL) < minEnergy;
     }
 
     @Nullable

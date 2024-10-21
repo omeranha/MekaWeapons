@@ -89,14 +89,14 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     }
 
     public void releaseUsing(@NotNull ItemStack bow, @NotNull Level world, @NotNull LivingEntity entity, int timeLeft) {
-        if (entity instanceof Player player && !player.isCreative()) {
+        if (entity instanceof Player player && getTotalDamage(bow) >= 0) {
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
             long energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get();
-            if (hasNotEnoughEnergy(energyContainer, energyNeeded) || getTotalDamage(bow) < 0) {
+            if (hasNotEnoughEnergy(energyContainer, energyNeeded) && !player.isCreative()) {
                 return;
             }
+            super.releaseUsing(bow, world, entity, timeLeft);
         }
-        super.releaseUsing(bow, world, entity, timeLeft);
     }
 
     protected void shoot(@NotNull ServerLevel world, @NotNull LivingEntity entity, @NotNull InteractionHand hand, @NotNull ItemStack bow, @NotNull List<ItemStack> potentialAmmo, float velocity, float inaccuracy, boolean critical, @Nullable LivingEntity target) {

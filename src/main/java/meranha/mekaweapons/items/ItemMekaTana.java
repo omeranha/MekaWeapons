@@ -97,49 +97,69 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
     @NotNull
     public InteractionResultHolder<ItemStack> use(@NotNull Level world, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (!world.isClientSide()) {
-            IModule<ModuleTeleportationUnit> module = getEnabledModule(stack, MekanismModules.TELEPORTATION_UNIT);
-            if (module != null) {
-                BlockHitResult result = MekanismUtils.rayTrace(player, MekaWeapons.general.mekaTanaMaxTeleportReach.get());
-                if (!module.getCustomInstance().requiresBlockTarget() || result.getType() != HitResult.Type.MISS) {
-                    BlockPos pos = result.getBlockPos();
-                    if (isValidDestinationBlock(world, pos.above()) && isValidDestinationBlock(world, pos.above(2))) {
-                        double distance = player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ());
-                        if (distance < 5) {
-                            return InteractionResultHolder.pass(stack);
-                        }
-                        IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-                        long energyNeeded = MathUtils.ceilToLong(MekaWeapons.general.mekaTanaTeleportUsage.get() * (distance / 10D));
-                        if (energyContainer == null || energyContainer.getEnergy() < energyNeeded) {
-                            return InteractionResultHolder.fail(stack);
-                        }
-                        double targetX = pos.getX() + 0.5;
-                        double targetY = pos.getY() + 1.5;
-                        double targetZ = pos.getZ() + 0.5;
-                        MekanismTeleportEvent.MekaTool event = new MekanismTeleportEvent.MekaTool(player, targetX, targetY, targetZ, stack, result);
-                        if (NeoForge.EVENT_BUS.post(event).isCanceled()) {
-                            return InteractionResultHolder.fail(stack);
-                        }
-                        energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
-                        if (player.isPassenger()) {
-                            player.dismountTo(targetX, targetY, targetZ);
-                        } else {
-                            player.teleportTo(targetX, targetY, targetZ);
-                        }
-                        player.resetFallDistance();
-                        PacketUtils.sendToAllTracking(new PacketPortalFX(pos.above()), world, pos);
-                        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
-                        return InteractionResultHolder.success(stack);
-                    }
-                }
-            }
+        if (world.isClientSide()) {
+            return InteractionResultHolder.pass(stack);
         }
-        return InteractionResultHolder.pass(stack);
+
+        IModule<ModuleTeleportationUnit> module = getEnabledModule(stack, MekanismModules.TELEPORTATION_UNIT);
+        if (module == null) {
+            return InteractionResultHolder.pass(stack);
+        }
+
+        BlockHitResult result = MekanismUtils.rayTrace(player, MekaWeapons.general.mekaTanaMaxTeleportReach.get());
+        if (module.getCustomInstance().requiresBlockTarget() && result.getType() == HitResult.Type.MISS) {
+            return InteractionResultHolder.pass(stack);
+        }
+
+        BlockPos pos = result.getBlockPos();
+        if (!isValidDestination(world, pos)) {
+            return InteractionResultHolder.pass(stack);
+        }
+
+        double distance = player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ());
+        if (distance < 5) {
+            return InteractionResultHolder.pass(stack);
+        }
+
+        IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
+        long energyNeeded = MathUtils.ceilToLong(MekaWeapons.general.mekaTanaTeleportUsage.get() * (distance / 10D));
+        if (energyContainer == null || energyContainer.getEnergy() < energyNeeded) {
+            return InteractionResultHolder.fail(stack);
+        }
+
+        return teleportPlayer(world, player, stack, pos, energyContainer, energyNeeded, result);
     }
 
-    private boolean isValidDestinationBlock(@NotNull Level world, BlockPos pos) {
+    private boolean isValidDestination(@NotNull Level world, @NotNull BlockPos pos) {
+        return isValidDestinationBlock(world, pos.above()) && isValidDestinationBlock(world, pos.above(2));
+    }
+
+    private boolean isValidDestinationBlock(@NotNull Level world, @NotNull BlockPos pos) {
         BlockState blockState = world.getBlockState(pos);
         return blockState.isAir() || MekanismUtils.isLiquidBlock(blockState.getBlock());
+    }
+
+    private InteractionResultHolder<ItemStack> teleportPlayer(Level world, Player player, ItemStack stack, @NotNull BlockPos pos, IEnergyContainer energyContainer, long energyNeeded, BlockHitResult result) {
+        double targetX = pos.getX() + 0.5;
+        double targetY = pos.getY() + 1.5;
+        double targetZ = pos.getZ() + 0.5;
+        
+        MekanismTeleportEvent.MekaTool event = new MekanismTeleportEvent.MekaTool(player, targetX, targetY, targetZ, stack, result);
+        if (NeoForge.EVENT_BUS.post(event).isCanceled()) {
+            return InteractionResultHolder.fail(stack);
+        }
+
+        energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
+        if (player.isPassenger()) {
+            player.dismountTo(targetX, targetY, targetZ);
+        } else {
+            player.teleportTo(targetX, targetY, targetZ);
+        }
+
+        player.resetFallDistance();
+        PacketUtils.sendToAllTracking(new PacketPortalFX(pos.above()), world, pos);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
+        return InteractionResultHolder.success(stack);
     }
 
     public boolean isBarVisible(@NotNull ItemStack stack) {

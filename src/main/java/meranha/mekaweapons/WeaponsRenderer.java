@@ -49,6 +49,4 @@ public class WeaponsRenderer implements ICurioRenderer {
         Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, player.level(), 1);
         ms.popPose();
     }
-
-    // todo Render weapon in hud?
 }
