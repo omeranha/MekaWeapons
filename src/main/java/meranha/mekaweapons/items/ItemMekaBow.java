@@ -111,8 +111,8 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem {
 
     public int getDamage(@Nonnull ItemStack stack) {
         IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
-        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
-        return MekaWeapons.general.mekaBowBaseDamage.get() * (installedModules);
+        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 0;
+        return MekaWeapons.general.mekaBowBaseDamage.get() * (installedModules + 1);
     }
 
     @Override
