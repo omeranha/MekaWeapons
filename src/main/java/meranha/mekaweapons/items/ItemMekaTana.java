@@ -64,9 +64,9 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem 
     @Override
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
         IModule<ModuleAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(stack, MekanismModules.ATTACK_AMPLIFICATION_UNIT);
-        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 1;
+        int installedModules = (attackAmplificationUnit != null) ? attackAmplificationUnit.getInstalledCount() : 0;
         int baseDamage = MekaWeapons.general.mekaTanaBaseDamage.get();
-        int totalDamage = baseDamage * (installedModules);
+        int totalDamage = baseDamage * (installedModules + 1);
 
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
         if (totalDamage > baseDamage && energyContainer != null && attacker instanceof Player player && !player.isCreative()) {
