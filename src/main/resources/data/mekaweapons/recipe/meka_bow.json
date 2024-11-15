@@ -1,7 +1,7 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekaweapons:mekabow"
+    "id":"mekaweapons:meka_bow"
   },
   "pattern":[ "pbp", "iei", "oso" ],
   "key":{

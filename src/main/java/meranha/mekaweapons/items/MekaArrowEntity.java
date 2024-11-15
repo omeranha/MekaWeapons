@@ -1,5 +1,7 @@
 package meranha.mekaweapons.items;
 
+import static meranha.mekaweapons.MekaWeaponsUtils.*;
+
 import org.jetbrains.annotations.NotNull;
 
 import meranha.mekaweapons.MekaWeapons;
@@ -14,9 +16,10 @@ public class MekaArrowEntity extends AbstractArrow {
         super(entityType, level);
     }
 
-    public MekaArrowEntity(Level level, double x, double y, double z, ItemStack itemStack, boolean noGravity, int damage) {
-        super(MekaWeapons.MEKA_ARROW.get(), x, y, z, level, itemStack, (ItemStack)null);
-        this.setNoGravity(noGravity);
+    public MekaArrowEntity(Level level, double x, double y, double z, ItemStack projectileStack, ItemStack weaponStack, int damage) {
+        super(MekaWeapons.MEKA_ARROW.get(), x, y, z, level, projectileStack, null);
+        this.setPickup(!isModuleEnabled(weaponStack, MekaWeapons.ARROWENERGY_UNIT));
+        this.setNoGravity(isModuleEnabled(weaponStack, MekaWeapons.GRAVITYDAMPENER_UNIT));
         this.setBaseDamage(damage);
     }
 
@@ -32,7 +35,12 @@ public class MekaArrowEntity extends AbstractArrow {
         }
     }
 
-    protected @NotNull ItemStack getDefaultPickupItem() {
+    public void setPickup(boolean pickup) {
+        this.pickup = pickup ? Pickup.ALLOWED : Pickup.CREATIVE_ONLY;
+    }
+
+    @NotNull
+    protected ItemStack getDefaultPickupItem() {
         return new ItemStack(Items.ARROW);
     }
 }

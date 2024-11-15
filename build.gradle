@@ -23,6 +23,10 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 repositories {
     mavenLocal()
+    maven { url "https://modmaven.dev/" }
+    maven { url = "https://maven.octo-studios.com/releases" }
+    maven { url = "https://maven.terraformersmc.com/" }
+    maven { url = "https://www.cursemaven.com" }
 }
 
 runs {
@@ -56,22 +60,20 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
-repositories {
-    maven { url "https://modmaven.dev/" }
-    maven { url = "https://maven.octo-studios.com/releases" }
-    maven { url = "https://maven.terraformersmc.com/" }
-    maven { url = "https://www.cursemaven.com" }
-}
-
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
-    implementation("mekanism:Mekanism:${mekanism_version}")
-    compileOnly("mekanism:Mekanism:${mekanism_version}:api")
-    implementation("top.theillusivec4.curios:curios-neoforge:${curios_version}")
+    implementation "mekanism:Mekanism:${mekanism_version}"
+    compileOnly "mekanism:Mekanism:${mekanism_version}:api"
+    implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 
-    runtimeOnly("mekanism:Mekanism:${mekanism_version}") // Mekanism
-    runtimeOnly("dev.emi:emi-neoforge:${emi_version}+${minecraft_version}")
-    runtimeOnly("curse.maven:jade-324717:5493270")
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+	annotationProcessor 'org.projectlombok:lombok:1.18.34'
+
+    runtimeOnly "mekanism:Mekanism:${mekanism_version}"  // Mekanism
+    runtimeOnly "dev.emi:emi-neoforge:${emi_version}+${minecraft_version}"
+    runtimeOnly "curse.maven:jade-324717:5493270"
+
+    annotationProcessor "org.jetbrains:annotations:24.0.0"
 }
 
 tasks.withType(ProcessResources).configureEach {
@@ -96,5 +98,5 @@ tasks.withType(ProcessResources).configureEach {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = "UTF-8"
+    options.encoding"UTF-8"
 }

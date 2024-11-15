@@ -1,7 +1,10 @@
 package meranha.mekaweapons;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -15,13 +18,14 @@ import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.client.ICurioRenderer;
 
 public class WeaponsRenderer implements ICurioRenderer {
-    public boolean contains(Player player, ItemStack stack) {
+    public boolean contains(@NotNull Player player, ItemStack stack) {
         return player.getInventory().items.stream().anyMatch(item -> !item.isEmpty() && ItemStack.isSameItem(stack, item));
     }
 
     final ItemStack katana = MekaWeapons.MEKA_TANA.getItemStack();
     final ItemStack bow = MekaWeapons.MEKA_BOW.getItemStack();
-    public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack stack, SlotContext slotContext, PoseStack ms, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource buffer, int light, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
+
+    public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack stack, @NotNull SlotContext slotContext, PoseStack ms, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource buffer, int light, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
         if (!(slotContext.entity() instanceof Player player)) {
             return;
         }
@@ -36,7 +40,7 @@ public class WeaponsRenderer implements ICurioRenderer {
         }
     }
 
-    private void renderItem(ItemStack stack, PoseStack ms, MultiBufferSource buffer, LivingEntity player, int rotationZN, int rotationXP, double translateX, double translateY, double translateZ, float scaleX, float scaleY, float scaleZ) {
+    private void renderItem(ItemStack stack, @NotNull PoseStack ms, MultiBufferSource buffer, @NotNull LivingEntity player, int rotationZN, int rotationXP, double translateX, double translateY, double translateZ, float scaleX, float scaleY, float scaleZ) {
         ms.pushPose();
         ms.mulPose(Axis.ZN.rotationDegrees(rotationZN));
         ms.mulPose(Axis.XP.rotationDegrees(rotationXP));
