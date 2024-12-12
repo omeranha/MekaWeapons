@@ -1,0 +1,14 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "result":{
+    "id":"mekaweapons:module_drawspeed_unit"
+  },
+  "pattern":[ "sbs", "ama", "ppp" ],
+  "key":{
+    "m":{ "item": "mekanism:module_base" },
+    "p":{ "item":"mekanism:pellet_polonium" },
+    "b":{ "item":"minecraft:bow" },
+    "a":{ "item":"mekanism:alloy_reinforced" },
+    "s":{ "item":"mekanism:upgrade_speed" }
+  }
+}

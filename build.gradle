@@ -1,121 +1,102 @@
-
 plugins {
-    id 'eclipse'
-    id 'idea'
-    id 'net.neoforged.gradle' version '[6.0.18,6.2)'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'org.spongepowered.mixin' version '0.7.+'
+    id "java-library"
+    id "eclipse"
+    id "idea"
+    id "maven-publish"
+    id("net.neoforged.gradle.userdev") version("7.0.152")
 }
 
+tasks.named("wrapper", Wrapper).configure {
+    // (Verify by checking gradle/wrapper/gradle-wrapper.properties to see if distributionUrl now points to `-all`)
+    distributionType = Wrapper.DistributionType.BIN
+}
 
-group = "mekaweapons"
-version = "1.20.1-${mod_version}"
+group = mod_group_id
+version = mod_version
 
 base {
-    archivesName = "mekaweapons"
+    archivesName = mod_id
 }
 
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
-}
-
-minecraft {
-    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
-    copyIdeResources = true
-    runs {
-        configureEach {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            mods {
-                "mekaweapons" {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        client { property 'forge.enabledGameTestNamespaces', "mekaweapons" }
-
-        server {
-            property 'forge.enabledGameTestNamespaces', "mekaweapons"
-            args '--nogui'
-        }
-
-        gameTestServer {
-            property 'forge.enabledGameTestNamespaces', "mekaweapons"
-        }
-
-        data {
-            workingDirectory project.file('run-data')
-            args '--mod', "mekaweapons", '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-        }
-    }
-}
-
-mixin {
-    add sourceSets.main, 'mekaweapons.refmap.json'
-    config 'mekaweapons.mixins.json'
-}
-
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+// Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 repositories {
-    maven {
-        url = "https://modmaven.dev/"
-        content { includeGroup("mekanism") }
+    mavenLocal()
+    maven { url "https://modmaven.dev/" }
+    maven { url = "https://maven.octo-studios.com/releases" }
+    maven { url = "https://maven.terraformersmc.com/" }
+    maven { url = "https://www.cursemaven.com" }
+}
+
+runs {
+    configureEach {
+        systemProperty "forge.logging.markers", "REGISTRIES"
+        systemProperty "forge.logging.console.level", "debug"
+        modSource project.sourceSets.main
     }
-    maven {
-        url "https://cursemaven.com"
-        content { includeGroup("curse.maven") }
+
+    client {
+        systemProperty "forge.enabledGameTestNamespaces", project.mod_id
     }
-    maven {
-        url 'https://maven.blamejared.com'
-        content { includeGroup("mezz.jei") }
+
+    server {
+        systemProperty "forge.enabledGameTestNamespaces", project.mod_id
+        programArgument "--nogui"
     }
-    maven { url = "https://maven.theillusivec4.top/" }
+
+    gameTestServer {
+        systemProperty "forge.enabledGameTestNamespaces", project.mod_id
+    }
+
+    data {
+        programArguments.addAll "--mod", project.mod_id, "--all", "--output", file("src/generated/resources/").getAbsolutePath(), "--existing", file("src/main/resources/").getAbsolutePath()
+    }
+}
+
+sourceSets.main.resources { srcDir "src/generated/resources" }
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
 }
 
 dependencies {
-    minecraft "net.neoforged:forge:${minecraft_version}-${forge_version}"
-    implementation(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}"))
-    compileOnly(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:api"))
-    compileOnly(fg.deobf("top.theillusivec4.curios:curios-forge:5.3.5+1.20.1:api"))
+    implementation "net.neoforged:neoforge:${neo_version}"
+    implementation "mekanism:Mekanism:${mekanism_version}"
+    compileOnly "mekanism:Mekanism:${mekanism_version}:api"
+    implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 
-    runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.2.0.27")
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+	annotationProcessor 'org.projectlombok:lombok:1.18.34'
 
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    runtimeOnly "mekanism:Mekanism:${mekanism_version}"  // Mekanism
+    runtimeOnly "dev.emi:emi-neoforge:${emi_version}+${minecraft_version}"
+    runtimeOnly "curse.maven:jade-324717:5493270"
+
+    annotationProcessor "org.jetbrains:annotations:24.0.0"
 }
 
-tasks.named('processResources', ProcessResources).configure {
+tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [
-            minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-            forge_version: forge_version, forge_version_range: forge_version_range,
-            loader_version_range: loader_version_range,
-            mod_id: "mekaweapons", mod_name: "Meka Weapons", mod_license: "MIT", mod_version: "${mod_version}",
-            mod_authors: "oMeranha", mod_description: "Weapons for Mekanism.",
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
     ]
-
     inputs.properties replaceProperties
 
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
-    }}
-
-tasks.named('jar', Jar).configure {
-    manifest {
-        attributes([
-                "Specification-Title": "mekaweapons",
-                "Specification-Vendor": "oMeranha",
-                "Specification-Version": "${mod_version}",
-                "Implementation-Title": "mekaweapons",
-                "Implementation-Version": "${mod_version}",
-                "Implementation-Vendor" :"oMeranha",
-                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
-        ])
+    filesMatching(["META-INF/neoforge.mods.toml"]) {
+        expand replaceProperties
     }
-    finalizedBy 'reobfJar'
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
+    options.encoding"UTF-8"
 }

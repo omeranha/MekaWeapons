@@ -1,0 +1,12 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "result":{
+    "id":"mekaweapons:magnetizer"
+  },
+  "pattern":[ "sis", "ibi", "sis" ],
+  "key":{
+    "s":{ "tag":"c:ingots/steel" },
+    "i":{ "tag":"c:ingots/iron" },
+    "b":{ "tag":"c:circuits/basic" }
+  }
+}
