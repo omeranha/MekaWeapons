@@ -14,7 +14,6 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import lombok.Getter;
 import mekanism.api.IIncrementalEnum;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.annotations.ParametersAreNotNullByDefault;
@@ -36,15 +35,12 @@ import meranha.mekaweapons.MekaWeapons;
 import meranha.mekaweapons.WeaponsLang;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.TranslatableEnum;
-import net.neoforged.neoforge.common.util.Lazy;
+import net.minecraftforge.common.util.Lazy;
 
 @ParametersAreNotNullByDefault
 public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) implements ICustomModule<ModuleWeaponAttackAmplificationUnit> {
@@ -109,11 +105,11 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
             if (displayChangeMessage) {
                 module.displayModeChange(player, MekanismLang.MODULE_EFFICIENCY.translate(), newMode);
             }
-            moduleContainer.replaceModuleConfig(player.level().registryAccess(), stack, module.getData(), module.<AttackDamage>getConfigOrThrow(ATTACK_DAMAGE).with(newMode));
+            moduleContainer.replaceModuleConfig(player.level().registryAccess(), stack, module.getData(), module.<AttackDamage>
         }
     }
 
-    public void addHUDStrings(IModule<ModuleWeaponAttackAmplificationUnit> module, IModuleContainer moduleContainer, ItemStack stack, Player player, Consumer<Component> hudStringAdder) {
+    public void addHUDStrings(IModule<ModuleWeaponAttackAmplificationUnit> module, ItemStack stack, Player player, Consumer<Component> hudStringAdder) {
         if (module.isEnabled()) {
             hudStringAdder.accept(MekanismLang.MODULE_DAMAGE.translateColored(EnumColor.DARK_GRAY, EnumColor.INDIGO, getCurrentMaxDamage(stack)));
         }
@@ -124,7 +120,7 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
     }
 
     @NothingNullByDefault
-    public enum AttackDamage implements IIncrementalEnum<AttackDamage>, IHasTextComponent, TranslatableEnum, IRadialMode, StringRepresentable {
+    public enum AttackDamage implements IIncrementalEnum<AttackDamage>, IHasTextComponent, IRadialMode, StringRepresentable {
         OFF(WeaponsLang.RADIAL_ATTACK_DAMAGE_OFF, EnumColor.WHITE, "damage_off"),
         LOW(WeaponsLang.RADIAL_ATTACK_DAMAGE_LOW, EnumColor.PINK, "damage_low"),
         MED(WeaponsLang.RADIAL_ATTACK_DAMAGE_MEDIUM, EnumColor.BRIGHT_GREEN, "damage_medium"),
@@ -134,14 +130,13 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
 
         public static final Codec<AttackDamage> CODEC = StringRepresentable.fromEnum(AttackDamage::values);
         public static final IntFunction<AttackDamage> BY_ID = ByIdMap.continuous(AttackDamage::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
-        public static final StreamCodec<ByteBuf, AttackDamage> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, AttackDamage::ordinal);
 
-        private final @Getter String serializedName;
+        private final String serializedName;
         private final ResourceLocation icon;
         // Unused for now
         // private final ILangEntry langEntry;
         private final Component label;
-        private final @Getter EnumColor color;
+        private final EnumColor color;
 
         private final Component sliceNamePreCalc;
 
@@ -173,6 +168,11 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
 
         public ResourceLocation icon() {
             return icon;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return serializedName;
         }
     }
 

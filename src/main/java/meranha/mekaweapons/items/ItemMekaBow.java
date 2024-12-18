@@ -13,13 +13,17 @@ import mekanism.api.AutomationType;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.gear.IModule;
 import mekanism.api.gear.IModuleHelper;
+import mekanism.api.math.FloatingLong;
 import mekanism.api.math.MathUtils;
 import mekanism.api.text.EnumColor;
 import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
 import mekanism.common.MekanismLang;
-import mekanism.common.content.gear.IRadialModuleContainerItem;
+import mekanism.common.config.value.CachedFloatValue;
+import mekanism.common.config.value.CachedFloatingLongValue;
+import mekanism.common.content.gear.IModuleContainerItem;
 import mekanism.common.content.gear.ModuleHelper;
+import mekanism.common.lib.radial.IGenericRadialModeItem;
 import mekanism.common.util.StorageUtils;
 import mekanism.common.util.text.BooleanStateDisplay;
 import meranha.mekaweapons.MekaWeapons;
@@ -43,9 +47,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
+//import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
+import net.minecraftforge.event.ItemAttributeModifierEvent;
 
-public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
+public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGenericRadialModeItem {
 
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_bow");
 
@@ -75,7 +80,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
 
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
         long totalDamage = getTotalDamage(event.getItemStack());
-        event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+        event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, (double) totalDamage, Operation.ADDITION), EquipmentSlotGroup.MAINHAND);
         // event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, (5 * installedModules) -9, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND); todo?
         IRadialModuleContainerItem.super.adjustAttributes(event);
     }
@@ -91,7 +96,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     public void releaseUsing(@NotNull ItemStack bow, @NotNull Level world, @NotNull LivingEntity entity, int timeLeft) {
         if (entity instanceof Player player && getTotalDamage(bow) >= 0) {
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
-            long energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get();
+            long energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get().longValue();
             if (hasNotEnoughEnergy(energyContainer, energyNeeded) && !player.isCreative()) {
                 return;
             }
@@ -105,7 +110,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
             long energyNeeded = getEnergyNeeded(bow);
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
             if(energyContainer != null) {
-                energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
+                energyContainer.extract(FloatingLong.create(energyNeeded), Action.EXECUTE, AutomationType.MANUAL);
             }
         }
     }
@@ -121,7 +126,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     }
 
     public void addItems(@NotNull Consumer<ItemStack> tabOutput) {
-        tabOutput.accept(StorageUtils.getFilledEnergyVariant(this));
+        tabOutput.accept(StorageUtils.getFilledEnergyVariant(new ItemStack(this), MekaWeapons.general.mekaBowBaseEnergyCapacity.get()));
     }
 
     public boolean isBarVisible(@NotNull ItemStack stack) {

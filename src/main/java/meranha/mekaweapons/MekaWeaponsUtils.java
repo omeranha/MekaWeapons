@@ -9,9 +9,11 @@ import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.gear.ICustomModule;
 import mekanism.api.gear.IModule;
 import mekanism.api.gear.IModuleHelper;
+import mekanism.api.math.FloatingLong;
 import mekanism.api.math.MathUtils;
 import mekanism.api.providers.IModuleDataProvider;
 import mekanism.common.config.MekanismConfig;
+import mekanism.common.config.value.CachedFloatingLongValue;
 import mekanism.common.config.value.CachedIntValue;
 import mekanism.common.config.value.CachedLongValue;
 import mekanism.common.util.StorageUtils;
@@ -38,7 +40,7 @@ public class MekaWeaponsUtils {
 
     public static long getBaseEnergyUsage(@NotNull ItemStack stack) {
         Item weapon = stack.getItem();
-        CachedLongValue value;
+        CachedFloatingLongValue value;
 
         if(weapon instanceof ItemMekaBow) {
             value = MekaWeapons.general.mekaBowEnergyUsage;
@@ -48,7 +50,7 @@ public class MekaWeaponsUtils {
             value = null;
         }
 
-        return value != null ? value.get() : 0L;
+        return value != null ? value.get().longValue() : 0;
     }
 
     public static long getTotalDamage(@NotNull ItemStack weapon) {
@@ -67,7 +69,7 @@ public class MekaWeaponsUtils {
             long energyCost = getEnergyNeeded(unitDamage, energyUsage);
             if (hasNotEnoughEnergy(energyContainer, energyCost)) {
                 //If we don't have enough power use it at a reduced power level (this will be false the majority of the time)
-                damage += Math.round(additionalDamage * MathUtils.divideToLevel(energyContainer.getEnergy() - energyUsage, energyCost - energyUsage));
+                damage += Math.round(additionalDamage * (energyContainer.getEnergy().divide(FloatingLong.create(energyCost)).floatValue()));
             } else {
                 damage += additionalDamage;
             }
@@ -108,12 +110,13 @@ public class MekaWeaponsUtils {
     }
 
     public static boolean hasNotEnoughEnergy(@Nullable IEnergyContainer energyContainer, long minEnergy) {
-        return energyContainer == null || energyContainer.extract(minEnergy, Action.SIMULATE, AutomationType.MANUAL) < minEnergy;
+        return energyContainer == null || energyContainer.getEnergy().smallerThan(FloatingLong.create(minEnergy));
     }
 
     @Nullable
     public static <MODULE extends ICustomModule<MODULE>> IModule<MODULE> getEnabledModule(ItemStack stack, IModuleDataProvider<MODULE> typeProvider) {
-        return IModuleHelper.INSTANCE.getIfEnabled(stack, typeProvider);
+        IModule<MODULE> module = IModuleHelper.INSTANCE.load(stack, typeProvider);
+        return module != null && module.isEnabled() ? module : null;
     }
 
     public static boolean isModuleEnabled(ItemStack stack, IModuleDataProvider<?> type) {

@@ -22,7 +22,7 @@ public enum WeaponsLang implements ILangEntry {
     private final String key;
 
     WeaponsLang(String type, String path) {
-        this(Util.makeDescriptionId(type, ResourceLocation.fromNamespaceAndPath(MekaWeapons.MODID, path)));
+        this(Util.makeDescriptionId(type, new ResourceLocation(MekaWeapons.MODID, path)));
     }
 
     WeaponsLang(String key) {
