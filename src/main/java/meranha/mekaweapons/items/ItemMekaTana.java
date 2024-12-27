@@ -64,6 +64,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.ItemAttributeModifierEvent;
 
 public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem, IGenericRadialModeItem {
 
@@ -88,6 +89,11 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
                 MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
     }
 
+    public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
+        long totalDamage = getTotalDamage(event.getItemStack());
+        event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", totalDamage, Operation.ADDITION));
+    }
+
     public boolean hurtEnemy(@NotNull @Nonnull ItemStack stack, @NotNull @Nonnull LivingEntity target,
             @NotNull @Nonnull LivingEntity attacker) {
         if (attacker instanceof Player player && !player.isCreative()) {
@@ -95,12 +101,14 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
             if (energyContainer != null) {
                 energyContainer.extract(FloatingLong.create(energyNeeded), Action.EXECUTE, AutomationType.MANUAL);
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     @NotNull
+    @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@NotNull EquipmentSlot slot,
             @NotNull ItemStack stack) {
         if (slot == EquipmentSlot.MAINHAND) {
@@ -110,9 +118,11 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
             FloatingLong energy = energyContainer != null ? energyContainer.getEnergy() : FloatingLong.ZERO;
 
-            int unitDamage = (energy.greaterOrEqual(MekaWeapons.general.mekaTanaEnergyUsage.get())
-                    && attackAmplificationUnit != null) ? attackAmplificationUnit.getCustomInstance().getCurrentUnit()
-                            : 0;
+            int unitDamage = energy.greaterOrEqual(MekaWeapons.general.mekaTanaEnergyUsage.get())
+                    ? (attackAmplificationUnit != null)
+                            ? attackAmplificationUnit.getCustomInstance().getCurrentUnit()
+                            : 1
+                    : 0;
             long totalDamage = MekaWeaponsUtils.getTotalDamage(stack);
 
             return attributeCaches.computeIfAbsent(unitDamage, damage -> new AttributeCache(builder -> {
@@ -126,7 +136,8 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
     }
 
     @NotNull
-    public InteractionResultHolder<ItemStack> use(@NotNull @Nonnull Level world, @NotNull @Nonnull Player player, @NotNull @Nonnull InteractionHand hand) {
+    public InteractionResultHolder<ItemStack> use(@NotNull @Nonnull Level world, @NotNull @Nonnull Player player,
+            @NotNull @Nonnull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (world.isClientSide()) {
             return InteractionResultHolder.pass(stack);
@@ -214,6 +225,11 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
 
     public ResourceLocation getRadialIdentifier() {
         return RADIAL_ID;
+    }
+
+    @Override
+    public boolean supportsSlotType(ItemStack stack, @NotNull EquipmentSlot slotType) {
+        return IGenericRadialModeItem.super.supportsSlotType(stack, slotType) && getModules(stack).stream().anyMatch(Module::handlesAnyModeChange);
     }
 
     @Override

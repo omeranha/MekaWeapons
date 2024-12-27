@@ -25,10 +25,10 @@ public class MekaWeaponsUtils {
         Item weapon = stack.getItem();
         CachedIntValue value;
 
-        if(weapon instanceof ItemMekaBow) 
+        if (weapon instanceof ItemMekaBow)
             value = MekaWeapons.general.mekaBowBaseDamage;
-        else if(weapon instanceof ItemMekaTana) 
-            value = MekaWeapons.general.mekaTanaBaseDamage; 
+        else if (weapon instanceof ItemMekaTana)
+            value = MekaWeapons.general.mekaTanaBaseDamage;
         else
             value = null;
 
@@ -39,9 +39,9 @@ public class MekaWeaponsUtils {
         Item weapon = stack.getItem();
         CachedFloatingLongValue value;
 
-        if(weapon instanceof ItemMekaBow) {
+        if (weapon instanceof ItemMekaBow) {
             value = MekaWeapons.general.mekaBowEnergyUsage;
-        } else if(weapon instanceof ItemMekaTana) {
+        } else if (weapon instanceof ItemMekaTana) {
             value = MekaWeapons.general.mekaTanaEnergyUsage;
         } else {
             value = null;
@@ -51,12 +51,15 @@ public class MekaWeaponsUtils {
     }
 
     public static long getTotalDamage(@NotNull ItemStack weapon) {
-        return getTotalDamage(weapon, getEnabledModule(weapon, MekaWeapons.ATTACKAMPLIFICATION_UNIT), getBaseDamage(weapon), getBaseEnergyUsage(weapon));
+        return getTotalDamage(weapon, getEnabledModule(weapon, MekaWeapons.ATTACKAMPLIFICATION_UNIT),
+                getBaseDamage(weapon), getBaseEnergyUsage(weapon));
     }
 
-    public static long getTotalDamage(@NotNull ItemStack weapon, @Nullable IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit, int baseDamage, long energyUsage) {
+    public static long getTotalDamage(@NotNull ItemStack weapon,
+            @Nullable IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit, int baseDamage,
+            long energyUsage) {
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(weapon, 0);
-        if(hasNotEnoughEnergy(energyContainer, energyUsage)) {
+        if (hasNotEnoughEnergy(energyContainer, energyUsage)) {
             return -1;
         }
 
@@ -65,8 +68,9 @@ public class MekaWeaponsUtils {
             int unitDamage = attackAmplificationUnit.getCustomInstance().getCurrentUnit(), additionalDamage = (unitDamage - 1) * baseDamage;
             long energyCost = getEnergyNeeded(unitDamage, energyUsage);
             if (hasNotEnoughEnergy(energyContainer, energyCost)) {
-                //If we don't have enough power use it at a reduced power level (this will be false the majority of the time)
-                damage += Math.round(additionalDamage * (energyContainer.getEnergy().divide(FloatingLong.create(energyCost)).floatValue()));
+                // If we don't have enough power use it at a reduced power level (this will be false the majority of the time)
+                damage += Math.round(additionalDamage
+                        * (energyContainer.getEnergy().divide(FloatingLong.create(energyCost)).floatValue()));
             } else {
                 damage += additionalDamage;
             }
@@ -81,10 +85,7 @@ public class MekaWeaponsUtils {
 
     public static long getEnergyNeeded(@Nullable ItemStack weaponStack, long energyUsage) {
         IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-        if (attackAmplificationUnit != null) {
-            return getEnergyNeeded(attackAmplificationUnit.getCustomInstance().getCurrentUnit(), energyUsage);
-        }
-        return -1;
+        return getEnergyNeeded(attackAmplificationUnit != null ? attackAmplificationUnit.getCustomInstance().getCurrentUnit() : 1, energyUsage);
     }
 
     public static long getEnergyNeeded(int unitDamage, long energyUsage) {
@@ -94,11 +95,12 @@ public class MekaWeaponsUtils {
     public static int getBarCustomColor(@NotNull ItemStack stack) {
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
         long energyUsage = getBaseEnergyUsage(stack);
-        if(hasNotEnoughEnergy(energyContainer, energyUsage)) {
+        if (hasNotEnoughEnergy(energyContainer, energyUsage)) {
             return MekanismConfig.client.hudDangerColor.get();
         }
 
         long energyNeeded = getEnergyNeeded(stack, energyUsage);
+
         if (hasNotEnoughEnergy(energyContainer, energyNeeded)) {
             return MekanismConfig.client.hudWarningColor.get();
         }
@@ -112,8 +114,7 @@ public class MekaWeaponsUtils {
 
     @Nullable
     public static <MODULE extends ICustomModule<MODULE>> IModule<MODULE> getEnabledModule(ItemStack stack, IModuleDataProvider<MODULE> typeProvider) {
-        IModule<MODULE> module = IModuleHelper.INSTANCE.load(stack, typeProvider);
-        return module != null && module.isEnabled() ? module : null;
+        return IModuleHelper.INSTANCE.load(stack, typeProvider);
     }
 
     public static boolean isModuleEnabled(ItemStack stack, IModuleDataProvider<?> type) {

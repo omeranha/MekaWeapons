@@ -88,7 +88,7 @@ public class ModuleWeaponAttackAmplificationUnit implements ICustomModule<Module
     @SuppressWarnings("unchecked")
     public <MODE extends IRadialMode> MODE getMode(IModule<ModuleWeaponAttackAmplificationUnit> module, ItemStack stack,
             RadialData<MODE> radialData) {
-        return radialData == getRadialData(module) ? (MODE) attackDamage : null;
+        return radialData == getRadialData(module) ? (MODE) attackDamage.get() : null;
     }
 
     public <MODE extends IRadialMode> boolean setMode(IModule<ModuleWeaponAttackAmplificationUnit> module, Player player, ItemStack stack, RadialData<MODE> radialData, MODE mode) {
@@ -133,8 +133,7 @@ public class ModuleWeaponAttackAmplificationUnit implements ICustomModule<Module
     }
 
     @NothingNullByDefault
-    public enum AttackDamage
-            implements IIncrementalEnum<AttackDamage>, IHasTextComponent, IRadialMode, StringRepresentable {
+    public enum AttackDamage implements IIncrementalEnum<AttackDamage>, IHasTextComponent, IRadialMode, StringRepresentable {
         OFF(WeaponsLang.RADIAL_ATTACK_DAMAGE_OFF, EnumColor.WHITE, "damage_off"),
         LOW(WeaponsLang.RADIAL_ATTACK_DAMAGE_LOW, EnumColor.PINK, "damage_low"),
         MED(WeaponsLang.RADIAL_ATTACK_DAMAGE_MEDIUM, EnumColor.BRIGHT_GREEN, "damage_medium"),

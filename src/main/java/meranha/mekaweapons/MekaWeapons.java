@@ -72,7 +72,7 @@ public class MekaWeapons {
     public static final ModuleRegistryObject<?> GRAVITYDAMPENER_UNIT = MODULES.registerMarker("gravitydampener_unit", () -> MekaWeapons.MODULE_GRAVITYDAMPENER.asItem(), builder -> builder.rarity(Rarity.EPIC));
     //public static final ModuleRegistryObject<?> ARROWVELOCITY_UNIT = MODULES.registerMarker("arrowvelocity_unit", () -> MekaWeapons.MODULE_ARROWVELOCITY.asItem(), builder -> builder.maxStackSize(8).rarity(Rarity.RARE));
     public static final ModuleRegistryObject<ModuleWeaponAttackAmplificationUnit> ATTACKAMPLIFICATION_UNIT = MODULES.register("attackamplification_unit",
-        ModuleWeaponAttackAmplificationUnit::new, () -> MekaWeapons.MODULE_ATTACKAMPLIFICATION.get(), builder -> builder.maxStackSize(4).rarity(Rarity.UNCOMMON).rendersHUD()
+        ModuleWeaponAttackAmplificationUnit::new, () -> MekaWeapons.MODULE_ATTACKAMPLIFICATION.get(), builder -> builder.maxStackSize(4).rarity(Rarity.UNCOMMON).rendersHUD().handlesModeChange()
     );
 
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);

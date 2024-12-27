@@ -6,6 +6,7 @@ import static meranha.mekaweapons.MekaWeaponsUtils.getTotalDamage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
@@ -22,6 +23,7 @@ import mekanism.api.AutomationType;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.gear.IModule;
 import mekanism.api.math.FloatingLong;
+import mekanism.api.math.FloatingLongSupplier;
 import mekanism.api.math.MathUtils;
 import mekanism.api.radial.RadialData;
 import mekanism.api.radial.mode.IRadialMode;
@@ -30,6 +32,9 @@ import mekanism.api.text.EnumColor;
 import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
 import mekanism.common.MekanismLang;
+import mekanism.common.capabilities.ItemCapabilityWrapper;
+import mekanism.common.capabilities.energy.BasicEnergyContainer;
+import mekanism.common.capabilities.energy.item.RateLimitEnergyHandler;
 import mekanism.common.content.gear.IModuleContainerItem;
 import mekanism.common.content.gear.Module;
 import mekanism.common.content.gear.shared.ModuleEnergyUnit;
@@ -42,6 +47,7 @@ import mekanism.common.util.text.BooleanStateDisplay;
 import meranha.mekaweapons.MekaWeapons;
 import meranha.mekaweapons.MekaWeaponsUtils;
 import meranha.mekaweapons.WeaponsLang;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -62,6 +68,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.event.ForgeEventFactory;
 
 public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGenericRadialModeItem {
@@ -95,30 +102,36 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
     }
 
     @NotNull
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@NotNull EquipmentSlot slot,
-            @NotNull ItemStack stack) {
+    @Override
+    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@NotNull EquipmentSlot slot, @NotNull ItemStack stack) {
         if (slot == EquipmentSlot.MAINHAND) {
-            IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getModule(stack,
-                    MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+            IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
 
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
             FloatingLong energy = energyContainer != null ? energyContainer.getEnergy() : FloatingLong.ZERO;
 
             int unitDamage = energy.greaterOrEqual(MekaWeapons.general.mekaBowEnergyUsage.get())
-                    && attackAmplificationUnit != null
+                    ? (attackAmplificationUnit != null)
                             ? attackAmplificationUnit.getCustomInstance().getCurrentUnit()
-                            : 0;
+                            : 1
+                    : 0;
             long totalDamage = MekaWeaponsUtils.getTotalDamage(stack);
 
-            return attributeCaches.computeIfAbsent(unitDamage, damage -> new AttributeCache(builder -> {
-                builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier",
-                        totalDamage, Operation.ADDITION));
-                // builder.put(Attributes.ATTACK_SPEED, new
-                // AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", (5 *
-                // installedModules) -9), Operation.ADDITION));
-            }, MekaWeapons.general.mekaTanaBaseDamage, MekaWeapons.general.mekaTanaAttackSpeed)).get();
+            return attributeCaches.compute(unitDamage, (damage, previous) ->{
+                AttributeModifier currentDamage = new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", totalDamage, Operation.ADDITION);
+                // AttributeModifier currentSpeed = new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", (5 * installedModules) -9), Operation.ADDITION);
+
+                if (previous != null && previous.get().containsKey(Attributes.ATTACK_DAMAGE) && previous.get().get(Attributes.ATTACK_DAMAGE).equals(currentDamage)) {
+                    return previous;
+                } else {
+                    return new AttributeCache(builder -> {
+                        builder.put(Attributes.ATTACK_DAMAGE, currentDamage);
+                        // builder.put(Attributes.ATTACK_SPEED, currentSpeed);
+                    });
+                }
+            }).get();
         }
-        return super.getAttributeModifiers(slot, stack);
+        return super.getAttributeModifiers(slot,stack);
     }
 
     public void onUseTick(@NotNull @Nonnull Level world, @NotNull @Nonnull LivingEntity player,
@@ -237,15 +250,25 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
         return getBarCustomColor(stack);
     }
 
+    @Override
+    public ICapabilityProvider initCapabilities(ItemStack stack, CompoundTag nbt) {
+        IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
+        @NotNull
+        FloatingLongSupplier maxEnergy = () -> (module == null ? MekaWeapons.general.mekaBowBaseEnergyCapacity.get()
+                : module.getCustomInstance().getEnergyCapacity(module));
+        return new ItemCapabilityWrapper(stack, RateLimitEnergyHandler.create(MekaWeapons.general.mekaBowBaseChargeRate,
+                maxEnergy, BasicEnergyContainer.manualOnly, BasicEnergyContainer.alwaysTrue));
+    }
+
     public boolean shouldCauseBlockBreakReset(@NotNull ItemStack oldStack, @NotNull ItemStack newStack) {
         return oldStack.getItem() != newStack.getItem();
     }
 
     public float getUseTick(@NotNull ItemStack stack) {
-        float useTick = 20.0F;
+        float useTick = 20;
         IModule<?> drawSpeedUnit = getEnabledModule(stack, MekaWeapons.DRAWSPEED_UNIT);
         if (drawSpeedUnit != null) {
-            useTick -= 5.0f * drawSpeedUnit.getInstalledCount();
+            useTick -= 5 * drawSpeedUnit.getInstalledCount();
         }
         return useTick;
     }
@@ -260,6 +283,12 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
 
     public ResourceLocation getRadialIdentifier() {
         return RADIAL_ID;
+    }
+
+    @Override
+    public boolean supportsSlotType(ItemStack stack, @NotNull EquipmentSlot slotType) {
+        return IGenericRadialModeItem.super.supportsSlotType(stack, slotType)
+                && getModules(stack).stream().anyMatch(Module::handlesAnyModeChange);
     }
 
     @Override
