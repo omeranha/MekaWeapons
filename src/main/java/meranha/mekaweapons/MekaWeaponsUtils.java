@@ -3,8 +3,6 @@ package meranha.mekaweapons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import mekanism.api.Action;
-import mekanism.api.AutomationType;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.gear.ICustomModule;
 import mekanism.api.gear.IModule;
@@ -15,7 +13,6 @@ import mekanism.api.providers.IModuleDataProvider;
 import mekanism.common.config.MekanismConfig;
 import mekanism.common.config.value.CachedFloatingLongValue;
 import mekanism.common.config.value.CachedIntValue;
-import mekanism.common.config.value.CachedLongValue;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaTana;

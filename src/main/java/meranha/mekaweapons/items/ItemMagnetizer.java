@@ -1,5 +1,7 @@
 package meranha.mekaweapons.items;
 
+import javax.annotation.Nullable;
+
 import mekanism.api.text.EnumColor;
 import meranha.mekaweapons.WeaponsLang;
 import net.minecraft.network.chat.Component;
@@ -17,8 +19,7 @@ public class ItemMagnetizer extends Item {
         super(pProperties.rarity(Rarity.RARE).stacksTo(1));
     }
 
-    @Override
-    public void appendHoverText(@Nonnull ItemStack stack, Level world, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag flag) {
+    public void appendHoverText(@Nonnull ItemStack stack, @Nullable Level world, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag flag) {
         tooltip.add(WeaponsLang.MAGNETIZER.translateColored(EnumColor.WHITE));
     }
 }
