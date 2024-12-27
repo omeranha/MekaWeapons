@@ -55,9 +55,9 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 
-// @SuppressWarnings({"Convert2MethodRef", "unused", "forremoval"})
 @Mod(MekaWeapons.MODID)
 public class MekaWeapons {
     public static final String MODID = "mekaweapons";
@@ -96,7 +96,7 @@ public class MekaWeapons {
     public static final String ADD_MEKATANA_MODULES = "add_mekatana_modules";
 
     public MekaWeapons() {
-        this(MinecraftForge.EVENT_BUS, ModLoadingContext.get().getActiveContainer());
+        this(FMLJavaModLoadingContext.get().getModEventBus(), ModLoadingContext.get().getActiveContainer());
     }
 
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
@@ -108,8 +108,8 @@ public class MekaWeapons {
         modEventBus.addListener(this::buildCreativeModeTabContents);
         modEventBus.addListener(this::enqueueIMC);
         modEventBus.addListener(this::registerRenderers);
-        modEventBus.addListener(this::mekaBowEnergyArrows);
-        modEventBus.addListener(this::disableMekaBowAttack);
+        MinecraftForge.EVENT_BUS.addListener(this::mekaBowEnergyArrows);
+        MinecraftForge.EVENT_BUS.addListener(this::disableMekaBowAttack);
     }
 
     @NotNull
@@ -134,17 +134,24 @@ public class MekaWeapons {
         }
     }
 
-    public void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(MekaWeapons.MEKA_ARROW.get(), MekaArrowRenderer::new);
-    }
-
     private void enqueueIMC(final InterModEnqueueEvent event) {
-        addModules(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, AUTOFIRE_UNIT, ARROWENERGY_UNIT, DRAWSPEED_UNIT, GRAVITYDAMPENER_UNIT); // MekaWeapons.ARROWVELOCITY_UNIT
+        addModules(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, AUTOFIRE_UNIT, ARROWENERGY_UNIT, DRAWSPEED_UNIT, GRAVITYDAMPENER_UNIT); // ARROWVELOCITY_UNIT
         addModules(ADD_MEKATANA_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT);
     }
 
     public static void addModules(String method, IModuleDataProvider<?>... moduleDataProviders) {
         sendModuleIMC(method, moduleDataProviders);
+    }
+
+    private static void sendModuleIMC(String method, IModuleDataProvider<?>... moduleDataProviders) {
+        if (moduleDataProviders == null || moduleDataProviders.length == 0) {
+            throw new IllegalArgumentException("No module data providers given.");
+        }
+        InterModComms.sendTo(Mekanism.MODID, method, () -> moduleDataProviders);
+    }
+
+    public void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(MekaWeapons.MEKA_ARROW.get(), MekaArrowRenderer::new);
     }
 
     private void mekaBowEnergyArrows(final ArrowNockEvent event) {
@@ -161,13 +168,6 @@ public class MekaWeapons {
         }
     }
 
-    private static void sendModuleIMC(String method, IModuleDataProvider<?>... moduleDataProviders) {
-        if (moduleDataProviders == null || moduleDataProviders.length == 0) {
-            throw new IllegalArgumentException("No module data providers given.");
-        }
-        InterModComms.sendTo(Mekanism.MODID, method, () -> moduleDataProviders);
-    }
-
     // small trick to prevent players from using the meka-bow to attack entities. This allows the tooltip to show attack damage without enabling actual damage.
     private void disableMekaBowAttack(@NotNull AttackEntityEvent event) {
         Player player = event.getEntity();
@@ -180,22 +180,6 @@ public class MekaWeapons {
             event.setCanceled(true);
         }
     }
-    
-    // @SubscribeEvent
-    // public static void init(FMLClientSetupEvent event) {
-    //     if (ModList.get().isLoaded("curios")) {
-    //         CuriosRendererRegistry.register(MekaWeapons.MAGNETIZER.get(), WeaponsRenderer::new);
-    //     }
-    //     event.enqueueWork(() -> {
-    //         ClientRegistrationUtil.setPropertyOverride(MekaWeapons.MEKA_BOW, Mekanism.rl("pull"), (stack, world, entity, seed) -> {
-    //             if (entity != null && entity.getUseItem() == stack && stack.getItem() instanceof ItemMekaBow bow) {
-    //                 return (stack.getUseDuration() - entity.getUseItemRemainingTicks()) / bow.getUseTick(stack);
-    //             }
-    //             return 0;
-    //         });
-    //         ClientRegistrationUtil.setPropertyOverride(MekaWeapons.MEKA_BOW, Mekanism.rl("pulling"), (stack, world, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
-    //     });
-    // }
 
     @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
