@@ -1,7 +1,7 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekaweapons:module_arrowvelocity_unit"
+    "item":"mekaweapons:module_arrowvelocity_unit"
   },
   "pattern":[ "sbs", "ama", "ppp" ],
   "key":{

@@ -1,11 +1,11 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekaweapons:bow_limb"
+    "item":"mekaweapons:bow_limb"
   },
   "pattern":[ "   ", "sss", "ggg" ],
   "key":{
     "s":{ "item":"minecraft:string" },
-    "g":{ "tag":"c:glass_panes" }
+    "g":{ "tag":"forge:glass_panes" }
   }
 }

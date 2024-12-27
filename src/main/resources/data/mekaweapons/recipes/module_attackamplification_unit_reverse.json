@@ -1,7 +1,7 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekanism:module_attack_amplification_unit"
+    "item":"mekanism:module_attack_amplification_unit"
   },
   "pattern": ["m"],
   "key":{

@@ -67,7 +67,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem, IGenericRadialModeItem {
 
-    private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_tana");
+    private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("mekatana");
     private final Int2ObjectMap<AttributeCache> attributeCaches = new Int2ObjectArrayMap<>(
             ModuleWeaponAttackAmplificationUnit.AttackDamage.values().length - 2);
 

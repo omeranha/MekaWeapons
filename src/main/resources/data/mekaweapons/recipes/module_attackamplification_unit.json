@@ -1,7 +1,7 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekaweapons:module_attackamplification_unit"
+    "item":"mekaweapons:module_attackamplification_unit"
   },
   "pattern": ["m"],
   "key":{

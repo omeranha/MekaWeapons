@@ -1,14 +1,14 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekaweapons:module_autofire_unit"
+    "item":"mekaweapons:module_drawspeed_unit"
   },
-  "pattern":[ "aca", "eme", "ppp" ],
+  "pattern":[ "sbs", "ama", "ppp" ],
   "key":{
     "m":{ "item": "mekanism:module_base" },
     "p":{ "item":"mekanism:pellet_polonium" },
-    "c":{ "item":"minecraft:clock" },
+    "b":{ "item":"minecraft:bow" },
     "a":{ "item":"mekanism:alloy_reinforced" },
-    "e":{ "item":"mekanism:elite_control_circuit" }
+    "s":{ "item":"mekanism:upgrade_speed" }
   }
 }

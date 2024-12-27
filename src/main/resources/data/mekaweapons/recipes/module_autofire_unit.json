@@ -1,13 +1,14 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekaweapons:module_arrowenergy_unit"
+    "item":"mekaweapons:module_autofire_unit"
   },
-  "pattern":[ "ece", "ama", "ppp" ],
+  "pattern":[ "aca", "eme", "ppp" ],
   "key":{
     "m":{ "item": "mekanism:module_base" },
     "p":{ "item":"mekanism:pellet_polonium" },
-    "c":{ "item":"minecraft:arrow" },
-    "a":{ "item":"mekanism:energy_tablet" },
+    "c":{ "item":"minecraft:clock" },
+    "a":{ "item":"mekanism:alloy_reinforced" },
     "e":{ "item":"mekanism:elite_control_circuit" }
-  }}
+  }
+}

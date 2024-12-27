@@ -1,15 +1,15 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekaweapons:meka_bow"
+    "item":"mekaweapons:mekabow"
   },
   "pattern":[ "pbp", "iei", "oso" ],
   "key":{
     "s":{ "item":"mekaweapons:bow_limb" },
-    "i":{ "tag":"c:ingots/steel" },
+    "i":{ "tag":"forge:ingots/steel" },
     "p":{ "item":"mekanism:pellet_polonium" },
     "e":{ "item":"mekanism:basic_induction_cell" },
     "b":{ "item":"mekaweapons:bow_riser" },
-    "o":{ "tag":"c:ingots/refined_obsidian" }
+    "o":{ "tag":"forge:ingots/refined_obsidian" }
   }
 }
