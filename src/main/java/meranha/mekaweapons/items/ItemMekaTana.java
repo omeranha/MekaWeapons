@@ -69,24 +69,20 @@ import net.minecraftforge.event.ItemAttributeModifierEvent;
 public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem, IGenericRadialModeItem {
 
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("mekatana");
-    private final Int2ObjectMap<AttributeCache> attributeCaches = new Int2ObjectArrayMap<>(
-            ModuleWeaponAttackAmplificationUnit.AttackDamage.values().length - 2);
+    private final Int2ObjectMap<AttributeCache> attributeCaches = new Int2ObjectArrayMap<>(ModuleWeaponAttackAmplificationUnit.AttackDamage.values().length - 2);
 
     public ItemMekaTana(@NotNull Properties properties) {
-        super(MekaWeapons.general.mekaTanaBaseChargeRate, MekaWeapons.general.mekaTanaBaseEnergyCapacity,
-                properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1));
+        super(MekaWeapons.general.mekaTanaBaseChargeRate, MekaWeapons.general.mekaTanaBaseEnergyCapacity, properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1));
     }
 
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull Level world, @NotNull List<Component> tooltip,
-            @NotNull TooltipFlag flag) {
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull Level world, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         if (MekKeyHandler.isKeyPressed(MekanismKeyHandler.detailsKey)) {
             addModuleDetails(stack, tooltip);
             return;
         }
 
         StorageUtils.addStoredEnergy(stack, tooltip, true);
-        tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO,
-                MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
+        tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
     }
 
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
@@ -94,8 +90,7 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
         event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", totalDamage, Operation.ADDITION));
     }
 
-    public boolean hurtEnemy(@NotNull @Nonnull ItemStack stack, @NotNull @Nonnull LivingEntity target,
-            @NotNull @Nonnull LivingEntity attacker) {
+    public boolean hurtEnemy(@NotNull @Nonnull ItemStack stack, @NotNull @Nonnull LivingEntity target, @NotNull @Nonnull LivingEntity attacker) {
         if (attacker instanceof Player player && !player.isCreative()) {
             long energyNeeded = getEnergyNeeded(stack);
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
@@ -109,20 +104,14 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
 
     @NotNull
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@NotNull EquipmentSlot slot,
-            @NotNull ItemStack stack) {
+    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@NotNull EquipmentSlot slot, @NotNull ItemStack stack) {
         if (slot == EquipmentSlot.MAINHAND) {
-            IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getModule(stack,
-                    MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-
+            IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
             FloatingLong energy = energyContainer != null ? energyContainer.getEnergy() : FloatingLong.ZERO;
-
-            int unitDamage = energy.greaterOrEqual(MekaWeapons.general.mekaTanaEnergyUsage.get())
-                    ? (attackAmplificationUnit != null)
+            int unitDamage = energy.greaterOrEqual(MekaWeapons.general.mekaTanaEnergyUsage.get()) ? (attackAmplificationUnit != null)
                             ? attackAmplificationUnit.getCustomInstance().getCurrentUnit()
-                            : 1
-                    : 0;
+                            : 1 : 0;
             long totalDamage = MekaWeaponsUtils.getTotalDamage(stack);
 
             return attributeCaches.computeIfAbsent(unitDamage, damage -> new AttributeCache(builder -> {
@@ -136,8 +125,7 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
     }
 
     @NotNull
-    public InteractionResultHolder<ItemStack> use(@NotNull @Nonnull Level world, @NotNull @Nonnull Player player,
-            @NotNull @Nonnull InteractionHand hand) {
+    public InteractionResultHolder<ItemStack> use(@NotNull @Nonnull Level world, @NotNull @Nonnull Player player, @NotNull @Nonnull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (world.isClientSide()) {
             return InteractionResultHolder.pass(stack);
@@ -181,14 +169,12 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
         return blockState.isAir() || MekanismUtils.isLiquidBlock(blockState.getBlock());
     }
 
-    private InteractionResultHolder<ItemStack> teleportPlayer(Level world, Player player, ItemStack stack,
-            @NotNull BlockPos pos, IEnergyContainer energyContainer, FloatingLong energyNeeded, BlockHitResult result) {
+    private InteractionResultHolder<ItemStack> teleportPlayer(Level world, Player player, ItemStack stack, @NotNull BlockPos pos, IEnergyContainer energyContainer, FloatingLong energyNeeded, BlockHitResult result) {
         double targetX = pos.getX() + 0.5;
         double targetY = pos.getY() + 1.5;
         double targetZ = pos.getZ() + 0.5;
 
-        MekanismTeleportEvent.MekaTool event = new MekanismTeleportEvent.MekaTool(player, targetX, targetY, targetZ,
-                stack, result);
+        MekanismTeleportEvent.MekaTool event = new MekanismTeleportEvent.MekaTool(player, targetX, targetY, targetZ, stack, result);
         if (MinecraftForge.EVENT_BUS.post(event)) {
             return InteractionResultHolder.fail(stack);
         }
@@ -202,8 +188,7 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
 
         player.resetFallDistance();
         Mekanism.packetHandler().sendToAllTracking(new PacketPortalFX(pos.above()), world, pos);
-        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDERMAN_TELEPORT,
-                SoundSource.PLAYERS, 1, 1);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1, 1);
         return InteractionResultHolder.success(stack);
     }
 
@@ -281,5 +266,11 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
                 return;
             }
         }
+    }
+
+    @Nullable
+    @Override
+    public Component getScrollTextComponent(@NotNull ItemStack stack) {
+        return getModules(stack).stream().filter(Module::handlesModeChange).findFirst().map(module -> module.getModeScrollComponent(stack)).orElse(null);
     }
 }

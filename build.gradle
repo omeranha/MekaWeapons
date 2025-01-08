@@ -70,11 +70,14 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    implementation(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}"))
-    compileOnly(fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:api"))
-    compileOnly(fg.deobf("top.theillusivec4.curios:curios-forge:5.3.5+1.20.1:api"))
+    implementation fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}")
+    compileOnly fg.deobf("mekanism:Mekanism:${minecraft_version}-${mekanism_version}:api")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.3.5+1.20.1:api")
 
     runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.2.0.27")
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:5.3.5+1.20.1")
+    runtimeOnly fg.deobf("curse.maven:mmmmmmmmmmmm-225738:5737040")
+    runtimeOnly fg.deobf("curse.maven:selene-499980:6058583")
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
@@ -100,7 +103,7 @@ tasks.named('jar', Jar).configure {
         attributes([
                 'Specification-Title'     : mod_id,
                 'Specification-Vendor'    : mod_authors,
-                'Specification-Version'   : '1',
+                'Specification-Version'   : mod_version,
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : mod_authors,

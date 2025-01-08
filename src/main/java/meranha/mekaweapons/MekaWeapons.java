@@ -95,6 +95,7 @@ public class MekaWeapons {
     public static final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
     public static final String ADD_MEKATANA_MODULES = "add_mekatana_modules";
 
+    @SuppressWarnings("removal")
     public MekaWeapons() {
         this(FMLJavaModLoadingContext.get().getModEventBus(), ModLoadingContext.get().getActiveContainer());
     }
@@ -171,7 +172,6 @@ public class MekaWeapons {
     // small trick to prevent players from using the meka-bow to attack entities. This allows the tooltip to show attack damage without enabling actual damage.
     private void disableMekaBowAttack(@NotNull AttackEntityEvent event) {
         Player player = event.getEntity();
-
         if (!(player.level() instanceof ServerLevel)) {
             return;
         }

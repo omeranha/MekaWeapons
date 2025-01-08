@@ -1,12 +1,7 @@
 package meranha.mekaweapons.items;
 
-import static meranha.mekaweapons.MekaWeaponsUtils.getBarCustomColor;
-import static meranha.mekaweapons.MekaWeaponsUtils.getEnabledModule;
-import static meranha.mekaweapons.MekaWeaponsUtils.getTotalDamage;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
@@ -24,7 +19,6 @@ import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.gear.IModule;
 import mekanism.api.math.FloatingLong;
 import mekanism.api.math.FloatingLongSupplier;
-import mekanism.api.math.MathUtils;
 import mekanism.api.radial.RadialData;
 import mekanism.api.radial.mode.IRadialMode;
 import mekanism.api.radial.mode.NestedRadialMode;
@@ -46,6 +40,8 @@ import mekanism.common.util.StorageUtils;
 import mekanism.common.util.text.BooleanStateDisplay;
 import meranha.mekaweapons.MekaWeapons;
 import meranha.mekaweapons.MekaWeaponsUtils;
+import static meranha.mekaweapons.MekaWeaponsUtils.getBarCustomColor;
+import static meranha.mekaweapons.MekaWeaponsUtils.getEnabledModule;
 import meranha.mekaweapons.WeaponsLang;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -73,16 +69,14 @@ import net.minecraftforge.event.ForgeEventFactory;
 
 public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGenericRadialModeItem {
 
-    private final Int2ObjectMap<AttributeCache> attributeCaches = new Int2ObjectArrayMap<>(
-            ModuleWeaponAttackAmplificationUnit.AttackDamage.values().length - 2);
+    private final Int2ObjectMap<AttributeCache> attributeCaches = new Int2ObjectArrayMap<>(ModuleWeaponAttackAmplificationUnit.AttackDamage.values().length - 2);
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_bow");
 
     public ItemMekaBow(@NotNull Properties properties) {
         super(properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1));
     }
 
-    public void appendHoverText(@NotNull @Nonnull ItemStack stack, @Nullable Level world,
-            @NotNull @Nonnull List<Component> tooltip, @NotNull @Nullable TooltipFlag flag) {
+    public void appendHoverText(@NotNull @Nonnull ItemStack stack, @Nullable Level world, @NotNull @Nonnull List<Component> tooltip, @NotNull @Nullable TooltipFlag flag) {
         if (MekKeyHandler.isKeyPressed(MekanismKeyHandler.detailsKey)) {
             addModuleDetails(stack, tooltip);
             return;
@@ -90,15 +84,12 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
 
         StorageUtils.addStoredEnergy(stack, tooltip, true);
         if (hasModule(stack, MekaWeapons.AUTOFIRE_UNIT)) {
-            tooltip.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.YELLOW,
-                    BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT))));
+            tooltip.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT))));
         }
         if (hasModule(stack, MekaWeapons.ARROWENERGY_UNIT)) {
-            tooltip.add(WeaponsLang.ARROWENERGY_MODE.translateColored(EnumColor.YELLOW,
-                    BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.ARROWENERGY_UNIT))));
+            tooltip.add(WeaponsLang.ARROWENERGY_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.ARROWENERGY_UNIT))));
         }
-        tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO,
-                MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
+        tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
     }
 
     @NotNull
@@ -110,11 +101,9 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
             FloatingLong energy = energyContainer != null ? energyContainer.getEnergy() : FloatingLong.ZERO;
 
-            int unitDamage = energy.greaterOrEqual(MekaWeapons.general.mekaBowEnergyUsage.get())
-                    ? (attackAmplificationUnit != null)
+            int unitDamage = energy.greaterOrEqual(MekaWeapons.general.mekaBowEnergyUsage.get()) ? (attackAmplificationUnit != null)
                             ? attackAmplificationUnit.getCustomInstance().getCurrentUnit()
-                            : 1
-                    : 0;
+                            : 1 : 0;
             long totalDamage = MekaWeaponsUtils.getTotalDamage(stack);
 
             return attributeCaches.compute(unitDamage, (damage, previous) ->{
@@ -134,21 +123,18 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
         return super.getAttributeModifiers(slot,stack);
     }
 
-    public void onUseTick(@NotNull @Nonnull Level world, @NotNull @Nonnull LivingEntity player,
-            @NotNull @Nonnull ItemStack stack, int timeLeft) {
-        if (isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT)
-                && getUseDuration(stack) - timeLeft == getUseTick(stack)) {
+    public void onUseTick(@NotNull @Nonnull Level world, @NotNull @Nonnull LivingEntity player, @NotNull @Nonnull ItemStack stack, int timeLeft) {
+        if (isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT) && getUseDuration(stack) - timeLeft == getUseTick(stack)) {
             player.stopUsingItem();
             stack.releaseUsing(world, player, 0);
             player.startUsingItem(player.getUsedItemHand());
         }
     }
 
-    public void releaseUsing(@NotNull @Nonnull ItemStack bow, @NotNull @Nonnull Level world,
-            @NotNull @Nonnull LivingEntity entity, int timeLeft) {
+    public void releaseUsing(@NotNull @Nonnull ItemStack bow, @NotNull @Nonnull Level world, @NotNull @Nonnull LivingEntity entity, int timeLeft) {
         if (entity instanceof Player player) {
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
-            if (!hasEnoughEnergy(energyContainer)) {
+            if (!player.isCreative() && !hasEnoughEnergy(energyContainer)) {
                 return;
             }
 
@@ -170,37 +156,21 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
             }
 
             if (!world.isClientSide) {
-                ArrowItem arrowitem = (ArrowItem) (potentialAmmo.getItem() instanceof ArrowItem
-                        ? potentialAmmo.getItem()
-                        : Items.ARROW);
+                ArrowItem arrowitem = (ArrowItem) (potentialAmmo.getItem() instanceof ArrowItem ? potentialAmmo.getItem() : Items.ARROW);
                 AbstractArrow arrowEntity = customArrow(arrowitem.createArrow(world, potentialAmmo, player));
                 int unitMultiplier = 0;
-
-                // IModule<?> arrowVelocityUnit = getModule(bow,
-                // MekaWeapons.ARROWVELOCITY_UNIT);
-                // if (arrowVelocityUnit != null && arrowVelocityUnit.isEnabled()) {
-                // for (int i = 0; i < arrowVelocityUnit.getInstalledCount(); i++) {
-                // unitMultiplier += 1;
-                // }
-                // }
-
-                arrowEntity.shootFromRotation(player, player.getXRot(), player.getYRot(), 0,
-                        (3 + unitMultiplier) * velocity, 0);
+                arrowEntity.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, (3 + unitMultiplier) * velocity, 0);
 
                 long totalDamage = MekaWeaponsUtils.getTotalDamage(bow);
                 arrowEntity.setBaseDamage(totalDamage);
-
-                if (isModuleEnabled(bow, MekaWeapons.ARROWENERGY_UNIT)
-                        && (potentialAmmo.getItem() == Items.SPECTRAL_ARROW
-                                || potentialAmmo.getItem() == Items.TIPPED_ARROW)) {
+                if (isModuleEnabled(bow, MekaWeapons.ARROWENERGY_UNIT) && (potentialAmmo.getItem() == Items.SPECTRAL_ARROW || potentialAmmo.getItem() == Items.TIPPED_ARROW)) {
                     arrowEntity.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
                 }
 
                 world.addFreshEntity(arrowEntity);
             }
 
-            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT,
-                    SoundSource.PLAYERS, 1, 1.0F / (world.random.nextFloat() * 0.4F + 1.2F) + velocity * 0.5F);
+            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1, 1.0F / (world.random.nextFloat() * 0.4F + 1.2F) + velocity * 0.5F);
             if (!isModuleEnabled(bow, MekaWeapons.ARROWENERGY_UNIT)) {
                 potentialAmmo.shrink(1);
                 if (potentialAmmo.isEmpty()) {
@@ -210,32 +180,30 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
             player.awardStat(Stats.ITEM_USED.get(this));
 
             long energyNeeded = MekaWeaponsUtils.getEnergyNeeded(bow);
-            energyContainer.extract(FloatingLong.create(energyNeeded), Action.EXECUTE, AutomationType.MANUAL);
+            if (!player.isCreative()) {
+                energyContainer.extract(FloatingLong.create(energyNeeded), Action.EXECUTE, AutomationType.MANUAL);
+            }
         }
         super.releaseUsing(bow, world, entity, timeLeft);
     }
 
     private boolean hasEnoughEnergy(IEnergyContainer energyContainer) {
-        return energyContainer != null
-                && energyContainer.getEnergy().greaterOrEqual(MekaWeapons.general.mekaBowEnergyUsage.get());
+        return energyContainer != null && energyContainer.getEnergy().greaterOrEqual(MekaWeapons.general.mekaBowEnergyUsage.get());
     }
 
+    @Override
     @NotNull
-    public AbstractArrow customArrow(@NotNull AbstractArrow arrow, @NotNull ItemStack projectileStack,
-            @NotNull ItemStack weaponStack) {
-        long totalDamage = getTotalDamage(weaponStack);
-        return new MekaArrowEntity(arrow.level(), arrow.getX(), arrow.getY(), arrow.getZ(), projectileStack,
-                weaponStack, MathUtils.clampToInt(totalDamage));
+    public AbstractArrow customArrow(AbstractArrow arrow) {
+        ItemStack weapon = arrow.getOwner() instanceof Player player ? player.getMainHandItem() : ItemStack.EMPTY;
+        return new MekaArrowEntity(arrow.level(), arrow.getX(), arrow.getY(), arrow.getZ(), new ItemStack(Items.ARROW), weapon);
     }
 
-    public boolean shouldCauseReequipAnimation(@NotNull ItemStack oldStack, @NotNull ItemStack newStack,
-            boolean slotChanged) {
+    public boolean shouldCauseReequipAnimation(@NotNull ItemStack oldStack, @NotNull ItemStack newStack, boolean slotChanged) {
         return slotChanged || oldStack.getItem() != newStack.getItem();
     }
 
     public void addItems(@NotNull Consumer<ItemStack> tabOutput) {
-        tabOutput.accept(StorageUtils.getFilledEnergyVariant(new ItemStack(this),
-                MekaWeapons.general.mekaBowBaseEnergyCapacity.get()));
+        tabOutput.accept(StorageUtils.getFilledEnergyVariant(new ItemStack(this), MekaWeapons.general.mekaBowBaseEnergyCapacity.get()));
     }
 
     public boolean isBarVisible(@NotNull @Nonnull ItemStack stack) {
@@ -254,10 +222,8 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
     public ICapabilityProvider initCapabilities(ItemStack stack, CompoundTag nbt) {
         IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
         @NotNull
-        FloatingLongSupplier maxEnergy = () -> (module == null ? MekaWeapons.general.mekaBowBaseEnergyCapacity.get()
-                : module.getCustomInstance().getEnergyCapacity(module));
-        return new ItemCapabilityWrapper(stack, RateLimitEnergyHandler.create(MekaWeapons.general.mekaBowBaseChargeRate,
-                maxEnergy, BasicEnergyContainer.manualOnly, BasicEnergyContainer.alwaysTrue));
+        FloatingLongSupplier maxEnergy = () -> (module == null ? MekaWeapons.general.mekaBowBaseEnergyCapacity.get() : module.getCustomInstance().getEnergyCapacity(module));
+        return new ItemCapabilityWrapper(stack, RateLimitEnergyHandler.create(MekaWeapons.general.mekaBowBaseChargeRate, maxEnergy, BasicEnergyContainer.manualOnly, BasicEnergyContainer.alwaysTrue));
     }
 
     public boolean shouldCauseBlockBreakReset(@NotNull ItemStack oldStack, @NotNull ItemStack newStack) {
@@ -287,8 +253,7 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
 
     @Override
     public boolean supportsSlotType(ItemStack stack, @NotNull EquipmentSlot slotType) {
-        return IGenericRadialModeItem.super.supportsSlotType(stack, slotType)
-                && getModules(stack).stream().anyMatch(Module::handlesAnyModeChange);
+        return IGenericRadialModeItem.super.supportsSlotType(stack, slotType) && getModules(stack).stream().anyMatch(Module::handlesAnyModeChange);
     }
 
     @Override
@@ -303,14 +268,12 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
 
     protected FloatingLong getMaxEnergy(ItemStack stack) {
         IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
-        return module == null ? MekaWeapons.general.mekaBowBaseEnergyCapacity.get()
-                : module.getCustomInstance().getEnergyCapacity(module);
+        return module == null ? MekaWeapons.general.mekaBowBaseEnergyCapacity.get() : module.getCustomInstance().getEnergyCapacity(module);
     }
 
     protected FloatingLong getChargeRate(ItemStack stack) {
         IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
-        return module == null ? MekaWeapons.general.mekaBowBaseChargeRate.get()
-                : module.getCustomInstance().getChargeRate(module);
+        return module == null ? MekaWeapons.general.mekaBowBaseChargeRate.get() : module.getCustomInstance().getChargeRate(module);
     }
 
     @Nullable
@@ -355,5 +318,11 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
                 return;
             }
         }
+    }
+
+    @Nullable
+    @Override
+    public Component getScrollTextComponent(@NotNull ItemStack stack) {
+        return getModules(stack).stream().filter(Module::handlesModeChange).findFirst().map(module -> module.getModeScrollComponent(stack)).orElse(null);
     }
 }

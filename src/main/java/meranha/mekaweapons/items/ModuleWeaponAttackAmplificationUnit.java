@@ -150,6 +150,7 @@ public class ModuleWeaponAttackAmplificationUnit implements ICustomModule<Module
         // Unused for now
         // private final ILangEntry langEntry;
         private final Component label;
+        @SuppressWarnings("unused")
         private final EnumColor color;
 
         private final Component sliceNamePreCalc;
