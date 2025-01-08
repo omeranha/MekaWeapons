@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "meranha.mekaweapons.mixin",
+  "refmap": "mekaweapons.refmap.json",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": ["ModuleHelperMixin"],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

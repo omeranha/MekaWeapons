@@ -1,6 +1,6 @@
 package meranha.mekaweapons.items;
 
-import static meranha.mekaweapons.MekaWeaponsUtils.*;
+import static meranha.mekaweapons.MekaWeaponsUtils.getBaseDamage;
 
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -11,16 +11,16 @@ import org.jetbrains.annotations.Nullable;
 
 import com.mojang.serialization.Codec;
 
-import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import lombok.Getter;
 import mekanism.api.IIncrementalEnum;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.annotations.ParametersAreNotNullByDefault;
 import mekanism.api.gear.ICustomModule;
 import mekanism.api.gear.IModule;
-import mekanism.api.gear.IModuleContainer;
+import mekanism.api.gear.config.IModuleConfigItem;
+import mekanism.api.gear.config.ModuleConfigItemCreator;
+import mekanism.api.gear.config.ModuleEnumData;
 import mekanism.api.radial.IRadialDataHelper;
 import mekanism.api.radial.RadialData;
 import mekanism.api.radial.mode.IRadialMode;
@@ -36,18 +36,15 @@ import meranha.mekaweapons.MekaWeapons;
 import meranha.mekaweapons.WeaponsLang;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.TranslatableEnum;
-import net.neoforged.neoforge.common.util.Lazy;
+import net.minecraftforge.common.util.Lazy;
 
 @ParametersAreNotNullByDefault
-public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) implements ICustomModule<ModuleWeaponAttackAmplificationUnit> {
+public class ModuleWeaponAttackAmplificationUnit implements ICustomModule<ModuleWeaponAttackAmplificationUnit> {
 
     public static final ResourceLocation ATTACK_DAMAGE = Mekanism.rl("bonus_attack_damage");
 
@@ -57,14 +54,20 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
         Int2ObjectMap<Lazy<NestedRadialMode>> map = new Int2ObjectArrayMap<>(types);
         for (int type = 1; type <= types; type++) {
             int accessibleValues = type + 2;
-            map.put(type, Lazy.of(() -> new NestedRadialMode(IRadialDataHelper.INSTANCE.dataForTruncated(RADIAL_ID, accessibleValues, AttackDamage.MED),
-                    WeaponsLang.RADIAL_ATTACK_DAMAGE, AttackDamage.MED.icon(), EnumColor.YELLOW)));
+            map.put(type,
+                    Lazy.of(() -> new NestedRadialMode(
+                            IRadialDataHelper.INSTANCE.dataForTruncated(RADIAL_ID, accessibleValues, AttackDamage.MED),
+                            WeaponsLang.RADIAL_ATTACK_DAMAGE, AttackDamage.MED.icon(), EnumColor.YELLOW)));
         }
         return map;
     });
 
-    public ModuleWeaponAttackAmplificationUnit(IModule<ModuleWeaponAttackAmplificationUnit> module) {
-        this(module.<AttackDamage>getConfigOrThrow(ATTACK_DAMAGE).get());
+    private IModuleConfigItem<AttackDamage> attackDamage;
+
+    @Override
+    public void init(IModule<ModuleWeaponAttackAmplificationUnit> module, ModuleConfigItemCreator configItemCreator) {
+        attackDamage = configItemCreator.createConfigItem("attack_damage", WeaponsLang.RADIAL_ATTACK_DAMAGE,
+                new ModuleEnumData<>(AttackDamage.MED, module.getInstalledCount() + 2));
     }
 
     @NotNull
@@ -83,15 +86,16 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
 
     @Nullable
     @SuppressWarnings("unchecked")
-    public <MODE extends IRadialMode> MODE getMode(IModule<ModuleWeaponAttackAmplificationUnit> module, ItemStack stack, RadialData<MODE> radialData) {
-        return radialData == getRadialData(module) ? (MODE) attackDamage : null;
+    public <MODE extends IRadialMode> MODE getMode(IModule<ModuleWeaponAttackAmplificationUnit> module, ItemStack stack,
+            RadialData<MODE> radialData) {
+        return radialData == getRadialData(module) ? (MODE) attackDamage.get() : null;
     }
 
-    public <MODE extends IRadialMode> boolean setMode(IModule<ModuleWeaponAttackAmplificationUnit> module, Player player, IModuleContainer moduleContainer, ItemStack stack, RadialData<MODE> radialData, MODE mode) {
+    public <MODE extends IRadialMode> boolean setMode(IModule<ModuleWeaponAttackAmplificationUnit> module, Player player, ItemStack stack, RadialData<MODE> radialData, MODE mode) {
         if (radialData == getRadialData(module)) {
             AttackDamage newMode = (AttackDamage) mode;
-            if (attackDamage != newMode) {
-                moduleContainer.replaceModuleConfig(player.level().registryAccess(), stack, module.getData(), module.<AttackDamage>getConfigOrThrow(ATTACK_DAMAGE).with(newMode));
+            if (attackDamage.get() != newMode) {
+                attackDamage.set(newMode);
                 return true;
             }
         }
@@ -100,31 +104,36 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
 
     @NotNull
     public Component getModeScrollComponent(IModule<ModuleWeaponAttackAmplificationUnit> module, ItemStack stack) {
-        return MekanismLang.GENERIC_WITH_PARENTHESIS.translateColored(EnumColor.INDIGO, attackDamage.sliceName(), EnumColor.AQUA, getCurrentMaxDamage(stack));
+        AttackDamage atkDmg = attackDamage.get();
+        return MekanismLang.GENERIC_WITH_PARENTHESIS.translateColored(EnumColor.INDIGO, atkDmg.sliceName(),
+                EnumColor.AQUA, getCurrentMaxDamage(stack));
     }
 
-    public void changeMode(IModule<ModuleWeaponAttackAmplificationUnit> module, Player player, IModuleContainer moduleContainer, ItemStack stack, int shift, boolean displayChangeMessage) {
-        AttackDamage newMode = attackDamage.adjust(shift, v -> v.ordinal() < module.getInstalledCount() + 2);
-        if (attackDamage != newMode) {
+    public void changeMode(IModule<ModuleWeaponAttackAmplificationUnit> module, Player player, ItemStack stack, int shift, boolean displayChangeMessage) {
+        AttackDamage atkDmg = attackDamage.get();
+        AttackDamage newMode = atkDmg.adjust(shift, v -> v.ordinal() < module.getInstalledCount() + 2);
+        if (atkDmg != newMode) {
             if (displayChangeMessage) {
                 module.displayModeChange(player, MekanismLang.MODULE_EFFICIENCY.translate(), newMode);
             }
-            moduleContainer.replaceModuleConfig(player.level().registryAccess(), stack, module.getData(), module.<AttackDamage>getConfigOrThrow(ATTACK_DAMAGE).with(newMode));
+            attackDamage.set(newMode);
         }
     }
 
-    public void addHUDStrings(IModule<ModuleWeaponAttackAmplificationUnit> module, IModuleContainer moduleContainer, ItemStack stack, Player player, Consumer<Component> hudStringAdder) {
+    public void addHUDStrings(IModule<ModuleWeaponAttackAmplificationUnit> module, ItemStack stack, Player player,
+            Consumer<Component> hudStringAdder) {
         if (module.isEnabled()) {
-            hudStringAdder.accept(MekanismLang.MODULE_DAMAGE.translateColored(EnumColor.DARK_GRAY, EnumColor.INDIGO, getCurrentMaxDamage(stack)));
+            hudStringAdder.accept(MekanismLang.MODULE_DAMAGE.translateColored(EnumColor.DARK_GRAY, EnumColor.INDIGO,
+                    getCurrentMaxDamage(stack)));
         }
     }
 
     public int getCurrentUnit() {
-        return attackDamage.ordinal();
+        return attackDamage.get().ordinal();
     }
 
     @NothingNullByDefault
-    public enum AttackDamage implements IIncrementalEnum<AttackDamage>, IHasTextComponent, TranslatableEnum, IRadialMode, StringRepresentable {
+    public enum AttackDamage implements IIncrementalEnum<AttackDamage>, IHasTextComponent, IRadialMode, StringRepresentable {
         OFF(WeaponsLang.RADIAL_ATTACK_DAMAGE_OFF, EnumColor.WHITE, "damage_off"),
         LOW(WeaponsLang.RADIAL_ATTACK_DAMAGE_LOW, EnumColor.PINK, "damage_low"),
         MED(WeaponsLang.RADIAL_ATTACK_DAMAGE_MEDIUM, EnumColor.BRIGHT_GREEN, "damage_medium"),
@@ -133,15 +142,16 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
         EXTREME(WeaponsLang.RADIAL_ATTACK_DAMAGE_EXTREME, EnumColor.RED, "damage_extreme");
 
         public static final Codec<AttackDamage> CODEC = StringRepresentable.fromEnum(AttackDamage::values);
-        public static final IntFunction<AttackDamage> BY_ID = ByIdMap.continuous(AttackDamage::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
-        public static final StreamCodec<ByteBuf, AttackDamage> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, AttackDamage::ordinal);
+        public static final IntFunction<AttackDamage> BY_ID = ByIdMap.continuous(AttackDamage::ordinal, values(),
+                ByIdMap.OutOfBoundsStrategy.WRAP);
 
-        private final @Getter String serializedName;
+        private final String serializedName;
         private final ResourceLocation icon;
         // Unused for now
         // private final ILangEntry langEntry;
         private final Component label;
-        private final @Getter EnumColor color;
+        @SuppressWarnings("unused")
+        private final EnumColor color;
 
         private final Component sliceNamePreCalc;
 
@@ -173,6 +183,11 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
 
         public ResourceLocation icon() {
             return icon;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return serializedName;
         }
     }
 

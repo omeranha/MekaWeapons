@@ -1,8 +1,9 @@
 package meranha.mekaweapons.items;
 
+import javax.annotation.Nonnull;
+
 import org.jetbrains.annotations.NotNull;
 
-import meranha.mekaweapons.MekaWeapons;
 import net.minecraft.client.renderer.entity.ArrowRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,7 @@ public class MekaArrowRenderer extends ArrowRenderer<MekaArrowEntity> {
     }
 
     @NotNull
-    public ResourceLocation getTextureLocation(@NotNull MekaArrowEntity entity) {
-        return ResourceLocation.fromNamespaceAndPath(MekaWeapons.MODID, "textures/entity/meka_arrow.png");
+    public ResourceLocation getTextureLocation(@NotNull @Nonnull MekaArrowEntity entity) {
+        return new ResourceLocation("mekaweapons:textures/entity/meka_arrow.png");
     }
 }

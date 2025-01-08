@@ -1,7 +1,7 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekaweapons:module_gravitydampener_unit"
+    "item":"mekaweapons:module_gravitydampener_unit"
   },
   "pattern":[ "uwu", "cmc", "pap" ],
   "key":{

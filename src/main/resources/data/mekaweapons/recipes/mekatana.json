@@ -1,13 +1,13 @@
 {
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekaweapons:meka_tana"
+    "item":"mekaweapons:mekatana"
   },
   "pattern":[ "ckc", "hsh", "pep" ],
   "key":{
-    "s":{ "tag":"c:ingots/steel" },
+    "s":{ "tag":"forge:ingots/steel" },
     "p":{ "item":"mekanism:pellet_polonium" },
-    "c":{ "tag":"c:circuits/ultimate" },
+    "c":{ "tag":"forge:circuits/ultimate" },
     "e":{ "item":"mekanism:basic_induction_cell" },
     "h":{ "item":"mekanism:hdpe_sheet" },
     "k":{ "item":"mekaweapons:katana_blade" }
