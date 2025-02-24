@@ -222,8 +222,10 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
     public ICapabilityProvider initCapabilities(ItemStack stack, CompoundTag nbt) {
         IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
         @NotNull
-        FloatingLongSupplier maxEnergy = () -> (module == null ? MekaWeapons.general.mekaBowBaseEnergyCapacity.get() : module.getCustomInstance().getEnergyCapacity(module));
-        return new ItemCapabilityWrapper(stack, RateLimitEnergyHandler.create(MekaWeapons.general.mekaBowBaseChargeRate, maxEnergy, BasicEnergyContainer.manualOnly, BasicEnergyContainer.alwaysTrue));
+        FloatingLongSupplier maxEnergy = () -> (getMaxEnergy(stack));
+        @NotNull
+        FloatingLongSupplier maxRate = () -> (getChargeRate(stack));
+        return new ItemCapabilityWrapper(stack, RateLimitEnergyHandler.create(maxRate, maxEnergy, BasicEnergyContainer.manualOnly, BasicEnergyContainer.alwaysTrue));
     }
 
     public boolean shouldCauseBlockBreakReset(@NotNull ItemStack oldStack, @NotNull ItemStack newStack) {

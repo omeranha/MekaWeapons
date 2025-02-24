@@ -32,6 +32,7 @@ import mekanism.common.MekanismLang;
 import mekanism.common.content.gear.IModuleContainerItem;
 import mekanism.common.content.gear.Module;
 import mekanism.common.content.gear.mekatool.ModuleTeleportationUnit;
+import mekanism.common.content.gear.shared.ModuleEnergyUnit;
 import mekanism.common.item.ItemEnergized;
 import mekanism.common.lib.attribute.AttributeCache;
 import mekanism.common.lib.radial.IGenericRadialModeItem;
@@ -273,4 +274,15 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
     public Component getScrollTextComponent(@NotNull ItemStack stack) {
         return getModules(stack).stream().filter(Module::handlesModeChange).findFirst().map(module -> module.getModeScrollComponent(stack)).orElse(null);
     }
+
+    protected FloatingLong getMaxEnergy(ItemStack stack) {
+        IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
+        return module == null ? MekaWeapons.general.mekaTanaBaseEnergyCapacity.get() : module.getCustomInstance().getEnergyCapacity(module);
+    }
+
+    protected FloatingLong getChargeRate(ItemStack stack) {
+        IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
+        return module == null ? MekaWeapons.general.mekaTanaBaseChargeRate.get() : module.getCustomInstance().getChargeRate(module);
+    }
+
 }
