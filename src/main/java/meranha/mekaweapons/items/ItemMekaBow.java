@@ -140,6 +140,7 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
 
             ItemStack potentialAmmo = player.getProjectile(bow);
             boolean hasAmmo = !potentialAmmo.isEmpty() || isModuleEnabled(bow, MekaWeapons.ARROWENERGY_UNIT);
+            boolean arrowGenerated = potentialAmmo.isEmpty();
 
             int charge = ForgeEventFactory.onArrowLoose(bow, world, player, getUseDuration(bow) - timeLeft, hasAmmo);
             if (charge < 0 || !hasAmmo) {
@@ -165,6 +166,9 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
                 arrowEntity.setBaseDamage(totalDamage);
                 if (isModuleEnabled(bow, MekaWeapons.ARROWENERGY_UNIT) && (potentialAmmo.getItem() == Items.SPECTRAL_ARROW || potentialAmmo.getItem() == Items.TIPPED_ARROW)) {
                     arrowEntity.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+                }
+                if (isModuleEnabled(bow, MekaWeapons.ARROWENERGY_UNIT) && arrowGenerated) {
+                    arrowEntity.pickup = AbstractArrow.Pickup.DISALLOWED;
                 }
 
                 world.addFreshEntity(arrowEntity);
