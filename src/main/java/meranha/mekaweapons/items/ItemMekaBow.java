@@ -195,7 +195,7 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
     @NotNull
     public AbstractArrow customArrow(AbstractArrow arrow) {
         ItemStack weapon = arrow.getOwner() instanceof Player player ? player.getMainHandItem() : ItemStack.EMPTY;
-        return new MekaArrowEntity(arrow.level(), arrow.getX(), arrow.getY(), arrow.getZ(), new ItemStack(Items.ARROW), weapon);
+        return new MekaArrowEntity(arrow, new ItemStack(Items.ARROW), weapon);
     }
 
     public boolean shouldCauseReequipAnimation(@NotNull ItemStack oldStack, @NotNull ItemStack newStack, boolean slotChanged) {
