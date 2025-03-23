@@ -5,6 +5,7 @@ import static meranha.mekaweapons.MekaWeaponsUtils.*;
 import java.util.List;
 import java.util.function.Consumer;
 
+import net.minecraft.core.Holder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -120,10 +121,6 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         return slotChanged || oldStack.getItem() != newStack.getItem();
     }
 
-    public void addItems(@NotNull Consumer<ItemStack> tabOutput) {
-        tabOutput.accept(StorageUtils.getFilledEnergyVariant(new ItemStack(this)));
-    }
-
     public boolean isBarVisible(@NotNull ItemStack stack) {
         return true;
     }
@@ -150,11 +147,11 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     }
 
     public boolean isEnchantable(@NotNull ItemStack stack) {
-        return false;
+        return MekaWeapons.general.mekaBowEnchantments.get();
     }
 
     public boolean isBookEnchantable(@NotNull ItemStack stack, @NotNull ItemStack book) {
-        return false;
+        return MekaWeapons.general.mekaBowEnchantments.get();
     }
 
     public ResourceLocation getRadialIdentifier() {

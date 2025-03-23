@@ -3,7 +3,9 @@ package meranha.mekaweapons.items;
 import static meranha.mekaweapons.MekaWeaponsUtils.*;
 
 import java.util.List;
+import java.util.function.Consumer;
 
+import net.minecraft.core.Holder;
 import org.jetbrains.annotations.NotNull;
 
 import mekanism.api.Action;
@@ -171,11 +173,11 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
     }
 
     public boolean isEnchantable(@NotNull ItemStack stack) {
-        return false;
+        return MekaWeapons.general.mekaTanaEnchantments.get();
     }
 
     public boolean isBookEnchantable(@NotNull ItemStack stack, @NotNull ItemStack book) {
-        return false;
+        return MekaWeapons.general.mekaTanaEnchantments.get();
     }
 
     public ResourceLocation getRadialIdentifier() {
