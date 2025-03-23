@@ -5,12 +5,13 @@ license="${mod_license}"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
+logoFile="logo.png"
 authors="${mod_authors}"
 description='''${mod_description}'''
 
-[[dependencies.${mod_id}]] 
-    modId="neoforge" 
-    type="required" 
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
     versionRange="${neo_version_range}"
     ordering="NONE"
     side="BOTH"
@@ -25,6 +26,6 @@ description='''${mod_description}'''
 [[dependencies.${mod_id}]]
     modId="mekanism"
     type="required"
-    versionRange="10.6.2.46"
+    versionRange="10.7.13.78"
     ordering="AFTER"
     side="BOTH"

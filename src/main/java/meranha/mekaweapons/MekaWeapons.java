@@ -3,6 +3,8 @@ package meranha.mekaweapons;
 import java.util.HashMap;
 import java.util.Map;
 
+import mekanism.api.functions.ConstantPredicates;
+import net.minecraft.core.Holder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -75,13 +77,13 @@ public class MekaWeapons {
     private static final Map<IConfigSpec, IMekanismConfig> KNOWN_CONFIGS = new HashMap<>();
 
     public static final ModuleDeferredRegister MODULES =  new ModuleDeferredRegister(MekaWeapons.MODID);
-    public static final ModuleRegistryObject<?> ARROWENERGY_UNIT = MODULES.registerMarker("arrowenergy_unit", () -> MekaWeapons.MODULE_ARROWENERGY.asItem());
-    public static final ModuleRegistryObject<?> AUTOFIRE_UNIT = MODULES.registerMarker("autofire_unit", () -> MekaWeapons.MODULE_AUTOFIRE.asItem());
-    public static final ModuleRegistryObject<?> DRAWSPEED_UNIT = MODULES.registerMarker("drawspeed_unit", () -> MekaWeapons.MODULE_DRAWSPEED.asItem(), builder -> builder.maxStackSize(3));
-    public static final ModuleRegistryObject<?> GRAVITYDAMPENER_UNIT = MODULES.registerMarker("gravitydampener_unit", () -> MekaWeapons.MODULE_GRAVITYDAMPENER.asItem());
+    public static final ModuleRegistryObject<?> ARROWENERGY_UNIT = MODULES.registerMarker("arrowenergy_unit", () -> MekaWeapons.MODULE_ARROWENERGY);
+    public static final ModuleRegistryObject<?> AUTOFIRE_UNIT = MODULES.registerMarker("autofire_unit", () -> MekaWeapons.MODULE_AUTOFIRE);
+    public static final ModuleRegistryObject<?> DRAWSPEED_UNIT = MODULES.registerMarker("drawspeed_unit", () -> MekaWeapons.MODULE_DRAWSPEED, builder -> builder.maxStackSize(3));
+    public static final ModuleRegistryObject<?> GRAVITYDAMPENER_UNIT = MODULES.registerMarker("gravitydampener_unit", () -> MekaWeapons.MODULE_GRAVITYDAMPENER);
     //public static final ModuleRegistryObject<?> ARROWVELOCITY_UNIT = MODULES.registerMarker("arrowvelocity_unit", () -> MekaWeapons.MODULE_ARROWVELOCITY.asItem(), builder -> builder.maxStackSize(8));
     public static final ModuleRegistryObject<ModuleWeaponAttackAmplificationUnit> ATTACKAMPLIFICATION_UNIT = MODULES.register("attackamplification_unit",
-            ModuleWeaponAttackAmplificationUnit::new, () -> MekaWeapons.MODULE_ATTACKAMPLIFICATION.asItem(), builder -> builder.maxStackSize(AttackDamage.values().length - 2).handlesModeChange().rendersHUD()
+            ModuleWeaponAttackAmplificationUnit::new, () -> MekaWeapons.MODULE_ATTACKAMPLIFICATION, builder -> builder.maxStackSize(AttackDamage.values().length - 2).handlesModeChange().rendersHUD()
                     .addInstalledCountConfig(
                             installed -> ModuleEnumConfig.createBounded(ModuleWeaponAttackAmplificationUnit.ATTACK_DAMAGE, AttackDamage.MED, installed + 2),
                             installed -> ModuleEnumConfig.codec(AttackDamage.CODEC, AttackDamage.class, installed + 2),
@@ -93,14 +95,14 @@ public class MekaWeapons {
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("meka_tana", ItemMekaTana::new)
     .addAttachedContainerCapabilities(ContainerType.ENERGY, () -> EnergyContainersBuilder.builder()
         .addContainer((type, attachedTo, containerIndex) -> new ComponentBackedNoClampEnergyContainer(attachedTo, containerIndex, BasicEnergyContainer.manualOnly,
-            BasicEnergyContainer.alwaysTrue, () -> ModuleEnergyUnit.getChargeRate(attachedTo, MekaWeapons.general.mekaTanaBaseChargeRate),
+            ConstantPredicates.alwaysTrue(), () -> ModuleEnergyUnit.getChargeRate(attachedTo, MekaWeapons.general.mekaTanaBaseChargeRate),
             () -> ModuleEnergyUnit.getEnergyCapacity(attachedTo, MekaWeapons.general.mekaTanaBaseEnergyCapacity)))
     .build(), MekaWeapons.general);
 
     public static final ItemRegistryObject<ItemMekaBow> MEKA_BOW = ITEMS.registerUnburnable("meka_bow", ItemMekaBow::new)
     .addAttachedContainerCapabilities(ContainerType.ENERGY, () -> EnergyContainersBuilder.builder()
           .addContainer((type, attachedTo, containerIndex) -> new ComponentBackedNoClampEnergyContainer(attachedTo, containerIndex, BasicEnergyContainer.manualOnly,
-                BasicEnergyContainer.alwaysTrue, () -> ModuleEnergyUnit.getChargeRate(attachedTo, MekaWeapons.general.mekaBowBaseChargeRate),
+                  ConstantPredicates.alwaysTrue(), () -> ModuleEnergyUnit.getChargeRate(attachedTo, MekaWeapons.general.mekaBowBaseChargeRate),
                 () -> ModuleEnergyUnit.getEnergyCapacity(attachedTo, MekaWeapons.general.mekaBowBaseEnergyCapacity)))
     .build(), MekaWeapons.general);
 
@@ -156,8 +158,8 @@ public class MekaWeapons {
     private void sendCustomModules(InterModEnqueueEvent event) {
         final String ADD_MEKA_TANA_MODULES = "add_meka_tana_modules";
         final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
-        MekanismIMC.addModuleContainer(MekaWeapons.MEKA_TANA, ADD_MEKA_TANA_MODULES);
-        MekanismIMC.addModuleContainer(MekaWeapons.MEKA_BOW, ADD_MEKA_BOW_MODULES);
+        MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_TANA, ADD_MEKA_TANA_MODULES);
+        MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_BOW, ADD_MEKA_BOW_MODULES);
         MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, AUTOFIRE_UNIT, ARROWENERGY_UNIT, DRAWSPEED_UNIT, GRAVITYDAMPENER_UNIT);
     }

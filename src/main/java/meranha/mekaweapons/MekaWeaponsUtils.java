@@ -1,5 +1,8 @@
 package meranha.mekaweapons;
 
+import mekanism.api.gear.ModuleData;
+import net.minecraft.core.Holder;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,7 +13,6 @@ import mekanism.api.gear.ICustomModule;
 import mekanism.api.gear.IModule;
 import mekanism.api.gear.IModuleHelper;
 import mekanism.api.math.MathUtils;
-import mekanism.api.providers.IModuleDataProvider;
 import mekanism.common.config.MekanismConfig;
 import mekanism.common.config.value.CachedIntValue;
 import mekanism.common.config.value.CachedLongValue;
@@ -112,11 +114,11 @@ public class MekaWeaponsUtils {
     }
 
     @Nullable
-    public static <MODULE extends ICustomModule<MODULE>> IModule<MODULE> getEnabledModule(ItemStack stack, IModuleDataProvider<MODULE> typeProvider) {
-        return IModuleHelper.INSTANCE.getIfEnabled(stack, typeProvider);
+    public static <MODULE extends ICustomModule<MODULE>> IModule<MODULE> getEnabledModule(ItemStack stack, DeferredHolder<ModuleData<?>, ModuleData<MODULE>> type) {
+        return IModuleHelper.INSTANCE.getIfEnabled(stack, type);
     }
 
-    public static boolean isModuleEnabled(ItemStack stack, IModuleDataProvider<?> type) {
+    public static boolean isModuleEnabled(ItemStack stack, Holder<ModuleData<?>> type) {
         return IModuleHelper.INSTANCE.isEnabled(stack, type);
     }
 }

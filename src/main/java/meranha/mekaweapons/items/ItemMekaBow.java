@@ -121,7 +121,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     }
 
     public void addItems(@NotNull Consumer<ItemStack> tabOutput) {
-        tabOutput.accept(StorageUtils.getFilledEnergyVariant(this));
+        tabOutput.accept(StorageUtils.getFilledEnergyVariant(new ItemStack(this)));
     }
 
     public boolean isBarVisible(@NotNull ItemStack stack) {

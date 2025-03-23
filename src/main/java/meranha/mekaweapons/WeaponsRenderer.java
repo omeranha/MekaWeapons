@@ -22,8 +22,8 @@ public class WeaponsRenderer implements ICurioRenderer {
         return player.getInventory().items.stream().anyMatch(item -> !item.isEmpty() && ItemStack.isSameItem(stack, item));
     }
 
-    final ItemStack katana = MekaWeapons.MEKA_TANA.getItemStack();
-    final ItemStack bow = MekaWeapons.MEKA_BOW.getItemStack();
+    final ItemStack katana = MekaWeapons.MEKA_TANA.asStack();
+    final ItemStack bow = MekaWeapons.MEKA_BOW.asStack();
 
     public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack stack, @NotNull SlotContext slotContext, PoseStack ms, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource buffer, int light, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
         if (!(slotContext.entity() instanceof Player player)) {

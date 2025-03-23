@@ -14,7 +14,6 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import lombok.Getter;
 import mekanism.api.IIncrementalEnum;
 import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.annotations.ParametersAreNotNullByDefault;
@@ -136,12 +135,12 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
         public static final IntFunction<AttackDamage> BY_ID = ByIdMap.continuous(AttackDamage::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
         public static final StreamCodec<ByteBuf, AttackDamage> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, AttackDamage::ordinal);
 
-        private final @Getter String serializedName;
+        private final String serializedName;
         private final ResourceLocation icon;
         // Unused for now
         // private final ILangEntry langEntry;
         private final Component label;
-        private final @Getter EnumColor color;
+        private final EnumColor color;
 
         private final Component sliceNamePreCalc;
 
@@ -173,6 +172,11 @@ public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) imp
 
         public ResourceLocation icon() {
             return icon;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return serializedName;
         }
     }
 
