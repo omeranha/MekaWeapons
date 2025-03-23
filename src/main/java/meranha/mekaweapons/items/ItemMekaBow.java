@@ -113,7 +113,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     @NotNull
     public AbstractArrow customArrow(@NotNull AbstractArrow arrow, @NotNull ItemStack projectileStack, @NotNull ItemStack weaponStack) {
         long totalDamage = getTotalDamage(weaponStack);
-        return new MekaArrowEntity(arrow.level(), arrow.getX(), arrow.getY(), arrow.getZ(), projectileStack, weaponStack, MathUtils.clampToInt(totalDamage));
+        return new MekaArrowEntity(arrow.level(), arrow, projectileStack, weaponStack, MathUtils.clampToInt(totalDamage));
     }
 
     public boolean shouldCauseReequipAnimation(@NotNull ItemStack oldStack, @NotNull ItemStack newStack, boolean slotChanged) {

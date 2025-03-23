@@ -16,11 +16,12 @@ public class MekaArrowEntity extends AbstractArrow {
         super(entityType, level);
     }
 
-    public MekaArrowEntity(Level level, double x, double y, double z, ItemStack projectileStack, ItemStack weaponStack, int damage) {
-        super(MekaWeapons.MEKA_ARROW.get(), x, y, z, level, projectileStack, null);
+    public MekaArrowEntity(Level level, AbstractArrow arrow, ItemStack projectileStack, ItemStack weaponStack, int damage) {
+        super(MekaWeapons.MEKA_ARROW.get(), arrow.getX(), arrow.getY(), arrow.getZ(), level, projectileStack, null);
         this.setPickup(!isModuleEnabled(weaponStack, MekaWeapons.ARROWENERGY_UNIT));
         this.setNoGravity(isModuleEnabled(weaponStack, MekaWeapons.GRAVITYDAMPENER_UNIT));
         this.setBaseDamage(damage);
+        this.setOwner(arrow.getOwner());
     }
 
     public MekaArrowEntity(EntityType<MekaArrowEntity> entityType, Level level) {
