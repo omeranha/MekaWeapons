@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:module_attackamplification_unit"
+    }
+  ],
   "type":"minecraft:crafting_shaped",
   "result":{
     "id":"mekaweapons:module_attackamplification_unit"
