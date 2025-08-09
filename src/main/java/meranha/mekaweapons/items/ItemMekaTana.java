@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nonnull;
 
+import mekanism.common.content.gear.shared.ModuleEnergyUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -132,7 +133,7 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
         }
 
         IModule<ModuleTeleportationUnit> module = getEnabledModule(stack, MekanismModules.TELEPORTATION_UNIT);
-        if (module == null) {
+        if (module == null || !module.isEnabled()) {
             return InteractionResultHolder.pass(stack);
         }
 
@@ -153,7 +154,7 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
 
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
         FloatingLong energyNeeded = MekaWeapons.general.mekaTanaTeleportUsage.get().multiply(distance / 10D);
-        if (energyContainer == null || energyContainer.getEnergy().compareTo(energyNeeded) < 0) {
+        if (!player.isCreative() && (energyContainer == null || energyContainer.getEnergy().compareTo(energyNeeded) < 0)) {
             return InteractionResultHolder.fail(stack);
         }
 
@@ -266,6 +267,18 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
                 return;
             }
         }
+    }
+
+    @Override
+    protected FloatingLong getMaxEnergy(ItemStack stack) {
+        IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
+        return module == null ? MekaWeapons.general.mekaBowBaseEnergyCapacity.get() : module.getCustomInstance().getEnergyCapacity(module);
+    }
+
+    @Override
+    protected FloatingLong getChargeRate(ItemStack stack) {
+        IModule<ModuleEnergyUnit> module = getModule(stack, MekanismModules.ENERGY_UNIT);
+        return module == null ? MekaWeapons.general.mekaBowBaseChargeRate.get() : module.getCustomInstance().getChargeRate(module);
     }
 
     @Nullable

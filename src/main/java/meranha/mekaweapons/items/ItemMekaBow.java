@@ -131,6 +131,7 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
         }
     }
 
+    @Override
     public void releaseUsing(@NotNull @Nonnull ItemStack bow, @NotNull @Nonnull Level world, @NotNull @Nonnull LivingEntity entity, int timeLeft) {
         if (entity instanceof Player player) {
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
@@ -188,7 +189,7 @@ public class ItemMekaBow extends BowItem implements IModuleContainerItem, IGener
                 energyContainer.extract(FloatingLong.create(energyNeeded), Action.EXECUTE, AutomationType.MANUAL);
             }
         }
-        super.releaseUsing(bow, world, entity, timeLeft);
+        //super.releaseUsing(bow, world, entity, timeLeft);
     }
 
     private boolean hasEnoughEnergy(IEnergyContainer energyContainer) {
