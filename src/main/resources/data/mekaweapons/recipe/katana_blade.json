@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:katana_blade"
+    }
+  ],
   "type":"minecraft:crafting_shaped",
   "result":{
     "id":"mekaweapons:katana_blade"

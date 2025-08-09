@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:module_attack_amplification_unit"
+    }
+  ],
   "type":"minecraft:crafting_shaped",
   "result":{
     "id":"mekanism:module_attack_amplification_unit"

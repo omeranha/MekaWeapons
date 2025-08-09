@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:bow_limb"
+    }
+  ],
   "type":"minecraft:crafting_shaped",
   "result":{
     "id":"mekaweapons:bow_riser"

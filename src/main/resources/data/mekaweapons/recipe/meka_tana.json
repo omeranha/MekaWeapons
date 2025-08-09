@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:meka_tana"
+    }
+  ],
   "type":"minecraft:crafting_shaped",
   "result":{
     "id":"mekaweapons:meka_tana"

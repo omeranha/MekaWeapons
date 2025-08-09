@@ -1,4 +1,10 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:magnetizer"
+    }
+  ],
   "type":"minecraft:crafting_shaped",
   "result":{
     "id":"mekaweapons:magnetizer"
