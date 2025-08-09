@@ -27,6 +27,14 @@ public class MekaArrowEntity extends AbstractArrow {
         this(entityType, level, new ItemStack(Items.ARROW));
     }
 
+    public MekaArrowEntity(AbstractArrow arrow, ItemStack projectileStack, ItemStack weaponStack) {
+        super(MekaWeapons.MEKA_ARROW.get(), arrow.getX(), arrow.getY(), arrow.getZ(), arrow.level());
+        this.setPickup(!isModuleEnabled(weaponStack, MekaWeapons.ARROWENERGY_UNIT));
+        this.setNoGravity(isModuleEnabled(weaponStack, MekaWeapons.GRAVITYDAMPENER_UNIT));
+        this.setBaseDamage(getTotalDamage(weaponStack));
+        this.setOwner(arrow.getOwner());
+    }
+
     public void tick() {
         super.tick();
         // 10 seconds (200 ticks) should be enough to hit something
