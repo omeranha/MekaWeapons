@@ -17,6 +17,7 @@ repositories {
     maven { url = "https://maven.theillusivec4.top/" }
     maven { url = "https://modmaven.dev/" }
     maven { url = "https://maven.terraformersmc.com/" }
+    maven { url = "https://cursemaven.com" }
 }
 
 base {

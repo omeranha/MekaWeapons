@@ -23,7 +23,10 @@ public class WeaponsConfig extends BaseMekanismConfig {
 
     public final CachedIntValue mekaBowBaseDamage;
     public final CachedLongValue mekaBowEnergyUsage;
-    public final CachedLongValue mekaBowFireModeEnergyUsage;
+    public final CachedLongValue mekaBowEnergyArrowUsage;
+    public final CachedLongValue mekabowAutoFireEnergyUsage;
+    public final CachedLongValue mekabowDrawSpeedUsage;
+    public final CachedLongValue mekabowGravityDampenerUsage;
     public final CachedLongValue mekaBowBaseEnergyCapacity;
     public final CachedLongValue mekaBowBaseChargeRate;
 
@@ -48,7 +51,10 @@ public class WeaponsConfig extends BaseMekanismConfig {
         WeaponsConfigTranslations.MEKA_BOW.applyToBuilder(builder).push("meka_bow");
         mekaBowBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_BOW_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 50));
         mekaBowEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_ENERGY_USAGE, "energy_usage", 625_000);
-        mekaBowFireModeEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_FIRE_MODE_ENERGY_USAGE, "fire_mode_energy_usage", 825_000);
+        mekaBowEnergyArrowUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_ENERGYARROW_USAGE, "energy_arrow_usage", 625_000);
+        mekabowAutoFireEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_ENERGYARROW_USAGE, "autofire_energy_usage", 125_000);
+        mekabowDrawSpeedUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_ENERGYARROW_USAGE, "draw_speed_usage", 125_000);
+        mekabowGravityDampenerUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_ENERGYARROW_USAGE, "gravity_dampener_usage", 125_000);
         mekaBowBaseEnergyCapacity = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_BASE_ENERGY_CAPACITY, "base_energy_capacity", 16_000_000);
         mekaBowBaseChargeRate = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_BASE_CHARGE_RATE, "base_charge_rate", 350_000);
         mekaBowEnchantments = CachedBooleanValue.wrap(this, WeaponsConfigTranslations.MEKA_BOW_ENCHANTMENTS.applyToBuilder(builder).define("enchantments", false));

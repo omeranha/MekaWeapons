@@ -22,6 +22,7 @@
 	"module.mekaweapons.gravitydampener_unit": "Gravity Dampener Unit",
 	"module.mekaweapons.arrowvelocity_unit": "Arrow Velocity Unit",
 	"module.mekaweapons.attackamplification_unit": "Attack Amplification Unit",
+	"module.mekaweapons.attack_damage_multiplier": "Damage multiplier",
 	"description.mekaweapons.arrowenergy_unit": "Fire arrows made of pure energy. Removes the need for ammunition.",
 	"description.mekaweapons.autofire_unit": "Fires automatically when the Meka-Bow is fully charged.",
 	"description.mekaweapons.drawspeed_unit": "Increases the draw speed of the Meka-Bow.",

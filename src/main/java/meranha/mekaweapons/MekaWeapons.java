@@ -83,7 +83,7 @@ public class MekaWeapons {
     public static final ModuleRegistryObject<?> GRAVITYDAMPENER_UNIT = MODULES.registerMarker("gravitydampener_unit", () -> MekaWeapons.MODULE_GRAVITYDAMPENER);
     //public static final ModuleRegistryObject<?> ARROWVELOCITY_UNIT = MODULES.registerMarker("arrowvelocity_unit", () -> MekaWeapons.MODULE_ARROWVELOCITY.asItem(), builder -> builder.maxStackSize(8));
     public static final ModuleRegistryObject<ModuleWeaponAttackAmplificationUnit> ATTACKAMPLIFICATION_UNIT = MODULES.register("attackamplification_unit",
-            ModuleWeaponAttackAmplificationUnit::new, () -> MekaWeapons.MODULE_ATTACKAMPLIFICATION, builder -> builder.maxStackSize(AttackDamage.values().length - 2).handlesModeChange().rendersHUD()
+            ModuleWeaponAttackAmplificationUnit::new, () -> MekaWeapons.MODULE_ATTACKAMPLIFICATION, builder -> builder.maxStackSize(4).handlesModeChange().rendersHUD()
                     .addInstalledCountConfig(
                             installed -> ModuleEnumConfig.createBounded(ModuleWeaponAttackAmplificationUnit.ATTACK_DAMAGE, AttackDamage.MED, installed + 2),
                             installed -> ModuleEnumConfig.codec(AttackDamage.CODEC, AttackDamage.class, installed + 2),

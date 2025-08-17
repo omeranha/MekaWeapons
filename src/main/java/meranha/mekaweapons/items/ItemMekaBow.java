@@ -1,14 +1,24 @@
 package meranha.mekaweapons.items;
 
 import static meranha.mekaweapons.MekaWeaponsUtils.*;
-
 import java.util.List;
-import java.util.function.Consumer;
 
-import net.minecraft.core.Holder;
+import mekanism.api.IDisableableEnum;
+import mekanism.api.annotations.NothingNullByDefault;
+import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.radial.IRadialDataHelper;
+import mekanism.api.radial.RadialData;
+import mekanism.api.radial.mode.IRadialMode;
+import mekanism.api.text.IHasTextComponent;
+import mekanism.api.text.ILangEntry;
+import mekanism.common.Mekanism;
+import mekanism.common.content.gear.mekatool.ModuleExcavationEscalationUnit;
+import mekanism.common.content.gear.mekatool.ModuleExcavationEscalationUnit.ExcavationMode;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.InteractionResultHolder;
+import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.energy.IEnergyContainer;
@@ -47,7 +57,6 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 
 public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
-
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_bow");
 
     public ItemMekaBow(@NotNull Properties properties) {
@@ -77,7 +86,6 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
         long totalDamage = getTotalDamage(event.getItemStack());
         event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
-        // event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, (5 * installedModules) -9, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND); todo?
         IRadialModuleContainerItem.super.adjustAttributes(event);
     }
 
@@ -89,26 +97,34 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         }
     }
 
-    public void releaseUsing(@NotNull ItemStack bow, @NotNull Level world, @NotNull LivingEntity entity, int timeLeft) {
-        if (entity instanceof Player player && getTotalDamage(bow) >= 0) {
-            IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
-            long energyNeeded = MekaWeapons.general.mekaBowEnergyUsage.get();
-            if (hasNotEnoughEnergy(energyContainer, energyNeeded) && !player.isCreative()) {
-                return;
-            }
-            super.releaseUsing(bow, world, entity, timeLeft);
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level world, @NotNull Player player, @NotNull InteractionHand hand) {
+        ItemStack bow = player.getItemInHand(hand);
+        if (world.isClientSide && isEnergyInsufficient(bow)) {
+            return InteractionResultHolder.fail(bow);
         }
+        return super.use(world, player, hand);
+    }
+
+    public void releaseUsing(@NotNull ItemStack bow, @NotNull Level world, @NotNull LivingEntity entity, int timeLeft) {
+        if (!(entity instanceof Player player) || (!player.isCreative() && isEnergyInsufficient(bow))) {
+            return;
+        }
+        super.releaseUsing(bow, world, entity, timeLeft);
     }
 
     protected void shoot(@NotNull ServerLevel world, @NotNull LivingEntity entity, @NotNull InteractionHand hand, @NotNull ItemStack bow, @NotNull List<ItemStack> potentialAmmo, float velocity, float inaccuracy, boolean critical, @Nullable LivingEntity target) {
-        super.shoot(world, entity, hand, bow, potentialAmmo, velocity, inaccuracy, critical, target);
-        if(entity instanceof Player player && !player.isCreative()) {
+        if (!(entity instanceof Player player)) {
+            return;
+        }
+
+        if (!player.isCreative()) {
             long energyNeeded = getEnergyNeeded(bow);
             IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
-            if(energyContainer != null) {
+            if (energyContainer != null) {
                 energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
             }
         }
+        super.shoot(world, entity, hand, bow, potentialAmmo, velocity, inaccuracy, critical, target);
     }
 
     @NotNull

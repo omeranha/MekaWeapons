@@ -8,7 +8,6 @@ import mekanism.common.config.TranslationPreset;
 import net.minecraft.Util;
 
 public enum WeaponsConfigTranslations implements IConfigTranslation {
-
     MEKA_TANA("meka_tana", "Meka-Tana", "Meka-Tana Settings", true),
     MEKA_TANA_BASE_DAMAGE("meka_tana.base_damage", "Base Damage", "Base damage of the Meka-Tana, multiply it with Attack Amplification Units."),
     MEKA_TANA_ATTACK_SPEED("meka_tana.attack_speed", "Attack Speed", "Attack speed of the Meka-Tana."),
@@ -22,7 +21,10 @@ public enum WeaponsConfigTranslations implements IConfigTranslation {
     MEKA_BOW("meka_bow", "Meka-Bow", "Meka-Bow Settings", true),
     MEKA_BOW_BASE_DAMAGE("meka_bow.base_damage", "Base Damage", "Attention: The final damage of Meka-Bow is based on how fast the arrow is going when it hits, multiply it with Attack Amplification Units."),
     MEKA_BOW_ENERGY_USAGE("meka_bow.energy_usage", "Energy Usage", "Cost in Joules of using the Meka-Bow."),
-    MEKA_BOW_FIRE_MODE_ENERGY_USAGE("meka_bow.fire_mode_energy_usage", "Fire Mode Energy Usage", "Cost in Joules of using the Meka-Bow with flame mode active."),
+    MEKA_BOW_ENERGYARROW_USAGE("meka_bow.energy_arrow_usage", "Energy Arrows Unit Usage", "Cost in Joules of using the Meka-Bow with Energy Arrow Unit active, per shot."),
+    MEKA_BOW_AUTOFIRE_ENERGY_USAGE("meka_bow.autofire_energy_usage", "Auto-Fire Energy Usage", "Cost in Joules of using the Meka-Bow with Auto-Fire active, per shot."),
+    MEKA_BOW_DRAW_SPEED_USAGE("meka_bow.draw_speed_usage", "Draw Speed Usage", "Cost in Joules of using the Meka-Bow with Draw Speed Unit active, multiplied by unit amount, per shot."),
+    MEKA_BOW_GRAVITY_DAMPENER_USAGE("meka_bow.gravity_dampener_usage", "Gravity Dampener Usage", "Cost in Joules of using the Meka-Bow with Gravity Dampener Unit active, per shot."),
     MEKA_BOW_BASE_ENERGY_CAPACITY("meka_bow.base_energy_capacity", "Base Energy Capacity", "Base energy capacity of Meka-Bow."),
     MEKA_BOW_BASE_CHARGE_RATE("meka_bow.base_charge_rate", "Base Charge Rate", "Base charge rate of Meka-Bow."),
     MEKA_BOW_ENCHANTMENTS("meka_bow.enchantments", "Enchantments", "Whether the Meka-Bow can be enchanted. False by default. Use at your own risk.");
