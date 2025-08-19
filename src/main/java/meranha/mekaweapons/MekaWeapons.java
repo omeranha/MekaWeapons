@@ -12,7 +12,12 @@ import mekanism.common.capabilities.Capabilities;
 import mekanism.common.content.entangloporter.InventoryFrequency;
 import mekanism.common.integration.energy.EnergyCompatUtils;
 import mekanism.common.registration.impl.*;
+import meranha.mekaweapons.client.GuiMagnetizer;
+import meranha.mekaweapons.client.MagnetizerContainer;
+import meranha.mekaweapons.client.MekaArrowRenderer;
+import meranha.mekaweapons.client.WeaponsRenderer;
 import meranha.mekaweapons.items.*;
+import meranha.mekaweapons.items.modules.*;
 import net.minecraft.core.Holder;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
@@ -38,7 +43,7 @@ import mekanism.common.item.ItemModule;
 import mekanism.common.registries.MekanismCreativeTabs;
 import mekanism.common.registries.MekanismModules;
 import mekanism.common.util.MekanismUtils.ResourceType;
-import meranha.mekaweapons.items.ModuleWeaponAttackAmplificationUnit.AttackDamage;
+import meranha.mekaweapons.items.modules.WeaponAttackAmplificationUnit.AttackDamage;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -86,17 +91,17 @@ public class MekaWeapons {
     public static final ModuleRegistryObject<?> DRAWSPEED_UNIT = MODULES.registerMarker("drawspeed_unit", () -> MekaWeapons.MODULE_DRAWSPEED, builder -> builder.maxStackSize(3));
     public static final ModuleRegistryObject<?> GRAVITYDAMPENER_UNIT = MODULES.registerMarker("gravitydampener_unit", () -> MekaWeapons.MODULE_GRAVITYDAMPENER);
     //public static final ModuleRegistryObject<?> ARROWVELOCITY_UNIT = MODULES.registerMarker("arrowvelocity_unit", () -> MekaWeapons.MODULE_ARROWVELOCITY.asItem(), builder -> builder.maxStackSize(8));
-    public static final ModuleRegistryObject<ModuleWeaponAttackAmplificationUnit> ATTACKAMPLIFICATION_UNIT = MODULES.register("attackamplification_unit",
-            ModuleWeaponAttackAmplificationUnit::new, () -> MekaWeapons.MODULE_ATTACKAMPLIFICATION, builder -> builder.maxStackSize(4).handlesModeChange().rendersHUD()
+    public static final ModuleRegistryObject<WeaponAttackAmplificationUnit> ATTACKAMPLIFICATION_UNIT = MODULES.register("attackamplification_unit",
+            WeaponAttackAmplificationUnit::new, () -> MekaWeapons.MODULE_ATTACKAMPLIFICATION, builder -> builder.maxStackSize(4).handlesModeChange().rendersHUD()
                     .addInstalledCountConfig(
-                            installed -> ModuleEnumConfig.createBounded(ModuleWeaponAttackAmplificationUnit.ATTACK_DAMAGE, AttackDamage.MED, installed + 2),
+                            installed -> ModuleEnumConfig.createBounded(WeaponAttackAmplificationUnit.ATTACK_DAMAGE, AttackDamage.MED, installed + 2),
                             installed -> ModuleEnumConfig.codec(AttackDamage.CODEC, AttackDamage.class, installed + 2),
                             installed -> ModuleEnumConfig.streamCodec(AttackDamage.STREAM_CODEC, AttackDamage.class, installed + 2)
                     )
     );
     public static final ModuleRegistryObject<?> SWEEPING_UNIT = MODULES.registerMarker("sweeping_unit", () -> MekaWeapons.MODULE_SWEEPING);
-    public static final ModuleRegistryObject<ModuleLootingUnit> LOOTING_UNIT = MODULES.registerInstanced("looting_unit",
-            ModuleLootingUnit::new, () -> MekaWeapons.MODULE_LOOTING, builder -> builder.maxStackSize(5));
+    public static final ModuleRegistryObject<LootingUnit> LOOTING_UNIT = MODULES.registerInstanced("looting_unit",
+            LootingUnit::new, () -> MekaWeapons.MODULE_LOOTING, builder -> builder.maxStackSize(5));
 
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("meka_tana", ItemMekaTana::new)

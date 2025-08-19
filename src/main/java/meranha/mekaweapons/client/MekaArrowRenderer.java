@@ -1,5 +1,6 @@
-package meranha.mekaweapons.items;
+package meranha.mekaweapons.client;
 
+import meranha.mekaweapons.items.MekaArrowEntity;
 import org.jetbrains.annotations.NotNull;
 
 import meranha.mekaweapons.MekaWeapons;

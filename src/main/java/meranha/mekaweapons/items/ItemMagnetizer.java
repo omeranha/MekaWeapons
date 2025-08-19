@@ -15,7 +15,7 @@ import net.minecraft.world.InteractionResultHolder;
 import org.jetbrains.annotations.NotNull;
 
 import mekanism.api.text.EnumColor;
-import meranha.mekaweapons.WeaponsLang;
+import meranha.mekaweapons.client.WeaponsLang;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

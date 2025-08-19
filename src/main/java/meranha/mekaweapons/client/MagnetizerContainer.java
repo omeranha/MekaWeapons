@@ -1,4 +1,4 @@
-package meranha.mekaweapons.items;
+package meranha.mekaweapons.client;
 
 import mekanism.common.content.entangloporter.InventoryFrequency;
 import mekanism.common.inventory.container.IEmptyContainer;

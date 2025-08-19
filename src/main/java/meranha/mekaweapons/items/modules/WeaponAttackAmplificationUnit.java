@@ -1,4 +1,4 @@
-package meranha.mekaweapons.items;
+package meranha.mekaweapons.items.modules;
 
 import static meranha.mekaweapons.MekaWeaponsUtils.*;
 
@@ -18,8 +18,7 @@ import mekanism.api.text.ILangEntry;
 import mekanism.api.text.TextComponentUtil;
 import mekanism.common.Mekanism;
 import mekanism.common.MekanismLang;
-import meranha.mekaweapons.MekaWeapons;
-import meranha.mekaweapons.WeaponsLang;
+import meranha.mekaweapons.client.WeaponsLang;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -30,14 +29,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 @ParametersAreNotNullByDefault
-public record ModuleWeaponAttackAmplificationUnit(AttackDamage attackDamage) implements ICustomModule<ModuleWeaponAttackAmplificationUnit> {
+public record WeaponAttackAmplificationUnit(AttackDamage attackDamage) implements ICustomModule<WeaponAttackAmplificationUnit> {
     public static final ResourceLocation ATTACK_DAMAGE = Mekanism.rl("bonus_attack_damage");
 
-    public ModuleWeaponAttackAmplificationUnit(IModule<ModuleWeaponAttackAmplificationUnit> module) {
+    public WeaponAttackAmplificationUnit(IModule<WeaponAttackAmplificationUnit> module) {
         this(module.<AttackDamage>getConfigOrThrow(ATTACK_DAMAGE).get());
     }
 
-    public void addHUDStrings(IModule<ModuleWeaponAttackAmplificationUnit> module, IModuleContainer moduleContainer, ItemStack stack, Player player, Consumer<Component> hudStringAdder) {
+    public void addHUDStrings(IModule<WeaponAttackAmplificationUnit> module, IModuleContainer moduleContainer, ItemStack stack, Player player, Consumer<Component> hudStringAdder) {
         if (module.isEnabled()) {
             hudStringAdder.accept(MekanismLang.MODULE_DAMAGE.translateColored(EnumColor.DARK_GRAY, EnumColor.INDIGO, getCurrentMaxDamage(stack)));
         }

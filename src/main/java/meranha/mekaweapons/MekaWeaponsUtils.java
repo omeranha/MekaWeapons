@@ -15,7 +15,7 @@ import mekanism.common.config.value.CachedLongValue;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaTana;
-import meranha.mekaweapons.items.ModuleWeaponAttackAmplificationUnit;
+import meranha.mekaweapons.items.modules.WeaponAttackAmplificationUnit;
 import net.minecraft.world.item.ItemStack;
 
 public class MekaWeaponsUtils {
@@ -66,7 +66,7 @@ public class MekaWeaponsUtils {
             }
         }
 
-        IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+        IModule<WeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
         if (attackAmplificationUnit != null) {
             energy *= attackAmplificationUnit.getCustomInstance().getCurrentUnit();
         }
@@ -97,7 +97,7 @@ public class MekaWeaponsUtils {
         }
 
         long damage = getBaseDamage(weapon);
-        IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weapon, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+        IModule<WeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weapon, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
         if (attackAmplificationUnit != null) {
             damage *= attackAmplificationUnit.getCustomInstance().getCurrentUnit();
         }

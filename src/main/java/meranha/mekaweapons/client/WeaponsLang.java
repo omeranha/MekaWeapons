@@ -1,5 +1,6 @@
-package meranha.mekaweapons;
+package meranha.mekaweapons.client;
 
+import meranha.mekaweapons.MekaWeapons;
 import org.jetbrains.annotations.NotNull;
 
 import mekanism.api.text.ILangEntry;

@@ -1,5 +1,6 @@
-package meranha.mekaweapons;
+package meranha.mekaweapons.client;
 
+import meranha.mekaweapons.MekaWeapons;
 import org.jetbrains.annotations.NotNull;
 
 import com.mojang.blaze3d.vertex.PoseStack;

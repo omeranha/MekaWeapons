@@ -1,4 +1,4 @@
-package meranha.mekaweapons.items;
+package meranha.mekaweapons.client;
 
 import mekanism.client.gui.GuiMekanism;
 import mekanism.client.gui.element.custom.GuiFrequencySelector;

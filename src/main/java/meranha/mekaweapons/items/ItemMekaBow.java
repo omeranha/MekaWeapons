@@ -21,7 +21,7 @@ import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.util.StorageUtils;
 import mekanism.common.util.text.BooleanStateDisplay;
 import meranha.mekaweapons.MekaWeapons;
-import meranha.mekaweapons.WeaponsLang;
+import meranha.mekaweapons.client.WeaponsLang;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -50,10 +50,12 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         super(IModuleHelper.INSTANCE.applyModuleContainerProperties(properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1)));
     }
 
+    @Override
     public void onDestroyed(@NotNull ItemEntity item, @NotNull DamageSource damageSource) {
         ModuleHelper.INSTANCE.dropModuleContainerContents(item, damageSource);
     }
 
+    @Override
     public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         if (MekKeyHandler.isKeyPressed(MekanismKeyHandler.detailsKey)) {
             addModuleDetails(stack, tooltip);
@@ -70,12 +72,14 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
     }
 
+    @Override
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
         long totalDamage = getTotalDamage(event.getItemStack());
         event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         IRadialModuleContainerItem.super.adjustAttributes(event);
     }
 
+    @Override
     public void onUseTick(@NotNull Level world, @NotNull LivingEntity player, @NotNull ItemStack stack, int timeLeft) {
         if (player.isAlive() && isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT) && getUseDuration(stack, player) - timeLeft == getUseTick(stack)) {
             player.stopUsingItem();
@@ -84,6 +88,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         }
     }
 
+    @Override
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level world, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack bow = player.getItemInHand(hand);
         if (world.isClientSide && isEnergyInsufficient(bow)) {
@@ -92,6 +97,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         return super.use(world, player, hand);
     }
 
+    @Override
     public void releaseUsing(@NotNull ItemStack bow, @NotNull Level world, @NotNull LivingEntity entity, int timeLeft) {
         if (!(entity instanceof Player player) || (!player.isCreative() && isEnergyInsufficient(bow))) {
             return;
@@ -99,6 +105,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         super.releaseUsing(bow, world, entity, timeLeft);
     }
 
+    @Override
     protected void shoot(@NotNull ServerLevel world, @NotNull LivingEntity entity, @NotNull InteractionHand hand, @NotNull ItemStack bow, @NotNull List<ItemStack> potentialAmmo, float velocity, float inaccuracy, boolean critical, @Nullable LivingEntity target) {
         if (!(entity instanceof Player player)) {
             return;
@@ -113,27 +120,33 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     }
 
     @NotNull
+    @Override
     public AbstractArrow customArrow(@NotNull AbstractArrow arrow, @NotNull ItemStack projectileStack, @NotNull ItemStack weaponStack) {
         long totalDamage = getTotalDamage(weaponStack);
         return new MekaArrowEntity(arrow.level(), arrow, projectileStack, weaponStack, MathUtils.clampToInt(totalDamage));
     }
 
+    @Override
     public boolean shouldCauseReequipAnimation(@NotNull ItemStack oldStack, @NotNull ItemStack newStack, boolean slotChanged) {
         return slotChanged || oldStack.getItem() != newStack.getItem();
     }
 
+    @Override
     public boolean isBarVisible(@NotNull ItemStack stack) {
         return true;
     }
 
+    @Override
     public int getBarWidth(@NotNull ItemStack stack) {
         return StorageUtils.getEnergyBarWidth(stack);
     }
 
+    @Override
     public int getBarColor(@NotNull ItemStack stack) {
         return getBarCustomColor(stack);
     }
 
+    @Override
     public boolean shouldCauseBlockBreakReset(@NotNull ItemStack oldStack, @NotNull ItemStack newStack) {
         return oldStack.getItem() != newStack.getItem();
     }
@@ -147,12 +160,19 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         return useTick;
     }
 
+    @Override
     public boolean isEnchantable(@NotNull ItemStack stack) {
         return MekaWeapons.general.mekaBowEnchantments.get();
     }
 
+    @Override
     public boolean isBookEnchantable(@NotNull ItemStack stack, @NotNull ItemStack book) {
         return MekaWeapons.general.mekaBowEnchantments.get();
+    }
+
+    @Override
+    public boolean isFoil(@NotNull ItemStack stack) {
+        return false;
     }
 
     public ResourceLocation getRadialIdentifier() {
