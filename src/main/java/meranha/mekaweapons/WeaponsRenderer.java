@@ -18,25 +18,29 @@ import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.client.ICurioRenderer;
 
 public class WeaponsRenderer implements ICurioRenderer {
-    public boolean contains(@NotNull Player player, ItemStack stack) {
-        return player.getInventory().items.stream().anyMatch(item -> !item.isEmpty() && ItemStack.isSameItem(stack, item));
-    }
-
-    final ItemStack katana = MekaWeapons.MEKA_TANA.asStack();
-    final ItemStack bow = MekaWeapons.MEKA_BOW.asStack();
+    private static final int ROTATION_ZN_DEFAULT = -180;
+    private static final int ROTATION_XP_DEFAULT = 180;
+    private static final int ROTATION_XP_KATANA_BOW = 180;
+    private static final int ROTATION_ZN_KATANA_BOW = 45;
+    private static final float SCALE_X = 1f;
+    private static final float SCALE_Y = -1f;
+    private static final float SCALE_Z = -1f;
+    private static final float TRANSLATION_Z = -0.2f;
+    private static final ItemStack MEKA_TANA = MekaWeapons.MEKA_TANA.asStack();
+    private static final ItemStack MEKA_BOW = MekaWeapons.MEKA_BOW.asStack();
 
     public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack stack, @NotNull SlotContext slotContext, PoseStack ms, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource buffer, int light, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
         if (!(slotContext.entity() instanceof Player player)) {
             return;
         }
 
-        renderItem(stack, ms, buffer, player, -180, 180, 0, 0.25, -0.1, 0.60f, -0.60f, -2f); // magnetizer
-        if (!player.isHolding(katana.getItem()) && contains(player, katana)) {
-            renderItem(katana, ms, buffer, player, 45, 180, -0.2, -0.75, -0.2, 1f, -1f, -1f);
+        renderItem(stack, ms, buffer, player, ROTATION_ZN_DEFAULT, ROTATION_XP_DEFAULT, 0, 0.25, -0.1, 0.60f, -0.60f, -2f); // magnetizer
+        if (!player.isHolding(MEKA_TANA.getItem()) && contains(player, MEKA_TANA)) {
+            renderItem(MEKA_TANA, ms, buffer, player, ROTATION_ZN_KATANA_BOW, ROTATION_XP_KATANA_BOW, -0.10, -0.70, TRANSLATION_Z, SCALE_X, SCALE_Y, SCALE_Z);
         }
 
-        if (!player.isHolding(bow.getItem()) && contains(player, bow)) {
-            renderItem(bow, ms, buffer, player, 45, 180, -0.3, -0.07, -0.2, 1f, -1f, -1f);
+        if (!player.isHolding(MEKA_BOW.getItem()) && contains(player, MEKA_BOW)) {
+            renderItem(MEKA_BOW, ms, buffer, player, ROTATION_ZN_KATANA_BOW, ROTATION_XP_KATANA_BOW, -0.30, -0.10, TRANSLATION_Z, SCALE_X, SCALE_Y, SCALE_Z);
         }
     }
 
@@ -48,5 +52,9 @@ public class WeaponsRenderer implements ICurioRenderer {
         ms.scale(scaleX, scaleY, scaleZ);
         Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, player.level(), 1);
         ms.popPose();
+    }
+
+    public boolean contains(@NotNull Player player, ItemStack stack) {
+        return player.getInventory().items.stream().anyMatch(item -> !item.isEmpty() && ItemStack.isSameItem(stack, item));
     }
 }

@@ -52,6 +52,10 @@ public class MekaWeaponsUtils {
             if (drawSpeedUnit != null) {
                 energy += drawSpeedUnit.getInstalledCount() * MekaWeapons.general.mekabowDrawSpeedUsage.get();
             }
+        } else if (weaponStack.getItem() instanceof ItemMekaTana) {
+            if (isModuleEnabled(weaponStack, MekaWeapons.SWEEPING_UNIT)) {
+                energy += MekaWeapons.general.mekaTanaSweepingEnergyUsage.get();
+            }
         }
 
         IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);

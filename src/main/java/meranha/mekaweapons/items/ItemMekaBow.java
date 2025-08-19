@@ -3,20 +3,7 @@ package meranha.mekaweapons.items;
 import static meranha.mekaweapons.MekaWeaponsUtils.*;
 import java.util.List;
 
-import mekanism.api.IDisableableEnum;
-import mekanism.api.annotations.NothingNullByDefault;
-import mekanism.api.functions.ConstantPredicates;
-import mekanism.api.radial.IRadialDataHelper;
-import mekanism.api.radial.RadialData;
-import mekanism.api.radial.mode.IRadialMode;
-import mekanism.api.text.IHasTextComponent;
-import mekanism.api.text.ILangEntry;
-import mekanism.common.Mekanism;
-import mekanism.common.content.gear.mekatool.ModuleExcavationEscalationUnit;
-import mekanism.common.content.gear.mekatool.ModuleExcavationEscalationUnit.ExcavationMode;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResultHolder;
-import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import mekanism.api.Action;
@@ -90,7 +77,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     }
 
     public void onUseTick(@NotNull Level world, @NotNull LivingEntity player, @NotNull ItemStack stack, int timeLeft) {
-        if (isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT) && getUseDuration(stack, player) - timeLeft == getUseTick(stack)) {
+        if (player.isAlive() && isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT) && getUseDuration(stack, player) - timeLeft == getUseTick(stack)) {
             player.stopUsingItem();
             stack.releaseUsing(world, player, 0);
             player.startUsingItem(player.getUsedItemHand());
@@ -117,12 +104,10 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
             return;
         }
 
-        if (!player.isCreative()) {
+        IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
+        if (!player.isCreative() && energyContainer != null) {
             long energyNeeded = getEnergyNeeded(bow);
-            IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(bow, 0);
-            if (energyContainer != null) {
-                energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
-            }
+            energyContainer.extract(energyNeeded, Action.EXECUTE, AutomationType.MANUAL);
         }
         super.shoot(world, entity, hand, bow, potentialAmmo, velocity, inaccuracy, critical, target);
     }

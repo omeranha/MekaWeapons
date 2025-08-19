@@ -3,9 +3,9 @@ package meranha.mekaweapons.items;
 import static meranha.mekaweapons.MekaWeaponsUtils.*;
 
 import java.util.List;
-import java.util.function.Consumer;
 
-import net.minecraft.core.Holder;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 import org.jetbrains.annotations.NotNull;
 
 import mekanism.api.Action;
@@ -77,6 +77,12 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
         tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
     }
 
+    public boolean canPerformAction(@NotNull ItemStack stack, @NotNull ItemAbility itemAbility) {
+        if (isModuleEnabled(stack, MekaWeapons.SWEEPING_UNIT)) {
+            return ItemAbilities.DEFAULT_SWORD_ACTIONS.contains(itemAbility);
+        }
+        return false;
+    }
 
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
         if(attacker instanceof Player player && !player.isCreative()) {

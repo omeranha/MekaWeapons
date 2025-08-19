@@ -3,8 +3,20 @@ package meranha.mekaweapons;
 import java.util.HashMap;
 import java.util.Map;
 
+import mekanism.api.Action;
+import mekanism.api.AutomationType;
+import mekanism.api.energy.IStrictEnergyHandler;
 import mekanism.api.functions.ConstantPredicates;
+import mekanism.common.attachments.FrequencyAware;
+import mekanism.common.capabilities.Capabilities;
+import mekanism.common.content.entangloporter.InventoryFrequency;
+import mekanism.common.integration.energy.EnergyCompatUtils;
+import mekanism.common.registration.impl.*;
+import meranha.mekaweapons.items.*;
 import net.minecraft.core.Holder;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -23,20 +35,9 @@ import mekanism.common.config.IMekanismConfig;
 import mekanism.common.config.MekanismConfigHelper;
 import mekanism.common.content.gear.shared.ModuleEnergyUnit;
 import mekanism.common.item.ItemModule;
-import mekanism.common.registration.impl.EntityTypeDeferredRegister;
-import mekanism.common.registration.impl.ItemDeferredRegister;
-import mekanism.common.registration.impl.ItemRegistryObject;
-import mekanism.common.registration.impl.ModuleDeferredRegister;
-import mekanism.common.registration.impl.ModuleRegistryObject;
 import mekanism.common.registries.MekanismCreativeTabs;
 import mekanism.common.registries.MekanismModules;
 import mekanism.common.util.MekanismUtils.ResourceType;
-import meranha.mekaweapons.items.ItemMagnetizer;
-import meranha.mekaweapons.items.ItemMekaBow;
-import meranha.mekaweapons.items.ItemMekaTana;
-import meranha.mekaweapons.items.MekaArrowEntity;
-import meranha.mekaweapons.items.MekaArrowRenderer;
-import meranha.mekaweapons.items.ModuleWeaponAttackAmplificationUnit;
 import meranha.mekaweapons.items.ModuleWeaponAttackAmplificationUnit.AttackDamage;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -65,7 +66,10 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingGetProjectileEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import top.theillusivec4.curios.api.CuriosCapability;
+import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
+import top.theillusivec4.curios.api.type.capability.ICurio;
 
 @SuppressWarnings({"Convert2MethodRef", "unused", "forremoval"})
 @Mod(MekaWeapons.MODID)
@@ -90,6 +94,7 @@ public class MekaWeapons {
                             installed -> ModuleEnumConfig.streamCodec(AttackDamage.STREAM_CODEC, AttackDamage.class, installed + 2)
                     )
     );
+    public static final ModuleRegistryObject<?> SWEEPING_UNIT = MODULES.registerMarker("sweeping_unit", () -> MekaWeapons.MODULE_SWEEPING);
 
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("meka_tana", ItemMekaTana::new)
@@ -116,14 +121,19 @@ public class MekaWeapons {
     public static final ItemRegistryObject<ItemModule> MODULE_GRAVITYDAMPENER = ITEMS.registerModule(MekaWeapons.GRAVITYDAMPENER_UNIT, Rarity.EPIC);
     //public static final ItemRegistryObject<ItemModule> MODULE_ARROWVELOCITY = ITEMS.registerModule(MekaWeapons.ARROWVELOCITY_UNIT);
     public static final ItemRegistryObject<ItemModule> MODULE_ATTACKAMPLIFICATION = ITEMS.registerModule(MekaWeapons.ATTACKAMPLIFICATION_UNIT, Rarity.UNCOMMON);
+    public static final ItemRegistryObject<ItemModule> MODULE_SWEEPING = ITEMS.registerModule(MekaWeapons.SWEEPING_UNIT, Rarity.UNCOMMON);
 
     public static final EntityTypeDeferredRegister ENTITY_TYPES = new EntityTypeDeferredRegister(MODID);
     public static final DeferredHolder<EntityType<?>, EntityType<MekaArrowEntity>> MEKA_ARROW = ENTITY_TYPES.register("meka_arrow", () -> EntityType.Builder.<MekaArrowEntity>of(MekaArrowEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20).build(MODID + ":meka_arrow"));
+
+    public static final ContainerTypeDeferredRegister CONTAINER_TYPES = new ContainerTypeDeferredRegister(MODID);
+    public static final ContainerTypeRegistryObject<MagnetizerContainer> MAGNETIZER_CONTAINER = CONTAINER_TYPES.register(MekaWeapons.MAGNETIZER, ItemMagnetizer.class, MagnetizerContainer::new);
 
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
         MekaWeapons.ITEMS.register(modEventBus);
         MekaWeapons.MODULES.register(modEventBus);
         MekaWeapons.ENTITY_TYPES.register(modEventBus);
+        MekaWeapons.CONTAINER_TYPES.register(modEventBus);
         MekanismConfigHelper.registerConfig(KNOWN_CONFIGS, modContainer, general);
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::buildCreativeModeTabContents);
@@ -131,6 +141,7 @@ public class MekaWeapons {
         modEventBus.addListener(this::registerRenderers);
         NeoForge.EVENT_BUS.addListener(this::mekaBowEnergyArrows);
         NeoForge.EVENT_BUS.addListener(this::disableMekaBowAttack);
+        modEventBus.addListener(this::registerCapabilities);
     }
 
     @NotNull
@@ -160,7 +171,7 @@ public class MekaWeapons {
         final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_TANA, ADD_MEKA_TANA_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_BOW, ADD_MEKA_BOW_MODULES);
-        MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, SWEEPING_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, AUTOFIRE_UNIT, ARROWENERGY_UNIT, DRAWSPEED_UNIT, GRAVITYDAMPENER_UNIT);
     }
 
@@ -170,18 +181,15 @@ public class MekaWeapons {
         }
 
         ItemStack stack = event.getProjectileWeaponItemStack();
-        if (stack.getItem() instanceof ProjectileWeaponItem bow && stack.getItem() instanceof ItemMekaBow mekaBow) {
-            if (mekaBow.isModuleEnabled(stack, ARROWENERGY_UNIT)) {
-                ItemStack defaultCreativeAmmo = bow.getDefaultCreativeAmmo(player, stack);
-                event.setProjectileItemStack(defaultCreativeAmmo);
-            }
+        if (stack.getItem() instanceof ProjectileWeaponItem bow && stack.getItem() instanceof ItemMekaBow mekaBow && mekaBow.isModuleEnabled(stack, ARROWENERGY_UNIT)) {
+            ItemStack defaultCreativeAmmo = bow.getDefaultCreativeAmmo(player, stack);
+            event.setProjectileItemStack(defaultCreativeAmmo);
         }
     }
 
     // small trick to prevent players from using the meka-bow to attack entities. This allows the tooltip to show attack damage without enabling actual damage.
     private void disableMekaBowAttack(@NotNull AttackEntityEvent event) {
         Player player = event.getEntity();
-
         if (!(player.level() instanceof ServerLevel)) {
             return;
         }
@@ -193,6 +201,35 @@ public class MekaWeapons {
 
     public void registerRenderers(@NotNull RegisterRenderers event) {
         event.registerEntityRenderer(MekaWeapons.MEKA_ARROW.get(), MekaArrowRenderer::new);
+    }
+
+    public void registerCapabilities(final RegisterCapabilitiesEvent evt) {
+        evt.registerItem(CuriosCapability.ITEM, (stack, context) -> new ICurio() {
+                @Override
+                public ItemStack getStack() {
+                    return stack;
+                }
+
+                @Override
+                public void curioTick(SlotContext slotContext) {
+                    if (!(getStack().getItem() instanceof ItemMagnetizer magnetizer) || !(slotContext.entity() instanceof Player player)) return;
+
+                    FrequencyAware<InventoryFrequency> frequencyAware = stack.get(magnetizer.getFrequencyComponent());
+                    if (frequencyAware == null || !(frequencyAware.getFrequency(stack, magnetizer.getFrequencyComponent()) instanceof InventoryFrequency frequency)) return;
+
+                    IItemHandler itemHandler = Capabilities.ITEM.getCapability(player);
+                    if (itemHandler == null) return;
+                    for (int slot = 0; slot < itemHandler.getSlots(); slot++) {
+                        ItemStack stack = itemHandler.getStackInSlot(slot);
+                        IStrictEnergyHandler energyHandler = EnergyCompatUtils.getStrictEnergyHandler(stack);
+                        long energyRate = MekaWeapons.general.wirelessChargerEnergyRate.get();
+                        boolean notFullEnergy = energyHandler != null && energyHandler.getEnergy(0) < energyHandler.getMaxEnergy(0);
+                        if (!stack.isEmpty() && notFullEnergy && frequency.storedEnergy.extract(energyRate, Action.EXECUTE, AutomationType.MANUAL) != 0) {
+                            energyHandler.insertEnergy(energyRate, Action.EXECUTE);
+                        }
+                    }
+                }
+        }, MekaWeapons.MAGNETIZER);
     }
 
     @EventBusSubscriber(modid = MekaWeapons.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -212,6 +249,11 @@ public class MekaWeapons {
                 });
                 ClientRegistrationUtil.setPropertyOverride(MekaWeapons.MEKA_BOW, Mekanism.rl("pulling"), (stack, world, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
             });
+        }
+
+        @SubscribeEvent
+        public static void registerScreens(RegisterMenuScreensEvent event) {
+            ClientRegistrationUtil.registerScreen(event, MekaWeapons.MAGNETIZER_CONTAINER, GuiMagnetizer::new);
         }
     }
 }
