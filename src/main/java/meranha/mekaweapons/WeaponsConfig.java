@@ -21,6 +21,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
     public final CachedLongValue mekaTanaSweepingEnergyUsage;
     public final CachedLongValue mekaTanaTeleportUsage;
     public final CachedIntValue mekaTanaMaxTeleportReach;
+    public final CachedLongValue mekaTanaLootingEnergyUsage;
     public final CachedLongValue mekaTanaBaseEnergyCapacity;
     public final CachedLongValue mekaTanaBaseChargeRate;
 
@@ -30,6 +31,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
     public final CachedLongValue mekabowAutoFireEnergyUsage;
     public final CachedLongValue mekabowDrawSpeedUsage;
     public final CachedLongValue mekabowGravityDampenerUsage;
+    public final CachedLongValue mekaBowLootingEnergyUsage;
     public final CachedLongValue mekaBowBaseEnergyCapacity;
     public final CachedLongValue mekaBowBaseChargeRate;
 
@@ -49,6 +51,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
         mekaTanaSweepingEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_TANA_SWEEPING_ATTACK, "sweeping_attack_energy_usage", 125_000);
         mekaTanaTeleportUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_TANA_TELEPORT_USAGE, "teleport_energy_usage", 5_000);
         mekaTanaMaxTeleportReach = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_TANA_MAX_TELEPORT_REACH.applyToBuilder(builder).defineInRange("max_teleport_reach", 100, 3, 1_024));
+        mekaTanaLootingEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_TANA_LOOTING_ENERGY_USAGE, "looting_energy_usage", 125_000);
         mekaTanaBaseEnergyCapacity = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_TANA_BASE_ENERGY_CAPACITY, "base_energy_capacity", 16_000_000);
         mekaTanaBaseChargeRate = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_TANA_BASE_CHARGE_RATE, "base_charge_rate", 350_000);
         mekaTanaEnchantments = CachedBooleanValue.wrap(this, WeaponsConfigTranslations.MEKA_TANA_ENCHANTMENTS.applyToBuilder(builder).define("enchantments", false));
@@ -61,6 +64,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
         mekabowAutoFireEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_AUTOFIRE_ENERGY_USAGE, "autofire_energy_usage", 125_000);
         mekabowDrawSpeedUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_DRAW_SPEED_USAGE, "draw_speed_usage", 125_000);
         mekabowGravityDampenerUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_GRAVITY_DAMPENER_USAGE, "gravity_dampener_usage", 125_000);
+        mekaBowLootingEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_LOOTING_ENERGY_USAGE, "looting_energy_usage", 125_000);
         mekaBowBaseEnergyCapacity = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_BASE_ENERGY_CAPACITY, "base_energy_capacity", 16_000_000);
         mekaBowBaseChargeRate = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_BASE_CHARGE_RATE, "base_charge_rate", 350_000);
         mekaBowEnchantments = CachedBooleanValue.wrap(this, WeaponsConfigTranslations.MEKA_BOW_ENCHANTMENTS.applyToBuilder(builder).define("enchantments", false));

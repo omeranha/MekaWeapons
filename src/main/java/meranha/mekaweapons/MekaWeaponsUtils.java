@@ -52,9 +52,17 @@ public class MekaWeaponsUtils {
             if (drawSpeedUnit != null) {
                 energy += drawSpeedUnit.getInstalledCount() * MekaWeapons.general.mekabowDrawSpeedUsage.get();
             }
+
+            if (isModuleEnabled(weaponStack, MekaWeapons.LOOTING_UNIT)) {
+                energy += MekaWeapons.general.mekaBowLootingEnergyUsage.get();
+            }
         } else if (weaponStack.getItem() instanceof ItemMekaTana) {
             if (isModuleEnabled(weaponStack, MekaWeapons.SWEEPING_UNIT)) {
                 energy += MekaWeapons.general.mekaTanaSweepingEnergyUsage.get();
+            }
+
+            if (isModuleEnabled(weaponStack, MekaWeapons.LOOTING_UNIT)) {
+                energy += MekaWeapons.general.mekaTanaLootingEnergyUsage.get();
             }
         }
 

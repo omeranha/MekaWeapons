@@ -95,6 +95,8 @@ public class MekaWeapons {
                     )
     );
     public static final ModuleRegistryObject<?> SWEEPING_UNIT = MODULES.registerMarker("sweeping_unit", () -> MekaWeapons.MODULE_SWEEPING);
+    public static final ModuleRegistryObject<ModuleLootingUnit> LOOTING_UNIT = MODULES.registerInstanced("looting_unit",
+            ModuleLootingUnit::new, () -> MekaWeapons.MODULE_LOOTING, builder -> builder.maxStackSize(5));
 
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("meka_tana", ItemMekaTana::new)
@@ -122,6 +124,7 @@ public class MekaWeapons {
     //public static final ItemRegistryObject<ItemModule> MODULE_ARROWVELOCITY = ITEMS.registerModule(MekaWeapons.ARROWVELOCITY_UNIT);
     public static final ItemRegistryObject<ItemModule> MODULE_ATTACKAMPLIFICATION = ITEMS.registerModule(MekaWeapons.ATTACKAMPLIFICATION_UNIT, Rarity.UNCOMMON);
     public static final ItemRegistryObject<ItemModule> MODULE_SWEEPING = ITEMS.registerModule(MekaWeapons.SWEEPING_UNIT, Rarity.UNCOMMON);
+    public static final ItemRegistryObject<ItemModule> MODULE_LOOTING = ITEMS.registerModule(MekaWeapons.LOOTING_UNIT, Rarity.UNCOMMON);
 
     public static final EntityTypeDeferredRegister ENTITY_TYPES = new EntityTypeDeferredRegister(MODID);
     public static final DeferredHolder<EntityType<?>, EntityType<MekaArrowEntity>> MEKA_ARROW = ENTITY_TYPES.register("meka_arrow", () -> EntityType.Builder.<MekaArrowEntity>of(MekaArrowEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20).build(MODID + ":meka_arrow"));
@@ -171,8 +174,8 @@ public class MekaWeapons {
         final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_TANA, ADD_MEKA_TANA_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_BOW, ADD_MEKA_BOW_MODULES);
-        MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, SWEEPING_UNIT);
-        MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, AUTOFIRE_UNIT, ARROWENERGY_UNIT, DRAWSPEED_UNIT, GRAVITYDAMPENER_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, SWEEPING_UNIT, LOOTING_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, AUTOFIRE_UNIT, ARROWENERGY_UNIT, DRAWSPEED_UNIT, GRAVITYDAMPENER_UNIT, LOOTING_UNIT);
     }
 
     private void mekaBowEnergyArrows(final @NotNull LivingGetProjectileEvent event) {

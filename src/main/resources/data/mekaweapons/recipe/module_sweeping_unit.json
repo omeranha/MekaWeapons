@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:module_sweeping_unit"
+    }
+  ],
+  "type":"minecraft:crafting_shaped",
+  "result":{
+    "id":"mekaweapons:module_sweeping_unit"
+  },
+  "pattern":[ "isi", "ibi", "hhh" ],
+  "key":{
+    "b":{ "item": "mekanism:module_base" },
+    "i":{ "item": "mekanism:alloy_infused" },
+    "s":{ "item": "minecraft:netherite_sword" },
+    "h":{ "item": "mekanism:hdpe_sheet"}
+  }
+}

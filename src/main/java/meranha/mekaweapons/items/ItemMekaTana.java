@@ -56,17 +56,18 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 
 public class ItemMekaTana extends ItemEnergized implements IRadialModuleContainerItem {
-
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_tana");
 
     public ItemMekaTana(@NotNull Properties properties) {
         super(IModuleHelper.INSTANCE.applyModuleContainerProperties(properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1)));
     }
 
+    @Override
     public void onDestroyed(@NotNull ItemEntity item, @NotNull DamageSource damageSource) {
         ModuleHelper.INSTANCE.dropModuleContainerContents(item, damageSource);
     }
 
+    @Override
     public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         if (MekKeyHandler.isKeyPressed(MekanismKeyHandler.detailsKey)) {
             addModuleDetails(stack, tooltip);
@@ -77,6 +78,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
         tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
     }
 
+    @Override
     public boolean canPerformAction(@NotNull ItemStack stack, @NotNull ItemAbility itemAbility) {
         if (isModuleEnabled(stack, MekaWeapons.SWEEPING_UNIT)) {
             return ItemAbilities.DEFAULT_SWORD_ACTIONS.contains(itemAbility);
@@ -84,6 +86,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
         return false;
     }
 
+    @Override
     public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NotNull LivingEntity attacker) {
         if(attacker instanceof Player player && !player.isCreative()) {
             long energyNeeded = getEnergyNeeded(stack);
@@ -95,6 +98,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
         return true;
     }
 
+    @Override
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
         long totalDamage = getTotalDamage(event.getItemStack());
         event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
@@ -103,6 +107,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
     }
 
     @NotNull
+    @Override
     public InteractionResultHolder<ItemStack> use(@NotNull Level world, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (world.isClientSide()) {
@@ -110,22 +115,14 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
         }
 
         IModule<ModuleTeleportationUnit> module = getEnabledModule(stack, MekanismModules.TELEPORTATION_UNIT);
-        if (module == null) {
-            return InteractionResultHolder.pass(stack);
-        }
-
         BlockHitResult result = MekanismUtils.rayTrace(player, MekaWeapons.general.mekaTanaMaxTeleportReach.get());
-        if (module.getCustomInstance().requiresBlockTarget() && result.getType() == HitResult.Type.MISS) {
+        if (module == null || module.getCustomInstance().requiresBlockTarget() && result.getType() == HitResult.Type.MISS) {
             return InteractionResultHolder.pass(stack);
         }
 
         BlockPos pos = result.getBlockPos();
-        if (!isValidDestination(world, pos)) {
-            return InteractionResultHolder.pass(stack);
-        }
-
         double distance = player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ());
-        if (distance < 5) {
+        if (!isValidDestination(world, pos) || distance < 5) {
             return InteractionResultHolder.pass(stack);
         }
 
@@ -170,23 +167,32 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
         return InteractionResultHolder.success(stack);
     }
 
+    @Override
     public boolean isBarVisible(@NotNull ItemStack stack) {
         return true;
     }
 
+    @Override
     public int getBarColor(@NotNull ItemStack stack) {
         return getBarCustomColor(stack);
     }
 
+    @Override
     public boolean isEnchantable(@NotNull ItemStack stack) {
         return MekaWeapons.general.mekaTanaEnchantments.get();
     }
 
+    @Override
     public boolean isBookEnchantable(@NotNull ItemStack stack, @NotNull ItemStack book) {
         return MekaWeapons.general.mekaTanaEnchantments.get();
     }
 
     public ResourceLocation getRadialIdentifier() {
         return RADIAL_ID;
+    }
+
+    @Override
+    public boolean isFoil(@NotNull ItemStack stack) {
+        return false;
     }
 }

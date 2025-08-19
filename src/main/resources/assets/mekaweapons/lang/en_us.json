@@ -24,6 +24,7 @@
 	"module.mekaweapons.attackamplification_unit": "Attack Amplification Unit",
 	"module.mekaweapons.attack_damage_multiplier": "Damage multiplier",
 	"module.mekaweapons.sweeping_unit": "Sweeping Unit",
+	"module.mekaweapons.looting_unit": "Looting Unit",
 	"description.mekaweapons.arrowenergy_unit": "Fire arrows made of pure energy. Removes the need for ammunition.",
 	"description.mekaweapons.autofire_unit": "Fires automatically when the Meka-Bow is fully charged.",
 	"description.mekaweapons.drawspeed_unit": "Increases the draw speed of the Meka-Bow.",
@@ -31,5 +32,6 @@
 	"description.mekaweapons.arrowvelocity_unit": "Multiply the velocity of the arrows.",
 	"description.mekaweapons.attackamplification_unit": "Amplifies weapon's damage on players or mobs.",
 	"description.mekaweapons.sweeping_unit": "Enables sweeping attacks with the Meka-Tana.",
+	"description.mekaweapons.looting_unit": "Cause mobs to drop more items and increase the chances of rare drops when using Meka-Weapons.",
 	"curios.identifier.magnetizer": "Magnetizer"
 }

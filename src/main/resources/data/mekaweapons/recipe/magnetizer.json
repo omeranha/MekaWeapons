@@ -9,10 +9,12 @@
   "result":{
     "id":"mekaweapons:magnetizer"
   },
-  "pattern":[ "sis", "ibi", "sis" ],
+  "pattern":[ "rcr", "iti", "rer" ],
   "key":{
-    "s":{ "tag":"c:ingots/steel" },
+    "r":{ "tag":"c:ingots/refined_obsidian" },
     "i":{ "tag":"c:ingots/iron" },
-    "b":{ "tag":"c:circuits/basic" }
+    "t":{ "item":"mekanism:teleportation_core" },
+    "c":{ "tag":"c:circuits/ultimate" },
+    "e":{ "item":"mekanism:energy_tablet" }
   }
 }
