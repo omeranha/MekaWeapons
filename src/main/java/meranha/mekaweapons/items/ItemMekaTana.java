@@ -120,6 +120,8 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
             return InteractionResultHolder.pass(stack);
         }
 
+        BlockPos pos = result.getBlockPos();
+        double distance = player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ());
         BlockState state1 = world.getBlockState(pos.above());
         BlockState state2 = world.getBlockState(pos.above(2));
         if (!((state1.isAir() || MekanismUtils.isLiquidBlock(state1.getBlock())) && (state2.isAir() || MekanismUtils.isLiquidBlock(state2.getBlock()))) || distance < 5) {
@@ -132,9 +134,9 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
             return InteractionResultHolder.fail(stack);
         }
 
-        double final targetX = pos.getX() + 0.5;
-        double final targetY = pos.getY() + 1.5;
-        double final targetZ = pos.getZ() + 0.5;
+        final double targetX = pos.getX() + 0.5;
+        final double targetY = pos.getY() + 1.5;
+        final double targetZ = pos.getZ() + 0.5;
 
         MekanismTeleportEvent.MekaTool event = new MekanismTeleportEvent.MekaTool(player, targetX, targetY, targetZ, stack, result);
         if (NeoForge.EVENT_BUS.post(event).isCanceled()) {
