@@ -1,7 +1,24 @@
 package meranha.mekaweapons;
 
+import mekanism.api.IIncrementalEnum;
+import mekanism.api.annotations.NothingNullByDefault;
 import mekanism.api.gear.ModuleData;
+import mekanism.api.radial.IRadialDataHelper;
+import mekanism.api.radial.mode.BasicRadialMode;
+import mekanism.api.radial.mode.IRadialMode;
+import mekanism.api.text.EnumColor;
+import mekanism.api.text.IHasTextComponent;
+import mekanism.api.text.ILangEntry;
+import mekanism.api.text.TextComponentUtil;
+import mekanism.common.util.MekanismUtils;
+import meranha.mekaweapons.client.WeaponsLang;
+import meranha.mekaweapons.items.modules.WeaponsModules;
 import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
+import net.neoforged.neoforge.common.TranslatableEnum;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,6 +34,9 @@ import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaTana;
 import meranha.mekaweapons.items.modules.WeaponAttackAmplificationUnit;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.Locale;
+import java.util.function.IntFunction;
 
 public class MekaWeaponsUtils {
     public static long getBaseEnergyUsage(@NotNull ItemStack stack) {
@@ -36,37 +56,37 @@ public class MekaWeaponsUtils {
 
         long energy = getBaseEnergyUsage(weaponStack);
         if (weaponStack.getItem() instanceof ItemMekaBow) {
-            if (isModuleEnabled(weaponStack, MekaWeapons.ARROWENERGY_UNIT)) {
+            if (isModuleEnabled(weaponStack, WeaponsModules.ARROWENERGY_UNIT)) {
                 energy += MekaWeapons.general.mekaBowEnergyArrowUsage.get();
             }
 
-            if (isModuleEnabled(weaponStack, MekaWeapons.AUTOFIRE_UNIT)) {
+            if (isModuleEnabled(weaponStack, WeaponsModules.AUTOFIRE_UNIT)) {
                 energy += MekaWeapons.general.mekabowAutoFireEnergyUsage.get();
             }
 
-            if (isModuleEnabled(weaponStack, MekaWeapons.GRAVITYDAMPENER_UNIT)) {
+            if (isModuleEnabled(weaponStack, WeaponsModules.GRAVITYDAMPENER_UNIT)) {
                 energy += MekaWeapons.general.mekabowGravityDampenerUsage.get();
             }
 
-            IModule<?> drawSpeedUnit = getEnabledModule(weaponStack, MekaWeapons.DRAWSPEED_UNIT);
+            IModule<?> drawSpeedUnit = getEnabledModule(weaponStack, WeaponsModules.DRAWSPEED_UNIT);
             if (drawSpeedUnit != null) {
                 energy += drawSpeedUnit.getInstalledCount() * MekaWeapons.general.mekabowDrawSpeedUsage.get();
             }
 
-            if (isModuleEnabled(weaponStack, MekaWeapons.LOOTING_UNIT)) {
+            if (isModuleEnabled(weaponStack, WeaponsModules.LOOTING_UNIT)) {
                 energy += MekaWeapons.general.mekaBowLootingEnergyUsage.get();
             }
         } else if (weaponStack.getItem() instanceof ItemMekaTana) {
-            if (isModuleEnabled(weaponStack, MekaWeapons.SWEEPING_UNIT)) {
+            if (isModuleEnabled(weaponStack, WeaponsModules.SWEEPING_UNIT)) {
                 energy += MekaWeapons.general.mekaTanaSweepingEnergyUsage.get();
             }
 
-            if (isModuleEnabled(weaponStack, MekaWeapons.LOOTING_UNIT)) {
+            if (isModuleEnabled(weaponStack, WeaponsModules.LOOTING_UNIT)) {
                 energy += MekaWeapons.general.mekaTanaLootingEnergyUsage.get();
             }
         }
 
-        IModule<WeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+        IModule<WeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, WeaponsModules.ATTACKAMPLIFICATION_UNIT);
         if (attackAmplificationUnit != null) {
             energy *= attackAmplificationUnit.getCustomInstance().getCurrentUnit();
         }
@@ -97,7 +117,7 @@ public class MekaWeaponsUtils {
         }
 
         long damage = getBaseDamage(weapon);
-        IModule<WeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weapon, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+        IModule<WeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weapon, WeaponsModules.ATTACKAMPLIFICATION_UNIT);
         if (attackAmplificationUnit != null) {
             damage *= attackAmplificationUnit.getCustomInstance().getCurrentUnit();
         }
@@ -119,5 +139,65 @@ public class MekaWeaponsUtils {
 
     public static boolean isModuleEnabled(ItemStack stack, Holder<ModuleData<?>> type) {
         return IModuleHelper.INSTANCE.isEnabled(stack, type);
+    }
+
+    @NothingNullByDefault
+    public enum ToggleableModule implements IIncrementalEnum<ToggleableModule>, IHasTextComponent, TranslatableEnum, IRadialMode, StringRepresentable {
+        OFF(WeaponsLang.RADIAL_TOGGLE_OFF, EnumColor.WHITE, "off"),
+        ON(WeaponsLang.RADIAL_TOGGLE_ON, EnumColor.BRIGHT_GREEN, "on");
+
+        private final String serializedName;
+        private final ResourceLocation icon;
+        private final Component label;
+        private final EnumColor color;
+        private final Component sliceNamePreCalc;
+        public static final IntFunction<ToggleableModule> BY_ID = ByIdMap.continuous(ToggleableModule::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+        public static final IRadialDataHelper.BooleanRadialModes RADIAL_MODES = new IRadialDataHelper.BooleanRadialModes(
+                new BasicRadialMode(WeaponsLang.RADIAL_TOGGLE_OFF, ToggleableModule.OFF.icon(), EnumColor.RED),
+                new BasicRadialMode(WeaponsLang.RADIAL_TOGGLE_ON, ToggleableModule.ON.icon(), EnumColor.BRIGHT_GREEN)
+        );
+
+        ToggleableModule(ILangEntry langEntry, EnumColor color, String texture) {
+            this.serializedName = name().toLowerCase(Locale.ROOT);
+            this.color = color;
+            this.icon = MekaWeapons.getResource(MekanismUtils.ResourceType.GUI_RADIAL, texture + ".png");
+            this.label = TextComponentUtil.getString(Integer.toString(this.ordinal()));
+            this.sliceNamePreCalc = langEntry.translateColored(color);
+        }
+
+        @Override
+        public ToggleableModule byIndex(int index) {
+            return BY_ID.apply(index);
+        }
+
+        @Override
+        public Component getTextComponent() {
+            return label;
+        }
+
+        @Override
+        public Component getTranslatedName() {
+            return sliceName();
+        }
+
+        @Override
+        public Component sliceName() {
+            return sliceNamePreCalc;
+        }
+
+        @Override
+        public ResourceLocation icon() {
+            return icon;
+        }
+
+        @Override
+        public EnumColor color() {
+            return color;
+        }
+
+        @Override
+        public String getSerializedName() {
+            return serializedName;
+        }
     }
 }

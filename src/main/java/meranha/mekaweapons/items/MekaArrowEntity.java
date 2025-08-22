@@ -4,6 +4,7 @@ import static meranha.mekaweapons.MekaWeaponsUtils.*;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import meranha.mekaweapons.items.modules.WeaponsModules;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -36,8 +37,8 @@ public class MekaArrowEntity extends AbstractArrow {
 
     public MekaArrowEntity(Level level, AbstractArrow arrow, ItemStack projectileStack, ItemStack weaponStack, int damage) {
         super(MekaWeapons.MEKA_ARROW.get(), arrow.getX(), arrow.getY(), arrow.getZ(), level, projectileStack, null);
-        this.setPickup(!isModuleEnabled(weaponStack, MekaWeapons.ARROWENERGY_UNIT));
-        this.setNoGravity(isModuleEnabled(weaponStack, MekaWeapons.GRAVITYDAMPENER_UNIT));
+        this.setPickup(!isModuleEnabled(weaponStack, WeaponsModules.ARROWENERGY_UNIT));
+        this.setNoGravity(isModuleEnabled(weaponStack, WeaponsModules.GRAVITYDAMPENER_UNIT));
         this.setBaseDamage(damage);
         this.setOwner(arrow.getOwner());
     }
@@ -55,6 +56,7 @@ public class MekaArrowEntity extends AbstractArrow {
     }
 
     @Override
+    @SuppressWarnings("ConstantValue")
     public void onHitEntity(EntityHitResult result) {
         Entity entity = result.getEntity();
         double baseDamage = this.getBaseDamage();

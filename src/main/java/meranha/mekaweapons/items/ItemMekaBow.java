@@ -3,6 +3,8 @@ package meranha.mekaweapons.items;
 import static meranha.mekaweapons.MekaWeaponsUtils.*;
 import java.util.List;
 
+import meranha.mekaweapons.items.modules.DrawSpeedUnit;
+import meranha.mekaweapons.items.modules.WeaponsModules;
 import net.minecraft.world.InteractionResultHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,9 +21,7 @@ import mekanism.common.MekanismLang;
 import mekanism.common.content.gear.IRadialModuleContainerItem;
 import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.util.StorageUtils;
-import mekanism.common.util.text.BooleanStateDisplay;
 import meranha.mekaweapons.MekaWeapons;
-import meranha.mekaweapons.client.WeaponsLang;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -63,12 +63,6 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         }
 
         StorageUtils.addStoredEnergy(stack, tooltip, true);
-        if (hasModule(stack, MekaWeapons.AUTOFIRE_UNIT)) {
-            tooltip.add(WeaponsLang.AUTOFIRE_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT))));
-        }
-        if (hasModule(stack, MekaWeapons.ARROWENERGY_UNIT)) {
-            tooltip.add(WeaponsLang.ARROWENERGY_MODE.translateColored(EnumColor.YELLOW, BooleanStateDisplay.OnOff.of(isModuleEnabled(stack, MekaWeapons.ARROWENERGY_UNIT))));
-        }
         tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
     }
 
@@ -81,7 +75,7 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
 
     @Override
     public void onUseTick(@NotNull Level world, @NotNull LivingEntity player, @NotNull ItemStack stack, int timeLeft) {
-        if (player.isAlive() && isModuleEnabled(stack, MekaWeapons.AUTOFIRE_UNIT) && getUseDuration(stack, player) - timeLeft == getUseTick(stack)) {
+        if (player.isAlive() && isModuleEnabled(stack, WeaponsModules.AUTOFIRE_UNIT) && getUseDuration(stack, player) - timeLeft == getUseTick(stack)) {
             player.stopUsingItem();
             stack.releaseUsing(world, player, 0);
             player.startUsingItem(player.getUsedItemHand());
@@ -153,9 +147,9 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
 
     public float getUseTick(@NotNull ItemStack stack) {
         float useTick = 20.0F;
-        IModule<?> drawSpeedUnit = getEnabledModule(stack, MekaWeapons.DRAWSPEED_UNIT);
+        IModule<DrawSpeedUnit> drawSpeedUnit = getEnabledModule(stack, WeaponsModules.DRAWSPEED_UNIT);
         if (drawSpeedUnit != null) {
-            useTick -= 5.0f * drawSpeedUnit.getInstalledCount();
+            useTick -= 5.0f * drawSpeedUnit.getCustomInstance().getDrawSpeed();
         }
         return useTick;
     }

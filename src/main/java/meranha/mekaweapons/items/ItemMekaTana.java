@@ -4,6 +4,7 @@ import static meranha.mekaweapons.MekaWeaponsUtils.*;
 
 import java.util.List;
 
+import meranha.mekaweapons.items.modules.WeaponsModules;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
 import org.jetbrains.annotations.NotNull;
@@ -80,7 +81,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
 
     @Override
     public boolean canPerformAction(@NotNull ItemStack stack, @NotNull ItemAbility itemAbility) {
-        if (isModuleEnabled(stack, MekaWeapons.SWEEPING_UNIT)) {
+        if (isModuleEnabled(stack, WeaponsModules.SWEEPING_UNIT)) {
             return ItemAbilities.DEFAULT_SWORD_ACTIONS.contains(itemAbility);
         }
         return false;
