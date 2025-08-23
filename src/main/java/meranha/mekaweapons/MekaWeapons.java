@@ -3,16 +3,7 @@ package meranha.mekaweapons;
 import java.util.HashMap;
 import java.util.Map;
 
-import mekanism.api.Action;
-import mekanism.api.AutomationType;
-import mekanism.api.energy.IEnergyContainer;
-import mekanism.api.energy.IStrictEnergyHandler;
 import mekanism.api.functions.ConstantPredicates;
-import mekanism.common.attachments.FrequencyAware;
-import mekanism.common.capabilities.Capabilities;
-import mekanism.common.content.entangloporter.InventoryFrequency;
-import mekanism.common.integration.curios.CuriosIntegration;
-import mekanism.common.integration.energy.EnergyCompatUtils;
 import mekanism.common.registration.impl.*;
 import meranha.mekaweapons.client.GuiMagnetizer;
 import meranha.mekaweapons.client.MagnetizerContainer;
@@ -21,9 +12,7 @@ import meranha.mekaweapons.client.WeaponsRenderer;
 import meranha.mekaweapons.items.*;
 import meranha.mekaweapons.items.modules.*;
 import net.minecraft.core.Holder;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -71,10 +60,7 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingGetProjectileEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import top.theillusivec4.curios.api.CuriosCapability;
-import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
-import top.theillusivec4.curios.api.type.capability.ICurio;
 
 @SuppressWarnings({"Convert2MethodRef", "unused", "forremoval"})
 @Mod(MekaWeapons.MODID)
@@ -130,7 +116,6 @@ public class MekaWeapons {
         modEventBus.addListener(this::registerRenderers);
         NeoForge.EVENT_BUS.addListener(this::mekaBowEnergyArrows);
         NeoForge.EVENT_BUS.addListener(this::disableMekaBowAttack);
-        modEventBus.addListener(this::registerCapabilities);
     }
 
     @NotNull
@@ -192,57 +177,6 @@ public class MekaWeapons {
 
     public void registerRenderers(@NotNull RegisterRenderers event) {
         event.registerEntityRenderer(MekaWeapons.MEKA_ARROW.get(), MekaArrowRenderer::new);
-    }
-
-    public void registerCapabilities(final RegisterCapabilitiesEvent evt) {
-        evt.registerItem(CuriosCapability.ITEM, (stack, context) -> new ICurio() {
-                @Override
-                public ItemStack getStack() {
-                    return stack;
-                }
-
-                @Override
-                public void curioTick(SlotContext slotContext) {
-                    if (!(getStack().getItem() instanceof ItemMagnetizer magnetizer) || !(slotContext.entity() instanceof Player player)) return;
-
-                    FrequencyAware<InventoryFrequency> frequencyAware = stack.get(magnetizer.getFrequencyComponent());
-                    if (frequencyAware == null || !(frequencyAware.getFrequency(stack, magnetizer.getFrequencyComponent()) instanceof InventoryFrequency frequency)) return;
-                    long toCharge = Math.min(MekaWeapons.general.wirelessChargerEnergyRate.get(), frequency.storedEnergy.getEnergy());
-                    if (toCharge == 0L) return;
-                    for (ItemStack stack : player.getInventory().items) {
-                        toCharge = charge(frequency.storedEnergy, stack, toCharge);
-                            if (toCharge == 0L) {
-                                return;
-                            }
-                    }
-
-                    IItemHandler handler = CuriosIntegration.getCuriosInventory(player);
-                    if (handler != null) {
-                        for (int slot = 0, slots = handler.getSlots(); slot < slots; slot++) {
-                            toCharge = charge(frequency.storedEnergy, handler.getStackInSlot(slot), toCharge);
-                            if (toCharge == 0L) {
-                                return;
-                            }
-                        }
-                    }
-                }
-
-                private long charge(IEnergyContainer energyContainer, ItemStack stack, long amount) {
-                    if (!stack.isEmpty() && amount > 0L) {
-                        IStrictEnergyHandler handler = EnergyCompatUtils.getStrictEnergyHandler(stack);
-                        if (handler != null) {
-                            long remaining = handler.insertEnergy(amount, Action.SIMULATE);
-                            if (remaining < amount) {
-                                long toExtract = amount - remaining;
-                                long extracted = energyContainer.extract(toExtract, Action.EXECUTE, AutomationType.MANUAL);
-                                long inserted = handler.insertEnergy(extracted, Action.EXECUTE);
-                                return inserted + remaining;
-                            }
-                        }
-                    }
-                    return amount;
-                }
-        }, MekaWeapons.MAGNETIZER);
     }
 
     @EventBusSubscriber(modid = MekaWeapons.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
