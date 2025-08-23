@@ -1,16 +1,45 @@
+## We've reached 2.5 million downloads on CurseForge. I'm very grateful for all the players' support and I hope the mod can continue to add value to everyone's gameplay.
+
 # Mekanism: Weapons
 
-Mekanism Weapons is an unofficial addon for [Mekanism](https://www.curseforge.com/minecraft/mc-mods/mekanism), introducing two advanced weapons that blend seamlessly with the distinctive "Meka" item aesthetic.
-* Meka-Tana: This high-tech katana not only delivers high amounts of damage but also offers the ability to teleport the player.
-* Meka-Bow: Elevating the traditional bow, the Meka-Bow that can be equipped with custom modules explained below.
+**Mekanism: Weapons** is an unofficial addon for [Mekanism](https://www.curseforge.com/minecraft/mc-mods/mekanism), introducing two advanced, highly customizable weapons that blend seamlessly with the iconic "Meka" item aesthetic.
 
-### Meka-Bow Specific Modules:
-* Auto Fire: Allows for continuous and automatic arrow shooting.
-* Drawspeed: Reduces the time required to fully draw the bow, enabling quicker shots.
-* Gravity Dampener: Modifies arrow trajectory for improved accuracy and range, defying the limitations of gravity.
+## Weapons
 
-### Magnetizer: A stylish accessory that can be equipped in the curio slot. When paired with the weapons in your inventory, it visually displays them on your back, adding a personalized touch to your character's appearance.
+- **Meka-Tana**: A high-tech katana capable of dealing massive damage and teleporting the player.
+- **Meka-Bow**: An advanced bow that elevates ranged combat with unique features and modular upgrades.
 
-Mekanism Weapons not only expands the arsenal available to players with cutting-edge, customizable weaponry but also introduces a layer of personal expression, enhancing the overall gameplay experience.
+Both weapons support exclusive modules, including:
+- **Weapon Attack Amplification Unit**: Increases damage up to 4x (configurable).
+- **Looting Unit**: Functions like the Looting enchantment, up to level 5.
 
-This addon is not from the official Mekanism team, report any issues or make a suggestion here on the project's Github repository
+## Meka-Bow Modules
+
+- **Auto Fire**: Enables continuous, automatic arrow shooting.
+- **Drawspeed**: Reduces the time required to fully draw the bow for quicker shots.
+- **Gravity Dampener**: Modifies arrow trajectory for improved accuracy and range, allowing arrows to fly straight.
+- **Energy Arrows**: Fires arrows made of pure energy, removing the need for ammunition.
+
+## Meka-Tana Modules
+
+- **Sweeping**: Grants sweeping attacks, hitting multiple targets at once.
+- **Teleportation**: Allows the player to teleport short distances, adding mobility and tactical options.
+
+## Additional Features
+
+- **Wireless Charger (formerly Magnetizer)**: 
+  - Charges items in your inventory.
+  - When equipped in a Curios slot, visually displays the Meka-Bow and Meka-Tana on your character’s back for added personalization.
+
+## Customization & Expansion
+
+- The mod is designed for extensibility: new weapons, equipment, and modules (including custom or enchantment-based modules) can be added.
+- Suggestions and contributions are welcome! Feel free to open an issue or pull request on the [GitHub repository](https://github.com/omeranha/MekaWeapons).
+
+## Disclaimer
+
+This addon is **not** developed by the official Mekanism team. Please report any issues or bugs on the [project's GitHub repository](https://github.com/omeranha/MekaWeapons).
+
+---
+
+Enjoy expanding your arsenal with cutting-edge, customizable weaponry and enhanced gameplay experiences!
