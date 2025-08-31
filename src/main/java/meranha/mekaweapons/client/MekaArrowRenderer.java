@@ -1,7 +1,8 @@
-package meranha.mekaweapons.items;
+package meranha.mekaweapons.client;
 
 import javax.annotation.Nonnull;
 
+import meranha.mekaweapons.items.MekaArrowEntity;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.client.renderer.entity.ArrowRenderer;

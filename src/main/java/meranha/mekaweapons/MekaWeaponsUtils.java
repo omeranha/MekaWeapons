@@ -1,5 +1,6 @@
 package meranha.mekaweapons;
 
+import meranha.mekaweapons.items.modules.WeaponsModules;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -7,8 +8,6 @@ import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.gear.ICustomModule;
 import mekanism.api.gear.IModule;
 import mekanism.api.gear.IModuleHelper;
-import mekanism.api.math.FloatingLong;
-import mekanism.api.math.MathUtils;
 import mekanism.api.providers.IModuleDataProvider;
 import mekanism.common.config.MekanismConfig;
 import mekanism.common.config.value.CachedFloatingLongValue;
@@ -16,100 +15,108 @@ import mekanism.common.config.value.CachedIntValue;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaTana;
-import meranha.mekaweapons.items.ModuleWeaponAttackAmplificationUnit;
+import meranha.mekaweapons.items.modules.WeaponAttackAmplificationUnit;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class MekaWeaponsUtils {
-    public static int getBaseDamage(@NotNull ItemStack stack) {
-        Item weapon = stack.getItem();
-        CachedIntValue value;
-
-        if (weapon instanceof ItemMekaBow)
-            value = MekaWeapons.general.mekaBowBaseDamage;
-        else if (weapon instanceof ItemMekaTana)
-            value = MekaWeapons.general.mekaTanaBaseDamage;
-        else
-            value = null;
-
-        return value != null ? value.get() : 0;
-    }
-
     public static long getBaseEnergyUsage(@NotNull ItemStack stack) {
         Item weapon = stack.getItem();
-        CachedFloatingLongValue value;
+        CachedFloatingLongValue energy = null;
 
         if (weapon instanceof ItemMekaBow) {
-            value = MekaWeapons.general.mekaBowEnergyUsage;
+            energy = MekaWeapons.general.mekaBowEnergyUsage;
         } else if (weapon instanceof ItemMekaTana) {
-            value = MekaWeapons.general.mekaTanaEnergyUsage;
-        } else {
-            value = null;
+            energy = MekaWeapons.general.mekaTanaEnergyUsage;
         }
 
-        return value != null ? value.get().longValue() : 0;
-    }
-
-    public static long getTotalDamage(@NotNull ItemStack weapon) {
-        return getTotalDamage(weapon, getEnabledModule(weapon, MekaWeapons.ATTACKAMPLIFICATION_UNIT),
-                getBaseDamage(weapon), getBaseEnergyUsage(weapon));
-    }
-
-    public static long getTotalDamage(@NotNull ItemStack weapon,
-            @Nullable IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit, int baseDamage,
-            long energyUsage) {
-        IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(weapon, 0);
-        if (hasNotEnoughEnergy(energyContainer, energyUsage)) {
-            return -1;
-        }
-
-        long damage = baseDamage;
-        if (attackAmplificationUnit != null) {
-            int unitDamage = attackAmplificationUnit.getCustomInstance().getCurrentUnit(), additionalDamage = (unitDamage - 1) * baseDamage;
-            long energyCost = getEnergyNeeded(unitDamage, energyUsage);
-            if (hasNotEnoughEnergy(energyContainer, energyCost)) {
-                // If we don't have enough power use it at a reduced power level (this will be false the majority of the time)
-                damage += Math.round(additionalDamage
-                        * (energyContainer.getEnergy().divide(FloatingLong.create(energyCost)).floatValue()));
-            } else {
-                damage += additionalDamage;
-            }
-        }
-
-        return damage - 1;
+        return energy != null ? energy.get().longValue() : 0;
     }
 
     public static long getEnergyNeeded(@Nullable ItemStack weaponStack) {
-        return getEnergyNeeded(weaponStack, getBaseEnergyUsage(weaponStack));
-    }
+        if (weaponStack == null) {
+            return -1;
+        }
 
-    public static long getEnergyNeeded(@Nullable ItemStack weaponStack, long energyUsage) {
-        IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-        return getEnergyNeeded(attackAmplificationUnit != null ? attackAmplificationUnit.getCustomInstance().getCurrentUnit() : 1, energyUsage);
-    }
+        long energy = getBaseEnergyUsage(weaponStack);
+        if (weaponStack.getItem() instanceof ItemMekaBow) {
+            if (isModuleEnabled(weaponStack, WeaponsModules.ARROWENERGY_UNIT)) {
+                energy += MekaWeapons.general.mekaBowEnergyArrowUsage.get().longValue();
+            }
 
-    public static long getEnergyNeeded(int unitDamage, long energyUsage) {
-        return MathUtils.clampToLong(energyUsage * unitDamage);
+            if (isModuleEnabled(weaponStack, WeaponsModules.AUTOFIRE_UNIT)) {
+                energy += MekaWeapons.general.mekabowAutoFireEnergyUsage.get().longValue();
+            }
+
+            if (isModuleEnabled(weaponStack, WeaponsModules.GRAVITYDAMPENER_UNIT)) {
+                energy += MekaWeapons.general.mekabowGravityDampenerUsage.get().longValue();
+            }
+
+            IModule<?> drawSpeedUnit = getEnabledModule(weaponStack, WeaponsModules.DRAWSPEED_UNIT);
+            if (drawSpeedUnit != null) {
+                energy += drawSpeedUnit.getInstalledCount() * MekaWeapons.general.mekabowDrawSpeedUsage.get().longValue();
+            }
+
+            if (isModuleEnabled(weaponStack, WeaponsModules.LOOTING_UNIT)) {
+                energy += MekaWeapons.general.mekaBowLootingEnergyUsage.get().longValue();
+            }
+        } else if (weaponStack.getItem() instanceof ItemMekaTana) {
+            if (isModuleEnabled(weaponStack, WeaponsModules.SWEEPING_UNIT)) {
+                energy += MekaWeapons.general.mekaTanaSweepingEnergyUsage.get().longValue();
+            }
+
+            if (isModuleEnabled(weaponStack, WeaponsModules.LOOTING_UNIT)) {
+                energy += MekaWeapons.general.mekaTanaLootingEnergyUsage.get().longValue();
+            }
+        }
+
+        IModule<WeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, WeaponsModules.ATTACKAMPLIFICATION_UNIT);
+        if (attackAmplificationUnit != null) {
+            energy *= attackAmplificationUnit.getCustomInstance().getCurrentUnit();
+        }
+        return energy;
     }
 
     public static int getBarCustomColor(@NotNull ItemStack stack) {
-        IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-        long energyUsage = getBaseEnergyUsage(stack);
-        if (hasNotEnoughEnergy(energyContainer, energyUsage)) {
+        if (isEnergyInsufficient(stack)) {
             return MekanismConfig.client.hudDangerColor.get();
-        }
-
-        long energyNeeded = getEnergyNeeded(stack, energyUsage);
-
-        if (hasNotEnoughEnergy(energyContainer, energyNeeded)) {
-            return MekanismConfig.client.hudWarningColor.get();
         }
 
         return MekanismConfig.client.energyColor.get();
     }
 
-    public static boolean hasNotEnoughEnergy(@Nullable IEnergyContainer energyContainer, long minEnergy) {
-        return energyContainer == null || energyContainer.getEnergy().smallerThan(FloatingLong.create(minEnergy));
+    public static int getBaseDamage(@NotNull ItemStack stack) {
+        Item weapon = stack.getItem();
+        CachedIntValue damage = null;
+
+        if (weapon instanceof ItemMekaBow) {
+            damage = MekaWeapons.general.mekaBowBaseDamage;
+        } else if (weapon instanceof ItemMekaTana) {
+            damage = MekaWeapons.general.mekaTanaBaseDamage;
+        }
+
+        return damage != null ? damage.get() : 0;
+    }
+
+    public static long getTotalDamage(@NotNull ItemStack weapon) {
+        if (isEnergyInsufficient(weapon)) {
+            return 20;
+        }
+
+        long damage = getBaseDamage(weapon);
+        IModule<WeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weapon, WeaponsModules.ATTACKAMPLIFICATION_UNIT);
+        if (attackAmplificationUnit != null) {
+            damage *= attackAmplificationUnit.getCustomInstance().getCurrentUnit();
+        }
+        return damage;
+    }
+
+    public static boolean isEnergyInsufficient(@Nullable IEnergyContainer energyContainer, long energyNeeded) {
+        return (energyContainer == null) || energyContainer.getEnergy().longValue() < energyNeeded;
+    }
+
+    public static boolean isEnergyInsufficient(@NotNull ItemStack weapon) {
+        return isEnergyInsufficient(StorageUtils.getEnergyContainer(weapon, 0), getEnergyNeeded(weapon));
     }
 
     @Nullable

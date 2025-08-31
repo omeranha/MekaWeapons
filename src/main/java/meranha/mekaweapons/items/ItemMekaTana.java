@@ -9,6 +9,8 @@ import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 
 import mekanism.common.content.gear.shared.ModuleEnergyUnit;
+import meranha.mekaweapons.items.modules.WeaponAttackAmplificationUnit;
+import meranha.mekaweapons.items.modules.WeaponsModules;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,12 +67,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.ItemAttributeModifierEvent;
 
 public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem, IGenericRadialModeItem {
 
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("mekatana");
-    private final Int2ObjectMap<AttributeCache> attributeCaches = new Int2ObjectArrayMap<>(ModuleWeaponAttackAmplificationUnit.AttackDamage.values().length - 2);
+    private final Int2ObjectMap<AttributeCache> attributeCaches = new Int2ObjectArrayMap<>(WeaponAttackAmplificationUnit.AttackDamage.values().length - 2);
 
     public ItemMekaTana(@NotNull Properties properties) {
         super(MekaWeapons.general.mekaTanaBaseChargeRate, MekaWeapons.general.mekaTanaBaseEnergyCapacity, properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1));
@@ -86,9 +87,12 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
         tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
     }
 
-    public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
-        long totalDamage = getTotalDamage(event.getItemStack());
-        event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", totalDamage, Operation.ADDITION));
+    @Override
+    public boolean canPerformAction(ItemStack stack, net.minecraftforge.common.ToolAction toolAction) {
+        if (isModuleEnabled(stack, WeaponsModules.SWEEPING_UNIT)) {
+            return net.minecraftforge.common.ToolActions.DEFAULT_SWORD_ACTIONS.contains(toolAction);
+        }
+        return false;
     }
 
     public boolean hurtEnemy(@NotNull @Nonnull ItemStack stack, @NotNull @Nonnull LivingEntity target, @NotNull @Nonnull LivingEntity attacker) {
@@ -107,15 +111,8 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
     @Override
     public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@NotNull EquipmentSlot slot, @NotNull ItemStack stack) {
         if (slot == EquipmentSlot.MAINHAND) {
-            IModule<ModuleWeaponAttackAmplificationUnit> attackAmplificationUnit = getModule(stack, MekaWeapons.ATTACKAMPLIFICATION_UNIT);
-            IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-            FloatingLong energy = energyContainer != null ? energyContainer.getEnergy() : FloatingLong.ZERO;
-            int unitDamage = energy.greaterOrEqual(MekaWeapons.general.mekaTanaEnergyUsage.get()) ? (attackAmplificationUnit != null)
-                            ? attackAmplificationUnit.getCustomInstance().getCurrentUnit()
-                            : 1 : 0;
             long totalDamage = MekaWeaponsUtils.getTotalDamage(stack);
-
-            return attributeCaches.computeIfAbsent(unitDamage, damage -> new AttributeCache(builder -> {
+            return attributeCaches.computeIfAbsent((int) totalDamage, damage -> new AttributeCache(builder -> {
                 builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier",
                         totalDamage, Operation.ADDITION));
                 builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier",
@@ -126,54 +123,36 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
     }
 
     @NotNull
-    public InteractionResultHolder<ItemStack> use(@NotNull @Nonnull Level world, @NotNull @Nonnull Player player, @NotNull @Nonnull InteractionHand hand) {
+    @Override
+    public InteractionResultHolder<ItemStack> use(@NotNull Level world, @NotNull Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (world.isClientSide()) {
             return InteractionResultHolder.pass(stack);
         }
 
         IModule<ModuleTeleportationUnit> module = getEnabledModule(stack, MekanismModules.TELEPORTATION_UNIT);
-        if (module == null || !module.isEnabled()) {
-            return InteractionResultHolder.pass(stack);
-        }
-
         BlockHitResult result = MekanismUtils.rayTrace(player, MekaWeapons.general.mekaTanaMaxTeleportReach.get());
-        if (module.getCustomInstance().requiresBlockTarget() && result.getType() == HitResult.Type.MISS) {
+        if (module == null || module.getCustomInstance().requiresBlockTarget() && result.getType() == HitResult.Type.MISS) {
             return InteractionResultHolder.pass(stack);
         }
 
         BlockPos pos = result.getBlockPos();
-        if (!isValidDestination(world, pos)) {
-            return InteractionResultHolder.pass(stack);
-        }
-
         double distance = player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ());
-        if (distance < 5) {
+        BlockState state1 = world.getBlockState(pos.above());
+        BlockState state2 = world.getBlockState(pos.above(2));
+        if (!((state1.isAir() || MekanismUtils.isLiquidBlock(state1.getBlock())) && (state2.isAir() || MekanismUtils.isLiquidBlock(state2.getBlock()))) || distance < 5) {
             return InteractionResultHolder.pass(stack);
         }
 
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
         FloatingLong energyNeeded = MekaWeapons.general.mekaTanaTeleportUsage.get().multiply(distance / 10D);
-        if (!player.isCreative() && (energyContainer == null || energyContainer.getEnergy().compareTo(energyNeeded) < 0)) {
+        if (energyContainer == null || energyContainer.getEnergy().compareTo(energyNeeded) < 0) {
             return InteractionResultHolder.fail(stack);
         }
 
-        return teleportPlayer(world, player, stack, pos, energyContainer, energyNeeded, result);
-    }
-
-    private boolean isValidDestination(@NotNull Level world, @NotNull BlockPos pos) {
-        return isValidDestinationBlock(world, pos.above()) && isValidDestinationBlock(world, pos.above(2));
-    }
-
-    private boolean isValidDestinationBlock(@NotNull Level world, @NotNull BlockPos pos) {
-        BlockState blockState = world.getBlockState(pos);
-        return blockState.isAir() || MekanismUtils.isLiquidBlock(blockState.getBlock());
-    }
-
-    private InteractionResultHolder<ItemStack> teleportPlayer(Level world, Player player, ItemStack stack, @NotNull BlockPos pos, IEnergyContainer energyContainer, FloatingLong energyNeeded, BlockHitResult result) {
-        double targetX = pos.getX() + 0.5;
-        double targetY = pos.getY() + 1.5;
-        double targetZ = pos.getZ() + 0.5;
+        final double targetX = pos.getX() + 0.5;
+        final double targetY = pos.getY() + 1.5;
+        final double targetZ = pos.getZ() + 0.5;
 
         MekanismTeleportEvent.MekaTool event = new MekanismTeleportEvent.MekaTool(player, targetX, targetY, targetZ, stack, result);
         if (MinecraftForge.EVENT_BUS.post(event)) {
@@ -193,24 +172,20 @@ public class ItemMekaTana extends ItemEnergized implements IModuleContainerItem,
         return InteractionResultHolder.success(stack);
     }
 
-    public boolean isBarVisible(@NotNull ItemStack stack) {
-        return true;
-    }
-
     public int getBarColor(@NotNull ItemStack stack) {
         return getBarCustomColor(stack);
     }
 
     public boolean isEnchantable(@NotNull @Nonnull ItemStack stack) {
-        return false;
+        return MekaWeapons.general.mekaTanaEnchantments.get();
     }
 
     public boolean isBookEnchantable(@NotNull ItemStack stack, @NotNull ItemStack book) {
-        return false;
+        return isEnchantable(stack);
     }
 
-    public ResourceLocation getRadialIdentifier() {
-        return RADIAL_ID;
+    public boolean isFoil(@NotNull ItemStack stack) {
+        return false;
     }
 
     @Override

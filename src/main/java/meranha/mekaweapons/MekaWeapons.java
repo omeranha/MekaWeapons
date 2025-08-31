@@ -1,5 +1,12 @@
 package meranha.mekaweapons;
 
+import mekanism.common.registration.impl.*;
+import meranha.mekaweapons.client.GuiMagnetizer;
+import meranha.mekaweapons.client.MagnetizerContainer;
+import meranha.mekaweapons.items.modules.WeaponsModules;
+import net.minecraft.core.registries.Registries;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.registries.RegisterEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -12,12 +19,6 @@ import mekanism.client.ClientRegistrationUtil;
 import mekanism.common.Mekanism;
 import mekanism.common.config.MekanismConfigHelper;
 import mekanism.common.item.ItemModule;
-import mekanism.common.registration.impl.EntityTypeDeferredRegister;
-import mekanism.common.registration.impl.EntityTypeRegistryObject;
-import mekanism.common.registration.impl.ItemDeferredRegister;
-import mekanism.common.registration.impl.ItemRegistryObject;
-import mekanism.common.registration.impl.ModuleDeferredRegister;
-import mekanism.common.registration.impl.ModuleRegistryObject;
 import mekanism.common.registries.MekanismCreativeTabs;
 import mekanism.common.registries.MekanismModules;
 import mekanism.common.util.MekanismUtils.ResourceType;
@@ -25,8 +26,7 @@ import meranha.mekaweapons.items.ItemMagnetizer;
 import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaTana;
 import meranha.mekaweapons.items.MekaArrowEntity;
-import meranha.mekaweapons.items.MekaArrowRenderer;
-import meranha.mekaweapons.items.ModuleWeaponAttackAmplificationUnit;
+import meranha.mekaweapons.client.MekaArrowRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -37,7 +37,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.item.Rarity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -65,16 +64,6 @@ public class MekaWeapons {
 
     public static final WeaponsConfig general = new WeaponsConfig();
 
-    public static final ModuleDeferredRegister MODULES =  new ModuleDeferredRegister(MekaWeapons.MODID);
-    public static final ModuleRegistryObject<?> ARROWENERGY_UNIT = MODULES.registerMarker("arrowenergy_unit", () -> MekaWeapons.MODULE_ARROWENERGY.asItem(), builder -> builder.rarity(Rarity.RARE));
-    public static final ModuleRegistryObject<?> AUTOFIRE_UNIT = MODULES.registerMarker("autofire_unit", () -> MekaWeapons.MODULE_AUTOFIRE.asItem(), builder -> builder.rarity(Rarity.RARE));
-    public static final ModuleRegistryObject<?> DRAWSPEED_UNIT = MODULES.registerMarker("drawspeed_unit", () -> MekaWeapons.MODULE_DRAWSPEED.asItem(), builder -> builder.maxStackSize(3).rarity(Rarity.RARE));
-    public static final ModuleRegistryObject<?> GRAVITYDAMPENER_UNIT = MODULES.registerMarker("gravitydampener_unit", () -> MekaWeapons.MODULE_GRAVITYDAMPENER.asItem(), builder -> builder.rarity(Rarity.EPIC));
-    //public static final ModuleRegistryObject<?> ARROWVELOCITY_UNIT = MODULES.registerMarker("arrowvelocity_unit", () -> MekaWeapons.MODULE_ARROWVELOCITY.asItem(), builder -> builder.maxStackSize(8).rarity(Rarity.RARE));
-    public static final ModuleRegistryObject<ModuleWeaponAttackAmplificationUnit> ATTACKAMPLIFICATION_UNIT = MODULES.register("attackamplification_unit",
-        ModuleWeaponAttackAmplificationUnit::new, () -> MekaWeapons.MODULE_ATTACKAMPLIFICATION.get(), builder -> builder.maxStackSize(4).rarity(Rarity.UNCOMMON).rendersHUD().handlesModeChange()
-    );
-
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("mekatana", ItemMekaTana::new);
     public static final ItemRegistryObject<ItemMekaBow> MEKA_BOW = ITEMS.registerUnburnable("mekabow", ItemMekaBow::new);
@@ -82,15 +71,20 @@ public class MekaWeapons {
     public static final ItemRegistryObject<Item> KATANA_BLADE = ITEMS.register("katana_blade");
     public static final ItemRegistryObject<Item> BOW_RISER = ITEMS.register("bow_riser");
     public static final ItemRegistryObject<Item> BOW_LIMB = ITEMS.register("bow_limb");
-    public static final ItemRegistryObject<ItemModule> MODULE_ARROWENERGY = ITEMS.registerModule(MekaWeapons.ARROWENERGY_UNIT);
-    public static final ItemRegistryObject<ItemModule> MODULE_AUTOFIRE = ITEMS.registerModule(MekaWeapons.AUTOFIRE_UNIT);
-    public static final ItemRegistryObject<ItemModule> MODULE_DRAWSPEED = ITEMS.registerModule(MekaWeapons.DRAWSPEED_UNIT);
-    public static final ItemRegistryObject<ItemModule> MODULE_GRAVITYDAMPENER = ITEMS.registerModule(MekaWeapons.GRAVITYDAMPENER_UNIT);
+    public static final ItemRegistryObject<ItemModule> MODULE_LOOTING = ITEMS.registerModule(WeaponsModules.LOOTING_UNIT);
+    public static final ItemRegistryObject<ItemModule> MODULE_DRAWSPEED = ITEMS.registerModule(WeaponsModules.DRAWSPEED_UNIT);
+    public static final ItemRegistryObject<ItemModule> MODULE_SWEEPING = ITEMS.registerModule(WeaponsModules.SWEEPING_UNIT);
+    public static final ItemRegistryObject<ItemModule> MODULE_ARROWENERGY = ITEMS.registerModule(WeaponsModules.ARROWENERGY_UNIT);
+    public static final ItemRegistryObject<ItemModule> MODULE_AUTOFIRE = ITEMS.registerModule(WeaponsModules.AUTOFIRE_UNIT);
+    public static final ItemRegistryObject<ItemModule> MODULE_GRAVITYDAMPENER = ITEMS.registerModule(WeaponsModules.GRAVITYDAMPENER_UNIT);
     //public static final ItemRegistryObject<ItemModule> MODULE_ARROWVELOCITY = ITEMS.registerModule(MekaWeapons.ARROWVELOCITY_UNIT);
-    public static final ItemRegistryObject<ItemModule> MODULE_ATTACKAMPLIFICATION = ITEMS.registerModule(MekaWeapons.ATTACKAMPLIFICATION_UNIT);
+    public static final ItemRegistryObject<ItemModule> MODULE_ATTACKAMPLIFICATION = ITEMS.registerModule(WeaponsModules.ATTACKAMPLIFICATION_UNIT);
 
     public static final EntityTypeDeferredRegister ENTITY_TYPES = new EntityTypeDeferredRegister(MekaWeapons.MODID);
     public static final EntityTypeRegistryObject<MekaArrowEntity> MEKA_ARROW = ENTITY_TYPES.register("meka_arrow", EntityType.Builder.<MekaArrowEntity>of(MekaArrowEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20));
+
+    public static final ContainerTypeDeferredRegister CONTAINER_TYPES = new ContainerTypeDeferredRegister(MODID);
+    public static final ContainerTypeRegistryObject<MagnetizerContainer> MAGNETIZER_CONTAINER = CONTAINER_TYPES.register(MekaWeapons.MAGNETIZER, ItemMagnetizer.class, MagnetizerContainer::new);
 
     public static final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
     public static final String ADD_MEKATANA_MODULES = "add_mekatana_modules";
@@ -102,8 +96,8 @@ public class MekaWeapons {
 
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
         MekaWeapons.ITEMS.register(modEventBus);
-        MekaWeapons.MODULES.register(modEventBus);
         MekaWeapons.ENTITY_TYPES.register(modEventBus);
+        MekaWeapons.CONTAINER_TYPES.register(modEventBus);
         MekanismConfigHelper.registerConfig(modContainer, general);
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::buildCreativeModeTabContents);
@@ -111,6 +105,7 @@ public class MekaWeapons {
         modEventBus.addListener(this::registerRenderers);
         MinecraftForge.EVENT_BUS.addListener(this::mekaBowEnergyArrows);
         MinecraftForge.EVENT_BUS.addListener(this::disableMekaBowAttack);
+        WeaponsModules.MODULES.register(modEventBus);
     }
 
     @NotNull
@@ -136,8 +131,8 @@ public class MekaWeapons {
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
-        addModules(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, AUTOFIRE_UNIT, ARROWENERGY_UNIT, DRAWSPEED_UNIT, GRAVITYDAMPENER_UNIT); // ARROWVELOCITY_UNIT
-        addModules(ADD_MEKATANA_MODULES, MekanismModules.ENERGY_UNIT, ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT);
+        addModules(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT, WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT);
+        addModules(ADD_MEKATANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT);
     }
 
     public static void addModules(String method, IModuleDataProvider<?>... moduleDataProviders) {
@@ -162,7 +157,7 @@ public class MekaWeapons {
 
         ItemStack stack = event.getBow();
         if (stack.getItem() instanceof ProjectileWeaponItem && stack.getItem() instanceof ItemMekaBow mekaBow) {
-            if (mekaBow.isModuleEnabled(stack, ARROWENERGY_UNIT)) {
+            if (mekaBow.isModuleEnabled(stack, WeaponsModules.ARROWENERGY_UNIT)) {
                 event.getEntity().startUsingItem(event.getHand());
                 event.setAction(InteractionResultHolder.success(event.getBow()));
             }
@@ -198,6 +193,13 @@ public class MekaWeapons {
                     return 0;
                 });
                 ClientRegistrationUtil.setPropertyOverride(MekaWeapons.MEKA_BOW, Mekanism.rl("pulling"), (stack, world, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
+            });
+        }
+
+        @SubscribeEvent(priority = EventPriority.LOW)
+        public static void registerScreens(RegisterEvent event) {
+            event.register(Registries.MENU, helper -> {
+                ClientRegistrationUtil.registerScreen(MekaWeapons.MAGNETIZER_CONTAINER, GuiMagnetizer::new);
             });
         }
     }
