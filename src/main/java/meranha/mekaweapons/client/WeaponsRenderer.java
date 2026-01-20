@@ -1,6 +1,7 @@
 package meranha.mekaweapons.client;
 
 import meranha.mekaweapons.MekaWeapons;
+import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -36,11 +37,18 @@ public class WeaponsRenderer implements ICurioRenderer {
         }
 
         renderItem(stack, ms, buffer, player, ROTATION_ZN_DEFAULT, ROTATION_XP_DEFAULT, 0, 0.25, -0.1, 0.60f, -0.60f, -2f); // magnetizer
-        if (!player.isHolding(MEKA_TANA.getItem()) && contains(player, MEKA_TANA)) {
+        boolean renderWeapons = !Boolean.FALSE.equals(stack.get(MekaWeapons.TOGGLE_RENDER.get()));
+        if (!renderWeapons) {
+            return;
+        }
+
+        boolean hasMekaTana = Boolean.TRUE.equals(stack.get(MekaWeapons.HAS_MEKA_TANA.get()));
+        boolean hasMekaBow  = Boolean.TRUE.equals(stack.get(MekaWeapons.HAS_MEKA_BOW.get()));
+        if (hasMekaTana && !isHolding(player, MekaWeapons.MEKA_TANA.get())){
             renderItem(MEKA_TANA, ms, buffer, player, ROTATION_ZN_KATANA_BOW, ROTATION_XP_KATANA_BOW, -0.10, -0.70, TRANSLATION_Z, SCALE_X, SCALE_Y, SCALE_Z);
         }
 
-        if (!player.isHolding(MEKA_BOW.getItem()) && contains(player, MEKA_BOW)) {
+        if (hasMekaBow && !isHolding(player, MekaWeapons.MEKA_BOW.get())) {
             renderItem(MEKA_BOW, ms, buffer, player, ROTATION_ZN_KATANA_BOW, ROTATION_XP_KATANA_BOW, -0.30, -0.10, TRANSLATION_Z, SCALE_X, SCALE_Y, SCALE_Z);
         }
     }
@@ -55,7 +63,7 @@ public class WeaponsRenderer implements ICurioRenderer {
         ms.popPose();
     }
 
-    public boolean contains(@NotNull Player player, ItemStack stack) {
-        return player.getInventory().items.stream().anyMatch(item -> !item.isEmpty() && ItemStack.isSameItem(stack, item));
+    private boolean isHolding(@NotNull Player player, Item item) {
+        return player.getMainHandItem().is(item) || player.getOffhandItem().is(item);
     }
 }

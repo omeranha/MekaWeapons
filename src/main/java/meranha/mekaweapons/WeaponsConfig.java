@@ -42,7 +42,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.comment("MekaWeapons Settings. Joules to FE conversion: 2.5J = 1FE").push("weapons");
 
-        wirelessChargerEnergyRate = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.WIRELESS_CHARGE_RATE, "wireless_charge_rate", 1_250_000);
+        wirelessChargerEnergyRate = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.WIRELESS_CHARGE_RATE, "wireless_charge_rate", 2_500_000);
 
         WeaponsConfigTranslations.MEKA_TANA.applyToBuilder(builder).push("meka_tana");
         mekaTanaBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_TANA_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 50));

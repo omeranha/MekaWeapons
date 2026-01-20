@@ -57,12 +57,25 @@ public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, IC
             return;
         }
 
+        boolean hasMekaTana = player.getInventory().items.stream()
+                .anyMatch(s -> !s.isEmpty() && s.is(MekaWeapons.MEKA_TANA.get()));
+        boolean hasMekaBow = player.getInventory().items.stream()
+                .anyMatch(s -> !s.isEmpty() && s.is(MekaWeapons.MEKA_BOW.get()));
+
+        stack.set(MekaWeapons.HAS_MEKA_TANA.get(), hasMekaTana);
+        stack.set(MekaWeapons.HAS_MEKA_BOW.get(), hasMekaBow);
+
         FrequencyAware<InventoryFrequency> frequencyAware = stack.get(getFrequencyComponent());
         if (frequencyAware == null || !(frequencyAware.getFrequency(stack, getFrequencyComponent()) instanceof InventoryFrequency frequency)) return;
         IEnergyContainer frequencyContainer = frequency.storedEnergy;
         long toCharge = Math.min(MekaWeapons.general.wirelessChargerEnergyRate.get(), frequencyContainer.getEnergy());
         if (toCharge == 0L) {
             return;
+        }
+
+        for (ItemStack armorSlot : player.getArmorSlots()) {
+            toCharge = charge(frequencyContainer, armorSlot, toCharge);
+            if (toCharge == 0L) return;
         }
 
         for (ItemStack slot : player.getInventory().items) {

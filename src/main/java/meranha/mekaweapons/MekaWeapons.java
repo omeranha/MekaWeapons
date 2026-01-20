@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mekanism.api.functions.ConstantPredicates;
+import mekanism.common.registration.MekanismDeferredHolder;
 import mekanism.common.registration.impl.*;
 import meranha.mekaweapons.client.GuiMagnetizer;
 import meranha.mekaweapons.client.MagnetizerContainer;
@@ -12,6 +13,7 @@ import meranha.mekaweapons.client.WeaponsRenderer;
 import meranha.mekaweapons.items.*;
 import meranha.mekaweapons.items.modules.*;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentType;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -104,11 +106,17 @@ public class MekaWeapons {
     public static final ContainerTypeDeferredRegister CONTAINER_TYPES = new ContainerTypeDeferredRegister(MODID);
     public static final ContainerTypeRegistryObject<MagnetizerContainer> MAGNETIZER_CONTAINER = CONTAINER_TYPES.register(MekaWeapons.MAGNETIZER, ItemMagnetizer.class, MagnetizerContainer::new);
 
+    public static final DataComponentDeferredRegister DATA_COMPONENTS = new DataComponentDeferredRegister(MODID);
+    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER = DATA_COMPONENTS.registerBoolean("render_weapons");
+    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> HAS_MEKA_TANA = DATA_COMPONENTS.registerBoolean("has_meka_tana");
+    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> HAS_MEKA_BOW = DATA_COMPONENTS.registerBoolean("has_meka_bow");
+
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
         MekaWeapons.ITEMS.register(modEventBus);
         WeaponsModules.MODULES.register(modEventBus);
         MekaWeapons.ENTITY_TYPES.register(modEventBus);
         MekaWeapons.CONTAINER_TYPES.register(modEventBus);
+        MekaWeapons.DATA_COMPONENTS.register(modEventBus);
         MekanismConfigHelper.registerConfig(KNOWN_CONFIGS, modContainer, general);
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::buildCreativeModeTabContents);
@@ -182,7 +190,7 @@ public class MekaWeapons {
     @EventBusSubscriber(modid = MekaWeapons.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event) {
+        public static void onClientSetup(final FMLClientSetupEvent event) {
             if (ModList.get().isLoaded("curios")) {
                 CuriosRendererRegistry.register(MekaWeapons.MAGNETIZER.get(), WeaponsRenderer::new);
             }

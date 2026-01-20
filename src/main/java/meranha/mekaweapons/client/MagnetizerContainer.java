@@ -18,4 +18,17 @@ public class MagnetizerContainer extends FrequencyItemContainer<InventoryFrequen
     protected FrequencyType<InventoryFrequency> getFrequencyType() {
         return FrequencyType.INVENTORY;
     }
+
+    public ItemStack getMagnetizerStack() {
+        return stack;
+    }
+
+    public void toggleRenderFlag() {
+        ItemStack stack = getMagnetizerStack();
+        if (stack.isEmpty()) {
+            return;
+        }
+        boolean current = !Boolean.FALSE.equals(stack.get(MekaWeapons.TOGGLE_RENDER.get()));
+        stack.set(MekaWeapons.TOGGLE_RENDER.get(), !current);
+    }
 }
