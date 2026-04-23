@@ -4,12 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mekanism.api.functions.ConstantPredicates;
+import mekanism.common.lib.Version;
 import mekanism.common.registration.MekanismDeferredHolder;
 import mekanism.common.registration.impl.*;
-import meranha.mekaweapons.client.GuiMagnetizer;
-import meranha.mekaweapons.client.MagnetizerContainer;
-import meranha.mekaweapons.client.MekaArrowRenderer;
-import meranha.mekaweapons.client.WeaponsRenderer;
+import meranha.mekaweapons.client.*;
 import meranha.mekaweapons.items.*;
 import meranha.mekaweapons.items.modules.*;
 import net.minecraft.core.Holder;
@@ -111,6 +109,9 @@ public class MekaWeapons {
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> HAS_MEKA_TANA = DATA_COMPONENTS.registerBoolean("has_meka_tana");
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> HAS_MEKA_BOW = DATA_COMPONENTS.registerBoolean("has_meka_bow");
 
+    private final WeaponsPacketHandler packetHandler;
+    private final Version versionNumber;
+
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
         MekaWeapons.ITEMS.register(modEventBus);
         WeaponsModules.MODULES.register(modEventBus);
@@ -124,6 +125,8 @@ public class MekaWeapons {
         modEventBus.addListener(this::registerRenderers);
         NeoForge.EVENT_BUS.addListener(this::mekaBowEnergyArrows);
         NeoForge.EVENT_BUS.addListener(this::disableMekaBowAttack);
+        versionNumber = new Version(modContainer);
+        packetHandler = new WeaponsPacketHandler(modEventBus, versionNumber);
     }
 
     @NotNull

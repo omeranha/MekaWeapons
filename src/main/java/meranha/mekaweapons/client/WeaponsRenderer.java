@@ -37,7 +37,7 @@ public class WeaponsRenderer implements ICurioRenderer {
         }
 
         renderItem(stack, ms, buffer, player, ROTATION_ZN_DEFAULT, ROTATION_XP_DEFAULT, 0, 0.25, -0.1, 0.60f, -0.60f, -2f); // magnetizer
-        boolean renderWeapons = !Boolean.FALSE.equals(stack.get(MekaWeapons.TOGGLE_RENDER.get()));
+        boolean renderWeapons = stack.getOrDefault(MekaWeapons.TOGGLE_RENDER.get(), false);
         if (!renderWeapons) {
             return;
         }

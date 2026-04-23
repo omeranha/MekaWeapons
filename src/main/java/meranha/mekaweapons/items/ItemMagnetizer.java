@@ -42,7 +42,7 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, ICapabilityAware {
     public ItemMagnetizer(@NotNull Properties pProperties) {
-        super(pProperties.rarity(Rarity.RARE).stacksTo(1));
+        super(pProperties.rarity(Rarity.RARE).stacksTo(1).component(MekaWeapons.TOGGLE_RENDER, true));
     }
 
     public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
