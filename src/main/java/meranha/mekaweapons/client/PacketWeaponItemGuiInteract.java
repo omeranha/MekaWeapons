@@ -46,10 +46,7 @@ public record PacketWeaponItemGuiInteract(ItemGuiInteraction interaction, Intera
 
     public enum ItemGuiInteraction {
         TOGGLE_RENDER((stack, player, extra) -> {
-            MekaWeapons.logger.info(String.valueOf(stack.get(MekaWeapons.TOGGLE_RENDER.get())));
-            boolean current = stack.getOrDefault(MekaWeapons.TOGGLE_RENDER.get(), true);
-            stack.set(MekaWeapons.TOGGLE_RENDER.get(), !current);
-            MekaWeapons.logger.info(String.valueOf(stack.get(MekaWeapons.TOGGLE_RENDER.get())));
+            stack.update(MekaWeapons.TOGGLE_RENDER.get(), true, val -> !val);
         });
 
         public static final IntFunction<ItemGuiInteraction> BY_ID = ByIdMap.continuous(ItemGuiInteraction::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);

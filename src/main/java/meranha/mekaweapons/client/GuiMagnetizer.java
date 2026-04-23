@@ -28,13 +28,12 @@ public class GuiMagnetizer extends GuiMekanism<MagnetizerContainer> implements I
     protected void addGuiElements() {
         super.addGuiElements();
         addRenderableWidget(new GuiFrequencySelector<>(this, 14));
-        ItemStack stack = menu.getMagnetizerStack();
-        if (stack.isEmpty()) {
+        if (menu.getMagnetizerStack().isEmpty()) {
             return;
         }
 
         addRenderableWidget(new GuiDigitalSwitch(this, 150, 14, SILK,
-                () -> stack.getOrDefault(MekaWeapons.TOGGLE_RENDER.get(), true),
+                () -> menu.getMagnetizerStack().getOrDefault(MekaWeapons.TOGGLE_RENDER.get(), true),
                 (element, mouseX, mouseY) -> {
                     PacketUtils.sendToServer(new PacketWeaponItemGuiInteract(PacketWeaponItemGuiInteract.ItemGuiInteraction.TOGGLE_RENDER, menu.getHand()));
                     return true;
