@@ -9,6 +9,7 @@ import mekanism.api.energy.IStrictEnergyHandler;
 import mekanism.common.Mekanism;
 import mekanism.common.attachments.FrequencyAware;
 import mekanism.common.content.entangloporter.InventoryFrequency;
+import mekanism.common.content.gear.IModuleContainerItem;
 import mekanism.common.integration.curios.CuriosIntegration;
 import mekanism.common.integration.energy.EnergyCompatUtils;
 import mekanism.common.lib.frequency.FrequencyType;
@@ -40,7 +41,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
-public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, ICapabilityAware {
+public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, ICapabilityAware, IModuleContainerItem {
     public ItemMagnetizer(@NotNull Properties pProperties) {
         super(pProperties.rarity(Rarity.RARE).stacksTo(1).component(MekaWeapons.TOGGLE_RENDER, true));
     }

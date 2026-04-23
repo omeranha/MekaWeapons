@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import mekanism.api.functions.ConstantPredicates;
+import mekanism.api.gear.IModule;
+import mekanism.api.gear.IModuleHelper;
+import mekanism.common.content.gear.shared.ModuleColorModulationUnit;
+import mekanism.common.lib.Color;
 import mekanism.common.lib.Version;
 import mekanism.common.registration.MekanismDeferredHolder;
 import mekanism.common.registration.impl.*;
@@ -12,6 +16,7 @@ import meranha.mekaweapons.items.*;
 import meranha.mekaweapons.items.modules.*;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -154,12 +159,15 @@ public class MekaWeapons {
     private void sendCustomModules(InterModEnqueueEvent event) {
         final String ADD_MEKA_TANA_MODULES = "add_meka_tana_modules";
         final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
+        final String ADD_MAGNETIZER_MODULE = "add_meka_bow_module";
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_TANA, ADD_MEKA_TANA_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_BOW, ADD_MEKA_BOW_MODULES);
+        MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MAGNETIZER, ADD_MAGNETIZER_MODULE);
         MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT,
-                WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT);
+                WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT,
-                WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT);
+                WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MAGNETIZER_MODULE, MekanismModules.COLOR_MODULATION_UNIT);
     }
 
     private void mekaBowEnergyArrows(final @NotNull LivingGetProjectileEvent event) {
@@ -213,6 +221,17 @@ public class MekaWeapons {
         @SubscribeEvent
         public static void registerScreens(RegisterMenuScreensEvent event) {
             ClientRegistrationUtil.registerScreen(event, MekaWeapons.MAGNETIZER_CONTAINER, GuiMagnetizer::new);
+        }
+
+        @SubscribeEvent
+        public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+            event.register((stack, tintIndex) -> {
+                if (tintIndex == 0) {
+                    IModule<ModuleColorModulationUnit> colorUnit = IModuleHelper.INSTANCE.getModule(stack, MekanismModules.COLOR_MODULATION_UNIT);
+                    return colorUnit != null ? colorUnit.getCustomInstance().color().argb() : Color.WHITE.argb();
+                }
+                return 0xFFFFFFFF;
+            }, MekaWeapons.MEKA_TANA.get(), MekaWeapons.MEKA_BOW.get(), MekaWeapons.MAGNETIZER.get());
         }
     }
 }

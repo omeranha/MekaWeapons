@@ -28,8 +28,6 @@ public class WeaponsRenderer implements ICurioRenderer {
     private static final float SCALE_Y = -1f;
     private static final float SCALE_Z = -1f;
     private static final float TRANSLATION_Z = -0.2f;
-    private static final ItemStack MEKA_TANA = MekaWeapons.MEKA_TANA.asStack();
-    private static final ItemStack MEKA_BOW = MekaWeapons.MEKA_BOW.asStack();
 
     public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack stack, @NotNull SlotContext slotContext, PoseStack ms, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource buffer, int light, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
         if (!(slotContext.entity() instanceof Player player)) {
@@ -42,14 +40,14 @@ public class WeaponsRenderer implements ICurioRenderer {
             return;
         }
 
-        boolean hasMekaTana = Boolean.TRUE.equals(stack.get(MekaWeapons.HAS_MEKA_TANA.get()));
-        boolean hasMekaBow  = Boolean.TRUE.equals(stack.get(MekaWeapons.HAS_MEKA_BOW.get()));
-        if (hasMekaTana && !isHolding(player, MekaWeapons.MEKA_TANA.get())){
-            renderItem(MEKA_TANA, ms, buffer, player, ROTATION_ZN_KATANA_BOW, ROTATION_XP_KATANA_BOW, -0.10, -0.70, TRANSLATION_Z, SCALE_X, SCALE_Y, SCALE_Z);
+        ItemStack mekatanaOnPlayer = player.getInventory().items.stream().filter(s -> s.is(MekaWeapons.MEKA_TANA.get())).findFirst().orElse(ItemStack.EMPTY);
+        ItemStack mekabowOnPlayer = player.getInventory().items.stream().filter(s -> s.is(MekaWeapons.MEKA_BOW.get())).findFirst().orElse(ItemStack.EMPTY);
+        if (!mekatanaOnPlayer.isEmpty() && !isHolding(player, MekaWeapons.MEKA_TANA.get())){
+            renderItem(mekatanaOnPlayer, ms, buffer, player, ROTATION_ZN_KATANA_BOW, ROTATION_XP_KATANA_BOW, -0.10, -0.70, TRANSLATION_Z, SCALE_X, SCALE_Y, SCALE_Z);
         }
 
-        if (hasMekaBow && !isHolding(player, MekaWeapons.MEKA_BOW.get())) {
-            renderItem(MEKA_BOW, ms, buffer, player, ROTATION_ZN_KATANA_BOW, ROTATION_XP_KATANA_BOW, -0.30, -0.10, TRANSLATION_Z, SCALE_X, SCALE_Y, SCALE_Z);
+        if (!mekabowOnPlayer.isEmpty() && !isHolding(player, MekaWeapons.MEKA_BOW.get())) {
+            renderItem(mekabowOnPlayer, ms, buffer, player, ROTATION_ZN_KATANA_BOW, ROTATION_XP_KATANA_BOW, -0.30, -0.10, TRANSLATION_Z, SCALE_X, SCALE_Y, SCALE_Z);
         }
     }
 
