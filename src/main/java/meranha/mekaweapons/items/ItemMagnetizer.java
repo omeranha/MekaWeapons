@@ -43,7 +43,7 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, ICapabilityAware, IModuleContainerItem {
     public ItemMagnetizer(@NotNull Properties pProperties) {
-        super(pProperties.rarity(Rarity.RARE).stacksTo(1).component(MekaWeapons.TOGGLE_RENDER, true));
+        super(pProperties.rarity(Rarity.RARE).stacksTo(1).component(MekaWeapons.TOGGLE_RENDER_MEKATANA, true).component(MekaWeapons.TOGGLE_RENDER_MEKABOW, true).component(MekaWeapons.TOGGLE_RENDER_MEKAGUN, true));
     }
 
     public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
@@ -57,14 +57,6 @@ public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, IC
         if (level.isClientSide() || !(entity instanceof Player player)) {
             return;
         }
-
-        boolean hasMekaTana = player.getInventory().items.stream()
-                .anyMatch(s -> !s.isEmpty() && s.is(MekaWeapons.MEKA_TANA.get()));
-        boolean hasMekaBow = player.getInventory().items.stream()
-                .anyMatch(s -> !s.isEmpty() && s.is(MekaWeapons.MEKA_BOW.get()));
-
-        stack.set(MekaWeapons.HAS_MEKA_TANA.get(), hasMekaTana);
-        stack.set(MekaWeapons.HAS_MEKA_BOW.get(), hasMekaBow);
 
         FrequencyAware<InventoryFrequency> frequencyAware = stack.get(getFrequencyComponent());
         if (frequencyAware == null || !(frequencyAware.getFrequency(stack, getFrequencyComponent()) instanceof InventoryFrequency frequency)) return;

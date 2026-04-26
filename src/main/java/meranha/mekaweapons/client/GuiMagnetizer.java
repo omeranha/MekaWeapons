@@ -20,7 +20,7 @@ public class GuiMagnetizer extends GuiMekanism<MagnetizerContainer> implements I
     private static final ResourceLocation SILK = MekanismUtils.getResource(MekanismUtils.ResourceType.GUI, "switch/silk.png");
     public GuiMagnetizer(MagnetizerContainer container, Inventory inv, Component title) {
         super(container, inv, title);
-        imageHeight = 172;
+        imageHeight = 182;
         titleLabelY = 4;
     }
 
@@ -32,13 +32,29 @@ public class GuiMagnetizer extends GuiMekanism<MagnetizerContainer> implements I
             return;
         }
 
-        addRenderableWidget(new GuiDigitalSwitch(this, 150, 14, SILK,
-                () -> menu.getMagnetizerStack().getOrDefault(MekaWeapons.TOGGLE_RENDER.get(), true),
+        addRenderableWidget(new GuiDigitalSwitch(this, 27, 150, SILK,
+                () -> menu.getMagnetizerStack().getOrDefault(MekaWeapons.TOGGLE_RENDER_MEKATANA.get(), true),
                 (element, mouseX, mouseY) -> {
-                    PacketUtils.sendToServer(new PacketWeaponItemGuiInteract(PacketWeaponItemGuiInteract.ItemGuiInteraction.TOGGLE_RENDER, menu.getHand()));
+                    PacketUtils.sendToServer(new PacketWeaponItemGuiInteract(PacketWeaponItemGuiInteract.ItemGuiInteraction.TOGGLE_MEKATANA_RENDER, menu.getHand()));
                     return true;
                 }, GuiDigitalSwitch.SwitchType.LOWER_ICON
-        )).setTooltip(Tooltip.create(Component.translatable(menu.getMagnetizerStack().getOrDefault(MekaWeapons.TOGGLE_RENDER.get(), true) ? "gui.mekaweapons.render_on" : "gui.mekaweapons.render_off")));
+        )).setTooltip(Tooltip.create(Component.translatable("gui.mekaweapons.render_tana")));
+
+        addRenderableWidget(new GuiDigitalSwitch(this, 50, 150, SILK,
+                () -> menu.getMagnetizerStack().getOrDefault(MekaWeapons.TOGGLE_RENDER_MEKABOW.get(), true),
+                (element, mouseX, mouseY) -> {
+                    PacketUtils.sendToServer(new PacketWeaponItemGuiInteract(PacketWeaponItemGuiInteract.ItemGuiInteraction.TOGGLE_MEKABOW_RENDER, menu.getHand()));
+                    return true;
+                }, GuiDigitalSwitch.SwitchType.LOWER_ICON
+        )).setTooltip(Tooltip.create(Component.translatable("gui.mekaweapons.render_bow")));
+
+        addRenderableWidget(new GuiDigitalSwitch(this, 73, 150, SILK,
+                () -> menu.getMagnetizerStack().getOrDefault(MekaWeapons.TOGGLE_RENDER_MEKAGUN.get(), true),
+                (element, mouseX, mouseY) -> {
+                    PacketUtils.sendToServer(new PacketWeaponItemGuiInteract(PacketWeaponItemGuiInteract.ItemGuiInteraction.TOGGLE_MEKAGUN_RENDER, menu.getHand()));
+                    return true;
+                }, GuiDigitalSwitch.SwitchType.LOWER_ICON
+        )).setTooltip(Tooltip.create(Component.translatable("gui.mekaweapons.render_gun")));
     }
 
     @Override

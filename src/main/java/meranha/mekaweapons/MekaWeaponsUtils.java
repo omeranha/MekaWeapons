@@ -12,6 +12,7 @@ import mekanism.api.text.ILangEntry;
 import mekanism.api.text.TextComponentUtil;
 import mekanism.common.util.MekanismUtils;
 import meranha.mekaweapons.client.WeaponsLang;
+import meranha.mekaweapons.items.ItemMekaGun;
 import meranha.mekaweapons.items.modules.WeaponsModules;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -43,6 +44,7 @@ public class MekaWeaponsUtils {
         CachedLongValue energy = switch (stack.getItem()) {
             case ItemMekaBow ignored -> MekaWeapons.general.mekaBowEnergyUsage;
             case ItemMekaTana ignored -> MekaWeapons.general.mekaTanaEnergyUsage;
+            case ItemMekaGun ignored -> MekaWeapons.general.mekaGunEnergyUsage;
             default -> null;
         };
 
@@ -105,6 +107,7 @@ public class MekaWeaponsUtils {
         CachedIntValue damage = switch (stack.getItem()) {
             case ItemMekaBow ignored -> MekaWeapons.general.mekaBowBaseDamage;
             case ItemMekaTana ignored -> MekaWeapons.general.mekaTanaBaseDamage;
+            case ItemMekaGun ignored -> MekaWeapons.general.mekaGunBaseDamage;
             default -> null;
         };
 

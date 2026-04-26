@@ -5,11 +5,12 @@
 	"item.mekaweapons.katana_blade": "Katana Blade",
 	"item.mekaweapons.bow_riser": "Bow Riser",
 	"item.mekaweapons.bow_limb": "Fiberglass Bow Limb",
+	"item.mekaweapons.meka_gun": "Meka-Gun",
 
 	"tooltip.mekaweapons.autofire_mode": "Auto Fire Mode: %s",
 	"tooltip.mekaweapons.arrowenergy_mode": "Energy Arrows Mode: %s",
 	"tooltip.mekaweapons.drawspeed": "Draw Speed: %s",
-	"tooltip.mekaweapons.magnetizer": "Charges your inventory items with energy from the selected frequency. Also displays the Meka-Bow and Meka-Tana on your back (when equipped on Curios).",
+	"tooltip.mekaweapons.magnetizer": "Charges your inventory items with energy from the selected frequency. Also displays the Meka-Tana, Meka-Bow and Meka-Gun on your back (when equipped on Curios).",
 
 	"radial.mekaweapons.attack_damage": "Attack Damage",
 	"radial.mekaweapons.autofire_mode": "Auto Fire",
@@ -44,5 +45,10 @@
 	"description.mekaweapons.attackamplification_unit": "Amplifies weapon's damage on players or mobs.",
 	"description.mekaweapons.sweeping_unit": "Enables sweeping attacks with the Meka-Tana.",
 	"description.mekaweapons.looting_unit": "Cause mobs to drop more items and increase the chances of rare drops when using Meka-Weapons.",
-	"curios.identifier.magnetizer": "Magnetizer"
+	"curios.identifier.magnetizer": "Magnetizer",
+
+	"gui.mekaweapons.render_tana": "Toggle Meka-Tana render on back",
+	"gui.mekaweapons.render_bow": "Toggle Meka-Bow render on back",
+	"gui.mekaweapons.render_gun": "Toggle Meka-Gun render on back"
+
 }

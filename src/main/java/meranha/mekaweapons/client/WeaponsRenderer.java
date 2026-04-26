@@ -20,38 +20,36 @@ import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.client.ICurioRenderer;
 
 public class WeaponsRenderer implements ICurioRenderer {
-    private static final int ROTATION_ZN_DEFAULT = -180;
-    private static final int ROTATION_XP_DEFAULT = 180;
-    private static final int ROTATION_XP_KATANA_BOW = 180;
-    private static final int ROTATION_ZN_KATANA_BOW = 45;
-    private static final float SCALE_X = 1f;
-    private static final float SCALE_Y = -1f;
-    private static final float SCALE_Z = -1f;
-    private static final float TRANSLATION_Z = -0.2f;
+    private static final Item MekaTana = MekaWeapons.MEKA_TANA.get();
+    private static final Item MekaBow = MekaWeapons.MEKA_BOW.get();
+    private static final Item MekaGun = MekaWeapons.MEKA_GUN.get();
 
     public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack stack, @NotNull SlotContext slotContext, PoseStack ms, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource buffer, int light, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
         if (!(slotContext.entity() instanceof Player player)) {
             return;
         }
 
-        renderItem(stack, ms, buffer, player, ROTATION_ZN_DEFAULT, ROTATION_XP_DEFAULT, 0, 0.25, -0.1, 0.60f, -0.60f, -2f); // magnetizer
-        boolean renderWeapons = stack.getOrDefault(MekaWeapons.TOGGLE_RENDER.get(), false);
-        if (!renderWeapons) {
-            return;
+        renderItem(stack, ms, buffer, player, 180, 0, 0, -0.2, 0.15, 0.5f, 0.5f, 0.5f); // magnetizer
+        if (stack.getOrDefault(MekaWeapons.TOGGLE_RENDER_MEKATANA.get(), true)) {
+            player.getInventory().items.stream().filter(s -> s.is(MekaTana))
+                    .findFirst().filter(s-> isNotHolding(player, MekaTana))
+                    .ifPresent(s -> renderItem(s, ms, buffer, player, 45, 0, -0.1, 0.7, 0.2, 1f, 1f, 1f));
         }
 
-        ItemStack mekatanaOnPlayer = player.getInventory().items.stream().filter(s -> s.is(MekaWeapons.MEKA_TANA.get())).findFirst().orElse(ItemStack.EMPTY);
-        ItemStack mekabowOnPlayer = player.getInventory().items.stream().filter(s -> s.is(MekaWeapons.MEKA_BOW.get())).findFirst().orElse(ItemStack.EMPTY);
-        if (!mekatanaOnPlayer.isEmpty() && !isHolding(player, MekaWeapons.MEKA_TANA.get())){
-            renderItem(mekatanaOnPlayer, ms, buffer, player, ROTATION_ZN_KATANA_BOW, ROTATION_XP_KATANA_BOW, -0.10, -0.70, TRANSLATION_Z, SCALE_X, SCALE_Y, SCALE_Z);
+        if (stack.getOrDefault(MekaWeapons.TOGGLE_RENDER_MEKABOW.get(), true)) {
+            player.getInventory().items.stream().filter(s -> s.is(MekaBow))
+                    .findFirst().filter(s-> isNotHolding(player, MekaBow))
+                    .ifPresent(s -> renderItem(s, ms, buffer, player, 45, 0, -0.30, -0.15, 0.2, 1f, 1f, 1f));
         }
 
-        if (!mekabowOnPlayer.isEmpty() && !isHolding(player, MekaWeapons.MEKA_BOW.get())) {
-            renderItem(mekabowOnPlayer, ms, buffer, player, ROTATION_ZN_KATANA_BOW, ROTATION_XP_KATANA_BOW, -0.30, -0.10, TRANSLATION_Z, SCALE_X, SCALE_Y, SCALE_Z);
+        if (stack.getOrDefault(MekaWeapons.TOGGLE_RENDER_MEKAGUN.get(), true)) {
+            player.getInventory().items.stream().filter(s -> s.is(MekaGun))
+                    .findFirst().filter(s-> isNotHolding(player, MekaGun))
+                    .ifPresent(s -> renderItem(s, ms, buffer, player, 45, 90, -0.15, 0.7, -0.1, 1.5f, 1.5f, 1.5f));
         }
     }
 
-    private void renderItem(ItemStack stack, @NotNull PoseStack ms, MultiBufferSource buffer, @NotNull LivingEntity player, int rotationZN, int rotationXP, double translateX, double translateY, double translateZ, float scaleX, float scaleY, float scaleZ) {
+    private void renderItem(ItemStack stack, @NotNull PoseStack ms, MultiBufferSource buffer, @NotNull LivingEntity player, float rotationZN, float rotationXP, double translateX, double translateY, double translateZ, float scaleX, float scaleY, float scaleZ) {
         ms.pushPose();
         ms.mulPose(Axis.ZN.rotationDegrees(rotationZN));
         ms.mulPose(Axis.XP.rotationDegrees(rotationXP));
@@ -61,7 +59,7 @@ public class WeaponsRenderer implements ICurioRenderer {
         ms.popPose();
     }
 
-    private boolean isHolding(@NotNull Player player, Item item) {
-        return player.getMainHandItem().is(item) || player.getOffhandItem().is(item);
+    private boolean isNotHolding(@NotNull Player player, Item item) {
+        return !player.getMainHandItem().is(item) && !player.getOffhandItem().is(item);
     }
 }

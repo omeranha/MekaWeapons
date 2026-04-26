@@ -84,6 +84,8 @@ dependencies {
     implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 
     runtimeOnly "dev.emi:emi-neoforge:${emi_version}+${minecraft_version}"
+    runtimeOnly "curse.maven:mmmmmmmmmmmm-225738:7943676"
+    runtimeOnly "curse.maven:selene-499980:7943878"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

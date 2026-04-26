@@ -31,6 +31,13 @@ public enum WeaponsConfigTranslations implements IConfigTranslation {
     MEKA_BOW_BASE_CHARGE_RATE("meka_bow.base_charge_rate", "Base Charge Rate", "Base charge rate of Meka-Bow."),
     MEKA_BOW_ENCHANTMENTS("meka_bow.enchantments", "Enchantments", "Whether Meka-Bow can be enchanted. False by default. Use at your own risk."),
 
+    MEKA_GUN("meka_gun", "Meka-Gun", "Meka-Gun Settings", true),
+    MEKA_GUN_BASE_DAMAGE("meka_gun.base_damage", "Base Damage", "Base damage of Meka-Gun"),
+    MEKA_GUN_ENERGY_USAGE("meka_gun.energy_usage", "Energy Usage", "Cost in Joules of using Meka-Gun."),
+    MEKA_GUN_BASE_ENERGY_CAPACITY("meka_gun.base_energy_capacity", "Base Energy Capacity", "Base energy capacity of Meka-Gun."),
+    MEKA_GUN_BASE_CHARGE_RATE("meka_gun.base_charge_rate", "Base Charge Rate", "Base charge rate of Meka-Gun."),
+
+
     WIRELESS_CHARGE_RATE("wireless_charger_energy_rate", "Wireless Charger Energy Rate", "Transfer energy rate of the Wireless Charger (Magnetizer), in Joules per tick.");
     private final String key;
     private final String title;

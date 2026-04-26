@@ -14,10 +14,15 @@ import mekanism.common.registration.impl.*;
 import meranha.mekaweapons.client.*;
 import meranha.mekaweapons.items.*;
 import meranha.mekaweapons.items.modules.*;
+import meranha.mekaweapons.particle.MekaGunLaserParticleType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.Registries;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -88,6 +93,12 @@ public class MekaWeapons {
                   ConstantPredicates.alwaysTrue(), () -> ModuleEnergyUnit.getChargeRate(attachedTo, MekaWeapons.general.mekaBowBaseChargeRate),
                 () -> ModuleEnergyUnit.getEnergyCapacity(attachedTo, MekaWeapons.general.mekaBowBaseEnergyCapacity)))
     .build(), MekaWeapons.general);
+    public static final ItemRegistryObject<ItemMekaGun> MEKA_GUN = ITEMS.registerUnburnable("meka_gun", ItemMekaGun::new)
+            .addAttachedContainerCapabilities(ContainerType.ENERGY, () -> EnergyContainersBuilder.builder()
+                    .addContainer((type, attachedTo, containerIndex) -> new ComponentBackedNoClampEnergyContainer(attachedTo, containerIndex, BasicEnergyContainer.manualOnly,
+                            ConstantPredicates.alwaysTrue(), () -> ModuleEnergyUnit.getChargeRate(attachedTo, MekaWeapons.general.mekaGunBaseChargeRate),
+                            () -> ModuleEnergyUnit.getEnergyCapacity(attachedTo, MekaWeapons.general.mekaGunBaseEnergyCapacity)))
+                    .build(), MekaWeapons.general);
 
     public static final ItemRegistryObject<ItemMagnetizer> MAGNETIZER = ITEMS.registerUnburnable("magnetizer", ItemMagnetizer::new);
     public static final ItemRegistryObject<Item> KATANA_BLADE = ITEMS.register("katana_blade");
@@ -110,9 +121,12 @@ public class MekaWeapons {
     public static final ContainerTypeRegistryObject<MagnetizerContainer> MAGNETIZER_CONTAINER = CONTAINER_TYPES.register(MekaWeapons.MAGNETIZER, ItemMagnetizer.class, MagnetizerContainer::new);
 
     public static final DataComponentDeferredRegister DATA_COMPONENTS = new DataComponentDeferredRegister(MODID);
-    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER = DATA_COMPONENTS.registerBoolean("render_weapons");
-    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> HAS_MEKA_TANA = DATA_COMPONENTS.registerBoolean("has_meka_tana");
-    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> HAS_MEKA_BOW = DATA_COMPONENTS.registerBoolean("has_meka_bow");
+    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKATANA = DATA_COMPONENTS.registerBoolean("render_mekatana");
+    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKABOW = DATA_COMPONENTS.registerBoolean("render_mekabow");
+    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKAGUN = DATA_COMPONENTS.registerBoolean("render_mekagun");
+
+    public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(Registries.PARTICLE_TYPE, MODID);
+    public static final DeferredHolder<ParticleType<?>, MekaGunLaserParticleType> MEKA_GUN_LASER = PARTICLE_TYPES.register("meka_gun_laser", MekaGunLaserParticleType::new);
 
     private final WeaponsPacketHandler packetHandler;
     private final Version versionNumber;
@@ -132,6 +146,7 @@ public class MekaWeapons {
         NeoForge.EVENT_BUS.addListener(this::disableMekaBowAttack);
         versionNumber = new Version(modContainer);
         packetHandler = new WeaponsPacketHandler(modEventBus, versionNumber);
+        MekaWeapons.PARTICLE_TYPES.register(modEventBus);
     }
 
     @NotNull
@@ -159,15 +174,18 @@ public class MekaWeapons {
     private void sendCustomModules(InterModEnqueueEvent event) {
         final String ADD_MEKA_TANA_MODULES = "add_meka_tana_modules";
         final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
+        final String ADD_MEKA_GUN_MODULES = "add_meka_gun_modules";
         final String ADD_MAGNETIZER_MODULE = "add_meka_bow_module";
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_TANA, ADD_MEKA_TANA_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_BOW, ADD_MEKA_BOW_MODULES);
+        MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_GUN, ADD_MEKA_GUN_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MAGNETIZER, ADD_MAGNETIZER_MODULE);
         MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT,
                 WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT,
                 WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
-        MekanismIMC.sendModuleIMC(ADD_MAGNETIZER_MODULE, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_GUN_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MAGNETIZER_MODULE, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
     }
 
     private void mekaBowEnergyArrows(final @NotNull LivingGetProjectileEvent event) {
@@ -231,7 +249,12 @@ public class MekaWeapons {
                     return colorUnit != null ? colorUnit.getCustomInstance().color().argb() : Color.WHITE.argb();
                 }
                 return 0xFFFFFFFF;
-            }, MekaWeapons.MEKA_TANA.get(), MekaWeapons.MEKA_BOW.get(), MekaWeapons.MAGNETIZER.get());
+            }, MekaWeapons.MEKA_TANA.get(), MekaWeapons.MEKA_BOW.get(), MekaWeapons.MEKA_GUN.get(), MekaWeapons.MAGNETIZER.get());
+        }
+
+        @SubscribeEvent
+        public static void registerParticleFactories(RegisterParticleProvidersEvent event) {
+            event.registerSpriteSet(MekaWeapons.MEKA_GUN_LASER.get(), MekaGunLaserParticle.Factory::new);
         }
     }
 }
