@@ -128,9 +128,6 @@ public class MekaWeapons {
     public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(Registries.PARTICLE_TYPE, MODID);
     public static final DeferredHolder<ParticleType<?>, MekaGunLaserParticleType> MEKA_GUN_LASER = PARTICLE_TYPES.register("meka_gun_laser", MekaGunLaserParticleType::new);
 
-    private final WeaponsPacketHandler packetHandler;
-    private final Version versionNumber;
-
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
         MekaWeapons.ITEMS.register(modEventBus);
         WeaponsModules.MODULES.register(modEventBus);
@@ -144,8 +141,8 @@ public class MekaWeapons {
         modEventBus.addListener(this::registerRenderers);
         NeoForge.EVENT_BUS.addListener(this::mekaBowEnergyArrows);
         NeoForge.EVENT_BUS.addListener(this::disableMekaBowAttack);
-        versionNumber = new Version(modContainer);
-        packetHandler = new WeaponsPacketHandler(modEventBus, versionNumber);
+        Version versionNumber = new Version(modContainer);
+        WeaponsPacketHandler packetHandler = new WeaponsPacketHandler(modEventBus, versionNumber);
         MekaWeapons.PARTICLE_TYPES.register(modEventBus);
     }
 

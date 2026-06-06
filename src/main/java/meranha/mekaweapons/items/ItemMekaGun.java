@@ -146,7 +146,7 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
             }
 
             float damage = MekaWeapons.general.mekaGunBaseDamage.get();
-            float remainingDamage = damage; // should shields block lasers from meka-gun?
+            float remainingDamage = damage; // TODO: should shields block lasers from meka-gun?
 
             double dissipationPercent = 0;
             double refractionPercent = 0;

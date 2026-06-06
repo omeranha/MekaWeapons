@@ -24,7 +24,7 @@ public class MekaGunLaserParticle extends TextureSheetParticle {
 
     private MekaGunLaserParticle(ClientLevel world, Vec3 start, Vec3 end, int r, int g, int b) {
         super(world, (start.x + end.x) / 2D, (start.y + end.y) / 2D, (start.z + end.z) / 2D);
-        lifetime = 10;
+        lifetime = 5;
         this.r = toColor(r);
         this.g = toColor(g);
         this.b = toColor(b);

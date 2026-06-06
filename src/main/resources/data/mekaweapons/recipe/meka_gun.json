@@ -1,0 +1,21 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:meka_gun"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "id": "mekaweapons:meka_gun"
+  },
+  "pattern": [ "plp", "oao", "cbc" ],
+  "key": {
+    "l": { "item":"mekanism:laser" },
+    "c": { "tag":"c:circuits/ultimate" },
+    "p": { "item":"mekanism:pellet_polonium" },
+    "b": { "item":"mekanism:basic_induction_cell" },
+    "o": { "tag":"c:ingots/refined_obsidian" },
+    "a": { "item":"mekanism:laser_amplifier" }
+  }
+}
