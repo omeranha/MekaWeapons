@@ -115,7 +115,7 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
             to = from.add(look.scale(MIN_BEAM_LENGTH));
         }
 
-        Vec3 finalTo = fireLaser(level, player, from, to);
+        Vec3 finalTo = fireLaser(level, stack, player, from, to);
         IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
         long energy = getEnergyNeeded(stack);
         if (!player.isCreative() && energyContainer != null) {
@@ -127,7 +127,7 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
         return InteractionResultHolder.pass(stack);
     }
 
-    private Vec3 fireLaser(Level level, Player owner, Vec3 from, Vec3 to) {
+    private Vec3 fireLaser(Level level, ItemStack stack, Player owner, Vec3 from, Vec3 to) {
         Vec3 beam = to.subtract(from);
         double length = beam.length();
         if (length < 1e-6) return to;
@@ -145,7 +145,7 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
                 return projectPoint(from, dir, livingEntity.position());
             }
 
-            float damage = MekaWeapons.general.mekaGunBaseDamage.get();
+            float damage = getTotalDamage(stack);
             float remainingDamage = damage; // TODO: should shields block lasers from meka-gun?
 
             double dissipationPercent = 0;
