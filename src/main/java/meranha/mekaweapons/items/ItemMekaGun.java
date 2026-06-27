@@ -18,6 +18,7 @@ import mekanism.common.registries.MekanismDamageTypes;
 import mekanism.common.registries.MekanismSounds;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.MekaWeapons;
+import meranha.mekaweapons.client.WeaponsLang;
 import meranha.mekaweapons.particle.MekaGunLaserParticleData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +28,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -46,14 +48,12 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Comparator;
 import java.util.List;
 
 import static meranha.mekaweapons.MekaWeaponsUtils.*;
 
 public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainerItem {
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_gun");
-    private static final double RANGE = 50.0D;
     private static final double MUZZLE_SIDE_OFFSET = 0.02D;
     private static final double MUZZLE_FORWARD_OFFSET = 0.05D;
     private static final double MUZZLE_DOWN_OFFSET = -0.02D;
@@ -89,7 +89,8 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand usedHand) {
         ItemStack stack = player.getItemInHand(usedHand);
-        if (isEnergyInsufficient(stack)) {
+        int heat = getHeat(stack);
+        if (isEnergyInsufficient(stack) || heat >= MekaWeapons.general.mekaGunMaxHeat.get()) {
             return InteractionResultHolder.fail(stack);
         }
 
@@ -106,7 +107,7 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
 
         Vec3 upLocal = right.cross(look).normalize();
         Vec3 from = eye.add(right.scale(MUZZLE_SIDE_OFFSET * handSign)).add(look.scale(MUZZLE_FORWARD_OFFSET)).add(upLocal.scale(MUZZLE_DOWN_OFFSET));
-        Vec3 aimEnd = eye.add(look.scale(RANGE));
+        Vec3 aimEnd = eye.add(look.scale(MekaWeapons.general.mekaGunBeamLength.get()));
         BlockHitResult result = level.clip(new ClipContext(eye, aimEnd, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
 
         Vec3 to = result.getType() != HitResult.Type.MISS ? result.getLocation() : aimEnd;
@@ -124,83 +125,120 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
         Vec3 finalBeam = finalTo.subtract(from);
         sendLaserDataToPlayers(level, new MekaGunLaserParticleData(finalBeam.x, finalBeam.y, finalBeam.z, 70, 242, 149), from);
         SoundHandler.playSound(MekanismSounds.LASER);
-        return InteractionResultHolder.pass(stack);
+        setHeat(stack, heat + MekaWeapons.general.mekaGunHeatPerShot.get());
+        setLastFireTick(stack, level.getGameTime());
+        return super.use(level, player, usedHand);
+    }
+
+    @Override
+    public void inventoryTick(@NotNull ItemStack stack, Level level, @NotNull Entity entity, int slot, boolean selected) {
+        if (level.isClientSide || !(entity instanceof Player player) || player.getMainHandItem() != stack) return;
+
+        long gameTime = level.getGameTime();
+        if (gameTime - getLastFireTick(stack) < MekaWeapons.general.mekaGunCooldownDelayTicks.get() || gameTime % 20 != 0) return;
+
+        int heat = getHeat(stack);
+        if (heat <= MekaWeapons.general.mekaGunMaxHeat.get()) {
+            setHeat(stack, heat - MekaWeapons.general.mekaGunHeatLossPerSecond.get());
+        }
     }
 
     private Vec3 fireLaser(Level level, ItemStack stack, Player owner, Vec3 from, Vec3 to) {
         Vec3 beam = to.subtract(from);
         double length = beam.length();
-        if (length < 1e-6) return to;
+        if (length < 1e-6) {
+            return to;
+        }
+
         Vec3 dir = beam.normalize();
-        float radius = 0.1f;
-        List<LivingEntity> entities = level.getEntitiesOfClass(LivingEntity.class, getLaserBox(from, to, radius));
-        entities.sort(Comparator.comparingDouble(e -> {
-            Vec3 rel = e.position().subtract(from);
-            return rel.dot(dir);
-        }));
-
-        for (LivingEntity livingEntity : entities) {
-            if (!isEntityHit(from, dir, length, livingEntity, radius) || livingEntity instanceof Player player && (!owner.canHarmPlayer(player) || player.is(owner))) continue;
-            if (livingEntity.isInvulnerable() || livingEntity.isInvulnerableTo(MekanismDamageTypes.LASER.source(level))) {
-                return projectPoint(from, dir, livingEntity.position());
+        float radius = 0.1F;
+        LivingEntity hitEntity = null;
+        double closestDistance = Double.MAX_VALUE;
+        for (LivingEntity livingEntity : level.getEntitiesOfClass(LivingEntity.class, getLaserBox(from, to, radius))) {
+            if (!isEntityHit(from, dir, length, livingEntity, radius)) {
+                continue;
             }
 
-            float damage = getTotalDamage(stack);
-            float remainingDamage = damage; // TODO: should shields block lasers from meka-gun?
-
-            double dissipationPercent = 0;
-            double refractionPercent = 0;
-            for (ItemStack armor : livingEntity.getArmorSlots()) {
-                if (!armor.isEmpty()) {
-                    ILaserDissipation laserDissipation = armor.getCapability(Capabilities.LASER_DISSIPATION);
-                    if (laserDissipation != null) {
-                        dissipationPercent += laserDissipation.getDissipationPercent();
-                        refractionPercent += laserDissipation.getRefractionPercent();
-                        if (dissipationPercent >= 1) {
-                            break;
-                        }
-                    }
-                }
-            }
-            if (dissipationPercent > 0) {
-                dissipationPercent = Math.min(dissipationPercent, 1);
-                remainingDamage = (long) (remainingDamage * (1D - dissipationPercent));
-                if (remainingDamage == 0L) {
-                    return projectPoint(from, dir, livingEntity.position());
-                }
+            if (livingEntity instanceof Player player && (!owner.canHarmPlayer(player) || player.is(owner))) {
+                continue;
             }
 
-            if (refractionPercent > 0) {
-                refractionPercent = Math.min(refractionPercent, 1);
-                double refractedDamage = remainingDamage * refractionPercent;
-                damage = (float) (remainingDamage - refractedDamage);
-            }
-            if (damage > 0) {
-                if (!livingEntity.fireImmune()) {
-                    livingEntity.igniteForTicks((int) damage);
-                }
+            Vec3 pos = livingEntity.position();
+            double distance = (pos.x - from.x) * dir.x + (pos.y - from.y) * dir.y + (pos.z - from.z) * dir.z;
 
-                livingEntity.hurt(MekanismDamageTypes.LASER.source(level), damage);
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                hitEntity = livingEntity;
             }
+        }
+
+        if (hitEntity == null) {
+            return to;
+        }
+
+        if (hitEntity.isInvulnerable() || hitEntity.isInvulnerableTo(MekanismDamageTypes.LASER.source(level))) {
+            return projectPoint(from, dir, hitEntity.position());
+        }
+
+        float damage = getTotalDamage(stack);
+        float remainingDamage = damage;
+        double dissipationPercent = 0;
+        double refractionPercent = 0;
+        for (ItemStack armor : hitEntity.getArmorSlots()) {
+            if (armor.isEmpty()) {
+                continue;
+            }
+
+            ILaserDissipation laserDissipation = armor.getCapability(Capabilities.LASER_DISSIPATION);
+            if (laserDissipation == null) {
+                continue;
+            }
+
+            dissipationPercent += laserDissipation.getDissipationPercent();
+            refractionPercent += laserDissipation.getRefractionPercent();
+            if (dissipationPercent >= 1) {
+                break;
+            }
+        }
+
+        if (dissipationPercent > 0) {
+            dissipationPercent = Math.min(dissipationPercent, 1);
+            remainingDamage *= (float) (1D - dissipationPercent);
+            if (remainingDamage <= 0) {
+                return projectPoint(from, dir, hitEntity.position());
+            }
+        }
+
+        if (refractionPercent > 0) {
+            refractionPercent = Math.min(refractionPercent, 1);
+            double refractedDamage = remainingDamage * refractionPercent;
+            damage = (float) (remainingDamage - refractedDamage);
+        } else {
+            damage = remainingDamage;
+        }
+
+        if (damage > 0) {
+            if (!hitEntity.fireImmune()) {
+                hitEntity.igniteForSeconds((int) damage);
+            }
+
+            hitEntity.hurt(MekanismDamageTypes.LASER.source(level), damage);
         }
 
         return to;
     }
 
     private AABB getLaserBox(Vec3 from, Vec3 to, float radius) {
-        Vec3 dir = to.subtract(from);
-        if (dir.lengthSqr() < 1e-6) {
+        double dx = to.x - from.x;
+        double dy = to.y - from.y;
+        double dz = to.z - from.z;
+        double lengthSq = dx * dx + dy * dy + dz * dz;
+        if (lengthSq < 1.0E-12) {
             return new AABB(from, to);
         }
 
-        dir = dir.normalize();
-        double ax = Math.abs(dir.x);
-        double ay = Math.abs(dir.y);
-        double az = Math.abs(dir.z);
-        double inflateX = (1.0 - ax) * radius;
-        double inflateY = (1.0 - ay) * radius;
-        double inflateZ = (1.0 - az) * radius;
-        return new AABB(from, to).inflate(inflateX, inflateY, inflateZ);
+        double invLength = 1.0 / Math.sqrt(lengthSq);
+        return new AABB(from, to).inflate((1.0 - Math.abs(dx * invLength)) * radius, (1.0 - Math.abs(dy * invLength)) * radius, (1.0 - Math.abs(dz * invLength)) * radius);
     }
 
     private Vec3 projectPoint(Vec3 from, Vec3 dir, Vec3 point) {
@@ -211,23 +249,40 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
 
     private boolean isEntityHit(Vec3 from, Vec3 dir, double length, Entity entity, double radius) {
         AABB box = entity.getBoundingBox();
-        Vec3 center = box.getCenter();
-        Vec3 toEntity = center.subtract(from);
-        double t = toEntity.dot(dir);
-        if (t < 0 || t > length) return false;
 
-        Vec3 closest = from.add(dir.scale(t));
-        double dx = Math.max(box.minX - closest.x, 0);
-        dx = Math.max(dx, closest.x - box.maxX);
+        double centerX = (box.minX + box.maxX) * 0.5;
+        double centerY = (box.minY + box.maxY) * 0.5;
+        double centerZ = (box.minZ + box.maxZ) * 0.5;
+        double t = (centerX - from.x) * dir.x + (centerY - from.y) * dir.y + (centerZ - from.z) * dir.z;
 
-        double dy = Math.max(box.minY - closest.y, 0);
-        dy = Math.max(dy, closest.y - box.maxY);
+        if (t < 0 || t > length) {
+            return false;
+        }
 
-        double dz = Math.max(box.minZ - closest.z, 0);
-        dz = Math.max(dz, closest.z - box.maxZ);
+        double closestX = from.x + dir.x * t;
+        double closestY = from.y + dir.y * t;
+        double closestZ = from.z + dir.z * t;
+        double dx = 0;
+        if (closestX < box.minX) {
+            dx = box.minX - closestX;
+        } else if (closestX > box.maxX) {
+            dx = closestX - box.maxX;
+        }
 
-        double distSqr = dx*dx + dy*dy + dz*dz;
-        return distSqr <= radius * radius;
+        double dy = 0;
+        if (closestY < box.minY) {
+            dy = box.minY - closestY;
+        } else if (closestY > box.maxY) {
+            dy = closestY - box.maxY;
+        }
+
+        double dz = 0;
+        if (closestZ < box.minZ) {
+            dz = box.minZ - closestZ;
+        } else if (closestZ > box.maxZ) {
+            dz = closestZ - box.maxZ;
+        }
+        return dx * dx + dy * dy + dz * dz <= radius * radius;
     }
 
     private void sendLaserDataToPlayers(Level level, MekaGunLaserParticleData data, Vec3 from) {
@@ -236,6 +291,11 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
                 serverWorld.sendParticles(player, data, true, from.x, from.y, from.z, 1, 0, 0, 0, 0);
             }
         }
+    }
+
+    @Override
+    public void addHUDStrings(List<Component> list, Player player, ItemStack stack, EquipmentSlot slotType) {
+        list.add(WeaponsLang.HEAT.translateColored(EnumColor.WHITE, getHeat(stack) + "%"));
     }
 
     @Override
@@ -260,5 +320,21 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
 
     public ResourceLocation getRadialIdentifier() {
         return RADIAL_ID;
+    }
+
+    private static int getHeat(ItemStack stack) {
+        return stack.getOrDefault(MekaWeapons.HEAT, 0);
+    }
+
+    private static void setHeat(ItemStack stack, int value) {
+        stack.set(MekaWeapons.HEAT, Math.clamp(value, 0, MekaWeapons.general.mekaGunMaxHeat.get()));
+    }
+
+    private static long getLastFireTick(ItemStack stack) {
+        return stack.getOrDefault(MekaWeapons.LAST_FIRE_TICK, 0L);
+    }
+
+    private static void setLastFireTick(ItemStack stack, long tick) {
+        stack.set(MekaWeapons.LAST_FIRE_TICK, tick);
     }
 }

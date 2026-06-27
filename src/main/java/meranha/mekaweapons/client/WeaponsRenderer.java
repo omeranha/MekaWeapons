@@ -29,33 +29,28 @@ public class WeaponsRenderer implements ICurioRenderer {
             return;
         }
 
-        renderItem(stack, ms, buffer, player, 180, 0, 0, -0.2, 0.15, 0.5f, 0.5f, 0.5f); // magnetizer
+        var playerInventory = player.getInventory().items;
+        renderItem(stack, ms, buffer, player, 180, 0, 0, -0.2, 0.15, 0.5f, 0.5f, 0.5f, light); // magnetizer
         if (stack.getOrDefault(MekaWeapons.TOGGLE_RENDER_MEKATANA.get(), true)) {
-            player.getInventory().items.stream().filter(s -> s.is(MekaTana))
-                    .findFirst().filter(s-> isNotHolding(player, MekaTana))
-                    .ifPresent(s -> renderItem(s, ms, buffer, player, 45, 0, -0.1, 0.7, 0.2, 1f, 1f, 1f));
+            playerInventory.stream().filter(s -> s.is(MekaTana)).findFirst().filter(s-> isNotHolding(player, MekaTana)).ifPresent(s -> renderItem(s, ms, buffer, player, 45, 0, -0.1, 0.7, 0.2, 1f, 1f, 1f, light));
         }
 
         if (stack.getOrDefault(MekaWeapons.TOGGLE_RENDER_MEKABOW.get(), true)) {
-            player.getInventory().items.stream().filter(s -> s.is(MekaBow))
-                    .findFirst().filter(s-> isNotHolding(player, MekaBow))
-                    .ifPresent(s -> renderItem(s, ms, buffer, player, 45, 0, -0.30, -0.15, 0.2, 1f, 1f, 1f));
+            playerInventory.stream().filter(s -> s.is(MekaBow)).findFirst().filter(s-> isNotHolding(player, MekaBow)).ifPresent(s -> renderItem(s, ms, buffer, player, 45, 0, -0.30, -0.15, 0.2, 1f, 1f, 1f, light));
         }
 
         if (stack.getOrDefault(MekaWeapons.TOGGLE_RENDER_MEKAGUN.get(), true)) {
-            player.getInventory().items.stream().filter(s -> s.is(MekaGun))
-                    .findFirst().filter(s-> isNotHolding(player, MekaGun))
-                    .ifPresent(s -> renderItem(s, ms, buffer, player, 45, 90, -0.15, 0.7, -0.1, 1.5f, 1.5f, 1.5f));
+            playerInventory.stream().filter(s -> s.is(MekaGun)).findFirst().filter(s-> isNotHolding(player, MekaGun)).ifPresent(s -> renderItem(s, ms, buffer, player, 45, 90, -0.15, 0.7, -0.1, 1.5f, 1.5f, 1.5f, light));
         }
     }
 
-    private void renderItem(ItemStack stack, @NotNull PoseStack ms, MultiBufferSource buffer, @NotNull LivingEntity player, float rotationZN, float rotationXP, double translateX, double translateY, double translateZ, float scaleX, float scaleY, float scaleZ) {
+    private void renderItem(ItemStack stack, @NotNull PoseStack ms, MultiBufferSource buffer, @NotNull LivingEntity player, float rotationZN, float rotationXP, double translateX, double translateY, double translateZ, float scaleX, float scaleY, float scaleZ, int light) {
         ms.pushPose();
         ms.mulPose(Axis.ZN.rotationDegrees(rotationZN));
         ms.mulPose(Axis.XP.rotationDegrees(rotationXP));
         ms.translate(translateX, translateY, translateZ);
         ms.scale(scaleX, scaleY, scaleZ);
-        Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE, 0xF000F0, OverlayTexture.NO_OVERLAY, ms, buffer, player.level(), 1);
+        Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.NONE, light, OverlayTexture.NO_OVERLAY, ms, buffer, player.level(), 1);
         ms.popPose();
     }
 

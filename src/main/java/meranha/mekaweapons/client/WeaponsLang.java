@@ -12,6 +12,7 @@ public enum WeaponsLang implements ILangEntry {
     ARROWENERGY_MODE("tooltip", "arrowenergy_mode"),
     MAGNETIZER("tooltip", "magnetizer"),
     DRAWSPEED("tooltip", "drawspeed"),
+    HEAT("tooltip", "gun_heat"),
 
     RADIAL_TOGGLE_ON("radial", "toggle_on"),
     RADIAL_TOGGLE_OFF("radial", "toggle_off"),

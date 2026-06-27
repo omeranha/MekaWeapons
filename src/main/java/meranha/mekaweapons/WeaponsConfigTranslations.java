@@ -36,9 +36,14 @@ public enum WeaponsConfigTranslations implements IConfigTranslation {
     MEKA_GUN_ENERGY_USAGE("meka_gun.energy_usage", "Energy Usage", "Cost in Joules of using Meka-Gun."),
     MEKA_GUN_BASE_ENERGY_CAPACITY("meka_gun.base_energy_capacity", "Base Energy Capacity", "Base energy capacity of Meka-Gun."),
     MEKA_GUN_BASE_CHARGE_RATE("meka_gun.base_charge_rate", "Base Charge Rate", "Base charge rate of Meka-Gun."),
-
+    MEKA_GUN_BEAM_LENGTH("meka_gun.beam_length", "Beam Length", "Laser beam length of Meka-Gun, in blocks."),
+    MEKA_GUN_MAX_HEAT("meka_gun.max_heat", "Max Heat", "Max heat percentage of Meka-Gun."),
+    MEKA_GUN_HEAT_PER_SHOT("meka_gun.heat_per_shot", "Heat Per Shot", "Heat percentage added to Meka-Gun per shot."),
+    MEKA_GUN_HEAT_LOSS_PER_SECOND("meka_gun.heat_loss_per_second", "Heat Loss Per Second", "Heat percentage lost by Meka-Gun per second."),
+    MEKA_GUN_COOLDOWN_DELAY_TICKS("meka_gun.cooldown_delay_ticks", "Cooldown Delay Ticks", "Ticks to wait before Meka-Gun starts cooling down."),
 
     WIRELESS_CHARGE_RATE("wireless_charger_energy_rate", "Wireless Charger Energy Rate", "Transfer energy rate of the Wireless Charger (Magnetizer), in Joules per tick.");
+
     private final String key;
     private final String title;
     private final String tooltip;

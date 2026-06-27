@@ -39,6 +39,11 @@ public class WeaponsConfig extends BaseMekanismConfig {
     public final CachedLongValue mekaGunEnergyUsage;
     public final CachedLongValue mekaGunBaseEnergyCapacity;
     public final CachedLongValue mekaGunBaseChargeRate;
+    public final CachedIntValue mekaGunBeamLength;
+    public final CachedIntValue mekaGunMaxHeat;
+    public final CachedIntValue mekaGunHeatPerShot;
+    public final CachedIntValue mekaGunHeatLossPerSecond;
+    public final CachedIntValue mekaGunCooldownDelayTicks;
 
     public final CachedBooleanValue mekaTanaEnchantments;
     public final CachedBooleanValue mekaBowEnchantments;
@@ -79,6 +84,11 @@ public class WeaponsConfig extends BaseMekanismConfig {
         mekaGunEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_ENERGY_USAGE, "energy_usage", 250_000);
         mekaGunBaseEnergyCapacity = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_BASE_ENERGY_CAPACITY, "base_energy_capacity", 16_000_000);
         mekaGunBaseChargeRate = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_BASE_CHARGE_RATE, "base_charge_rate", 350_000);
+        mekaGunBeamLength = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_BEAM_LENGTH.applyToBuilder(builder).defineInRange("beam_length", 20, 1, 1_024));
+        mekaGunMaxHeat = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_MAX_HEAT.applyToBuilder(builder).defineInRange("max_heat", 100, 1, 10_000));
+        mekaGunHeatPerShot = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_HEAT_PER_SHOT.applyToBuilder(builder).defineInRange("heat_per_shot", 10, 1, 10_000));
+        mekaGunHeatLossPerSecond = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_HEAT_LOSS_PER_SECOND.applyToBuilder(builder).defineInRange("heat_loss_per_second", 5, 1, 10_000));
+        mekaGunCooldownDelayTicks = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_COOLDOWN_DELAY_TICKS.applyToBuilder(builder).defineInRange("cooldown_delay_ticks", 20, 1, 10_000));
         builder.pop();
 
         this.configSpec = builder.build();

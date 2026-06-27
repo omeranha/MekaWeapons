@@ -3,6 +3,7 @@ package meranha.mekaweapons;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.mojang.serialization.Codec;
 import mekanism.api.functions.ConstantPredicates;
 import mekanism.api.gear.IModule;
 import mekanism.api.gear.IModuleHelper;
@@ -19,6 +20,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
@@ -124,6 +126,8 @@ public class MekaWeapons {
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKATANA = DATA_COMPONENTS.registerBoolean("render_mekatana");
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKABOW = DATA_COMPONENTS.registerBoolean("render_mekabow");
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKAGUN = DATA_COMPONENTS.registerBoolean("render_mekagun");
+    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Integer>> HEAT = DATA_COMPONENTS.registerInt("heat");
+    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Long>> LAST_FIRE_TICK = DATA_COMPONENTS.registerNonNegativeLong("last_fire_tick");
 
     public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(Registries.PARTICLE_TYPE, MODID);
     public static final DeferredHolder<ParticleType<?>, MekaGunLaserParticleType> MEKA_GUN_LASER = PARTICLE_TYPES.register("meka_gun_laser", MekaGunLaserParticleType::new);
