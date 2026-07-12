@@ -176,7 +176,7 @@ public class MekaWeapons {
         final String ADD_MEKA_TANA_MODULES = "add_meka_tana_modules";
         final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
         final String ADD_MEKA_GUN_MODULES = "add_meka_gun_modules";
-        final String ADD_MAGNETIZER_MODULE = "add_meka_bow_module";
+        final String ADD_MAGNETIZER_MODULE = "add_magnetizer_module";
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_TANA, ADD_MEKA_TANA_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_BOW, ADD_MEKA_BOW_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_GUN, ADD_MEKA_GUN_MODULES);
@@ -186,7 +186,7 @@ public class MekaWeapons {
         MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT,
                 WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MEKA_GUN_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
-        MekanismIMC.sendModuleIMC(ADD_MAGNETIZER_MODULE, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MAGNETIZER_MODULE, MekanismModules.COLOR_MODULATION_UNIT);
     }
 
     private void mekaBowEnergyArrows(final @NotNull LivingGetProjectileEvent event) {
