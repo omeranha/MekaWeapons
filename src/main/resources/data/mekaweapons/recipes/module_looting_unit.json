@@ -1,0 +1,14 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "result":{
+    "item":"mekaweapons:module_looting_unit"
+  },
+  "pattern":[ "rer", "rbr", "hph" ],
+  "key":{
+    "b":{ "item": "mekanism:module_base" },
+    "r":{ "item": "mekanism:alloy_reinforced" },
+    "e":{ "item": "minecraft:emerald" },
+    "p":{ "item": "mekanism:pellet_polonium" },
+    "h":{ "item": "mekanism:hdpe_sheet"}
+  }
+}

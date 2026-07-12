@@ -13,8 +13,12 @@ import mekanism.common.Mekanism;
 import mekanism.common.capabilities.ItemCapabilityWrapper.ItemCapability;
 import mekanism.common.capabilities.security.item.ItemStackOwnerObject;
 import mekanism.common.content.entangloporter.InventoryFrequency;
+import mekanism.common.content.gear.IModuleContainerItem;
 import mekanism.common.integration.curios.CuriosIntegration;
 import mekanism.common.integration.energy.EnergyCompatUtils;
+import mekanism.common.inventory.container.MekanismContainer;
+import mekanism.common.inventory.container.item.MekanismItemContainer;
+import mekanism.common.inventory.container.sync.SyncableBoolean;
 import mekanism.common.item.CapabilityItem;
 import mekanism.common.item.interfaces.IGuiItem;
 import mekanism.common.lib.frequency.Frequency;
@@ -37,7 +41,11 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 
-public class ItemMagnetizer extends CapabilityItem implements IFrequencyItem, IGuiItem {
+public class ItemMagnetizer extends CapabilityItem implements IFrequencyItem, IGuiItem, MekanismItemContainer.IItemContainerTracker, IModuleContainerItem {
+    public static final String SETTINGS_TAG = "Settings";
+    public static final String RENDER_GUN = "RenderGun";
+    public static final String RENDER_BOW = "RenderBow";
+    public static final String RENDER_KATANA = "RenderKatana";
 
     public ItemMagnetizer(Properties properties) {
         super(properties.rarity(Rarity.RARE).stacksTo(1));
@@ -64,18 +72,30 @@ public class ItemMagnetizer extends CapabilityItem implements IFrequencyItem, IG
             return;
         }
 
-        for (ItemStack slot : player.getInventory().items) {
-            toCharge = charge(frequencyContainer, slot, toCharge);
-            if (toCharge.isZero()) break;
+        for (ItemStack armorSlot : player.getArmorSlots()) {
+            if (toCharge.isZero()) {
+                return;
+            }
+            toCharge = charge(frequencyContainer, armorSlot, toCharge);
         }
 
-        if (!toCharge.isZero() && Mekanism.hooks.CuriosLoaded) {
+        for (ItemStack slot : player.getInventory().items) {
+            if (toCharge.isZero()) {
+                return;
+            }
+            toCharge = charge(frequencyContainer, slot, toCharge);
+        }
+
+        if (Mekanism.hooks.CuriosLoaded) {
             Optional<? extends IItemHandler> curiosInventory = CuriosIntegration.getCuriosInventory(player);
-            if (curiosInventory.isEmpty()) return;
-            IItemHandler handler = curiosInventory.get();
-            for (int slot = 0, slots = handler.getSlots(); slot < slots; slot++) {
-                toCharge = charge(frequencyContainer, handler.getStackInSlot(slot), toCharge);
-                if (toCharge.isZero()) break;
+            if (curiosInventory.isPresent()) {
+                IItemHandler handler = curiosInventory.get();
+                for (int slot = 0, slots = handler.getSlots(); slot < slots; slot++) {
+                    if (toCharge.isZero()) {
+                        return;
+                    }
+                    toCharge = charge(frequencyContainer, handler.getStackInSlot(slot), toCharge);
+                }
             }
         }
     }
@@ -116,5 +136,16 @@ public class ItemMagnetizer extends CapabilityItem implements IFrequencyItem, IG
     protected void gatherCapabilities(List<ItemCapability> capabilities, ItemStack stack, CompoundTag nbt) {
         capabilities.add(new ItemStackOwnerObject());
         super.gatherCapabilities(capabilities, stack, nbt);
+    }
+
+    public boolean getRenderValue(ItemStack stack, String tag) {
+        return stack.getOrCreateTagElement(SETTINGS_TAG).getBoolean(tag);
+    }
+
+    @Override
+    public void addContainerTrackers(MekanismContainer container, ItemStack stack) {
+        container.track(SyncableBoolean.create(() -> getRenderValue(stack, RENDER_KATANA), value -> stack.getOrCreateTagElement(SETTINGS_TAG).putBoolean(RENDER_KATANA, value)));
+        container.track(SyncableBoolean.create(() -> getRenderValue(stack, RENDER_BOW), value -> stack.getOrCreateTagElement(SETTINGS_TAG).putBoolean(RENDER_BOW, value)));
+        container.track(SyncableBoolean.create(() -> getRenderValue(stack, RENDER_GUN), value -> stack.getOrCreateTagElement(SETTINGS_TAG).putBoolean(RENDER_GUN, value)));
     }
 }

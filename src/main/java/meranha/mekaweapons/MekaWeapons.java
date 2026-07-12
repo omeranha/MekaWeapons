@@ -1,10 +1,20 @@
 package meranha.mekaweapons;
 
+import mekanism.api.gear.IModule;
+import mekanism.common.content.gear.shared.ModuleColorModulationUnit;
+import mekanism.common.lib.Color;
 import mekanism.common.registration.impl.*;
-import meranha.mekaweapons.client.GuiMagnetizer;
-import meranha.mekaweapons.client.MagnetizerContainer;
+import meranha.mekaweapons.client.*;
+import meranha.mekaweapons.items.*;
 import meranha.mekaweapons.items.modules.WeaponsModules;
+import meranha.mekaweapons.particle.MekaGunLaserParticleData;
+import meranha.mekaweapons.particle.MekaGunLaserParticleType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.registries.RegisterEvent;
 import org.jetbrains.annotations.Contract;
@@ -22,11 +32,6 @@ import mekanism.common.item.ItemModule;
 import mekanism.common.registries.MekanismCreativeTabs;
 import mekanism.common.registries.MekanismModules;
 import mekanism.common.util.MekanismUtils.ResourceType;
-import meranha.mekaweapons.items.ItemMagnetizer;
-import meranha.mekaweapons.items.ItemMekaBow;
-import meranha.mekaweapons.items.ItemMekaTana;
-import meranha.mekaweapons.items.MekaArrowEntity;
-import meranha.mekaweapons.client.MekaArrowRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -67,6 +72,7 @@ public class MekaWeapons {
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);
     public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("mekatana", ItemMekaTana::new);
     public static final ItemRegistryObject<ItemMekaBow> MEKA_BOW = ITEMS.registerUnburnable("mekabow", ItemMekaBow::new);
+    public static final ItemRegistryObject<ItemMekaGun> MEKA_GUN = ITEMS.registerUnburnable("meka_gun", ItemMekaGun::new);
     public static final ItemRegistryObject<Item> MAGNETIZER = ITEMS.registerUnburnable("magnetizer", ItemMagnetizer::new);
     public static final ItemRegistryObject<Item> KATANA_BLADE = ITEMS.register("katana_blade");
     public static final ItemRegistryObject<Item> BOW_RISER = ITEMS.register("bow_riser");
@@ -86,8 +92,13 @@ public class MekaWeapons {
     public static final ContainerTypeDeferredRegister CONTAINER_TYPES = new ContainerTypeDeferredRegister(MODID);
     public static final ContainerTypeRegistryObject<MagnetizerContainer> MAGNETIZER_CONTAINER = CONTAINER_TYPES.register(MekaWeapons.MAGNETIZER, ItemMagnetizer.class, MagnetizerContainer::new);
 
-    public static final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
+    public static final ParticleTypeDeferredRegister PARTICLE_TYPES = new ParticleTypeDeferredRegister(MODID);
+    public static final ParticleTypeRegistryObject<MekaGunLaserParticleData, MekaGunLaserParticleType> MEKA_GUN_LASER = PARTICLE_TYPES.register("meka_gun_laser", MekaGunLaserParticleType::new);
+
     public static final String ADD_MEKATANA_MODULES = "add_mekatana_modules";
+    public static final String ADD_MEKABOW_MODULES = "add_mekabow_modules";
+    public static final String ADD_MEKAGUN_MODULES = "add_mekagun_modules";
+    public static final String ADD_MAGNETIZER_MODULES = "add_magnetizer_modules";
 
     @SuppressWarnings("removal")
     public MekaWeapons() {
@@ -98,13 +109,14 @@ public class MekaWeapons {
         MekaWeapons.ITEMS.register(modEventBus);
         MekaWeapons.ENTITY_TYPES.register(modEventBus);
         MekaWeapons.CONTAINER_TYPES.register(modEventBus);
+        MekaWeapons.PARTICLE_TYPES.register(modEventBus);
         MekanismConfigHelper.registerConfig(modContainer, general);
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::buildCreativeModeTabContents);
         modEventBus.addListener(this::enqueueIMC);
         modEventBus.addListener(this::registerRenderers);
         MinecraftForge.EVENT_BUS.addListener(this::mekaBowEnergyArrows);
-        MinecraftForge.EVENT_BUS.addListener(this::disableMekaBowAttack);
+        MinecraftForge.EVENT_BUS.addListener(this::MekaWeaponsAttackEvent);
         WeaponsModules.MODULES.register(modEventBus);
     }
 
@@ -131,8 +143,10 @@ public class MekaWeapons {
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
-        addModules(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT, WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT);
-        addModules(ADD_MEKATANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT);
+        addModules(ADD_MEKATANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        addModules(ADD_MEKABOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT, WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        addModules(ADD_MEKAGUN_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        addModules(ADD_MAGNETIZER_MODULES, MekanismModules.COLOR_MODULATION_UNIT);
     }
 
     public static void addModules(String method, IModuleDataProvider<?>... moduleDataProviders) {
@@ -164,24 +178,44 @@ public class MekaWeapons {
         }
     }
 
-    // small trick to prevent players from using the meka-bow to attack entities. This allows the tooltip to show attack damage without enabling actual damage.
-    private void disableMekaBowAttack(@NotNull AttackEntityEvent event) {
+
+    private void MekaWeaponsAttackEvent(@NotNull AttackEntityEvent event) {
         Player player = event.getEntity();
-        if (!(player.level() instanceof ServerLevel)) {
+        if (!(player.level() instanceof ServerLevel level)) {
             return;
         }
 
-        if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof ItemMekaBow) {
+        var stack = player.getItemInHand(InteractionHand.MAIN_HAND);
+        var item = stack.getItem();
+        // small trick to prevent players from using the meka-bow to attack entities. This allows the tooltip to show attack damage without enabling actual damage.
+        if (item instanceof ItemMekaBow) {
             event.setCanceled(true);
+            return;
+        }
+
+        // another small trick to emulate Minecraft's sweep attack. Vanilla applies sweep damage through enchantment helper directly in attack function, so manually damage nearby entities to support the Meka-Tana.
+        if (item instanceof ItemMekaTana) {
+            if (!MekaWeaponsUtils.isModuleEnabled(stack, WeaponsModules.SWEEPING_UNIT)) {
+                return;
+            }
+
+            var target = event.getTarget();
+            var damage = MekaWeaponsUtils.getTotalDamage(stack);
+            for(LivingEntity livingentity : level.getEntitiesOfClass(LivingEntity.class, player.getItemInHand(InteractionHand.MAIN_HAND).getSweepHitBox(player, target))) {
+                double entityReachSq = Mth.square(player.getEntityReach());
+                if (livingentity != player && livingentity != target && !player.isAlliedTo(livingentity) && (!(livingentity instanceof ArmorStand) || !((ArmorStand)livingentity).isMarker()) && player.distanceToSqr(livingentity) < entityReachSq) {
+                    livingentity.hurt(player.damageSources().playerAttack(player), damage);
+                }
+            }
         }
     }
 
-    @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             if (ModList.get().isLoaded("curios")) {
-                IItemProvider itemProvider = () -> MekaWeapons.MAGNETIZER.get();
+                IItemProvider itemProvider = MekaWeapons.MAGNETIZER::get;
                 CuriosRendererRegistry.register(itemProvider.asItem(), WeaponsRenderer::new);
             }
 
@@ -198,9 +232,23 @@ public class MekaWeapons {
 
         @SubscribeEvent(priority = EventPriority.LOW)
         public static void registerScreens(RegisterEvent event) {
-            event.register(Registries.MENU, helper -> {
-                ClientRegistrationUtil.registerScreen(MekaWeapons.MAGNETIZER_CONTAINER, GuiMagnetizer::new);
-            });
+            event.register(Registries.MENU, helper -> ClientRegistrationUtil.registerScreen(MekaWeapons.MAGNETIZER_CONTAINER, GuiMagnetizer::new));
+        }
+
+        @SubscribeEvent
+        public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+            event.register((stack, tintIndex) -> {
+                if (tintIndex == 0) {
+                    IModule<ModuleColorModulationUnit> colorUnit = MekaWeaponsUtils.getEnabledModule(stack, MekanismModules.COLOR_MODULATION_UNIT);
+                    return colorUnit != null ? colorUnit.getCustomInstance().getColor().argb() : Color.WHITE.argb();
+                }
+                return 0xFFFFFFFF;
+            }, MekaWeapons.MEKA_TANA.get(), MekaWeapons.MEKA_BOW.get(), MekaWeapons.MAGNETIZER.get(), MekaWeapons.MEKA_GUN.get());
+        }
+
+        @SubscribeEvent
+        public static void registerParticleFactories(RegisterParticleProvidersEvent event) {
+            event.registerSpriteSet(MekaWeapons.MEKA_GUN_LASER.get(), MekaGunLaserParticle.Factory::new);
         }
     }
 }

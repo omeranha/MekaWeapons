@@ -33,7 +33,8 @@ public abstract class ModuleHelperMixin {
     )
     void processIMC(InterModProcessEvent event, CallbackInfo ci, Map<ModuleData<?>, ImmutableSet.Builder<Item>> supportedContainersBuilderMap) {
         MekaWeapons.logger.debug("Weapons: Injected processIMC");
-        mapSupportedModules(event, MekaWeapons.ADD_MEKA_BOW_MODULES, MekaWeapons.MEKA_BOW, supportedContainersBuilderMap);
+        mapSupportedModules(event, MekaWeapons.ADD_MEKABOW_MODULES, MekaWeapons.MEKA_BOW, supportedContainersBuilderMap);
         mapSupportedModules(event, MekaWeapons.ADD_MEKATANA_MODULES, MekaWeapons.MEKA_TANA, supportedContainersBuilderMap);
+        mapSupportedModules(event, MekaWeapons.ADD_MEKAGUN_MODULES, MekaWeapons.MEKA_GUN, supportedContainersBuilderMap);
     }
 }

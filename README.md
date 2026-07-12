@@ -1,5 +1,3 @@
-## We've reached 2.5 million downloads on CurseForge. I'm very grateful for all the players' support and I hope the mod can continue to add value to everyone's gameplay.
-
 # Mekanism: Weapons
 
 **Mekanism: Weapons** is an unofficial addon for [Mekanism](https://www.curseforge.com/minecraft/mc-mods/mekanism), introducing two advanced, highly customizable weapons that blend seamlessly with the iconic "Meka" item aesthetic.
@@ -8,15 +6,16 @@
 
 - **Meka-Tana**: A high-tech katana capable of dealing massive damage and teleporting the player.
 - **Meka-Bow**: An advanced bow that elevates ranged combat with unique features and modular upgrades.
+- **Meka-Gun**: A powerful laser gun that fires precise energy lasers, offering a futuristic alternative to traditional firearms.
 
-Both weapons support exclusive modules, including:
+Weapons support exclusive modules, including:
 - **Weapon Attack Amplification Unit**: Increases damage up to 4x (configurable).
 - **Looting Unit**: Functions like the Looting enchantment, up to level 5.
 
 ## Meka-Bow Modules
 
 - **Auto Fire**: Enables continuous, automatic arrow shooting.
-- **Drawspeed**: Reduces the time required to fully draw the bow for quicker shots.
+- **Draw speed**: Reduces the time required to fully draw the bow for quicker shots.
 - **Gravity Dampener**: Modifies arrow trajectory for improved accuracy and range, allowing arrows to fly straight.
 - **Energy Arrows**: Fires arrows made of pure energy, removing the need for ammunition.
 
@@ -27,9 +26,9 @@ Both weapons support exclusive modules, including:
 
 ## Additional Features
 
-- **Wireless Charger (formerly Magnetizer)**:
-    - Charges items in your inventory.
-    - When equipped in a Curios slot, visually displays the Meka-Bow and Meka-Tana on your character’s back for added personalization.
+- **Wireless Charger**:
+  - Charges items in your inventory.
+  - When equipped in a Curios slot, visually displays the Meka-Bow and Meka-Tana on your character’s back for added personalization.
 
 ## Customization & Expansion
 

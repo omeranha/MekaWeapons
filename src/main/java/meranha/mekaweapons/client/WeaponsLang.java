@@ -1,5 +1,6 @@
-package meranha.mekaweapons;
+package meranha.mekaweapons.client;
 
+import meranha.mekaweapons.MekaWeapons;
 import org.jetbrains.annotations.NotNull;
 
 import mekanism.api.text.ILangEntry;
@@ -11,6 +12,11 @@ public enum WeaponsLang implements ILangEntry {
     ARROWENERGY_MODE("tooltip", "arrowenergy_mode"),
     MAGNETIZER("tooltip", "magnetizer"),
     DRAWSPEED("tooltip", "drawspeed"),
+    HEAT("tooltip", "gun_heat"),
+
+    MEKATANA_TOGGLE_RENDER("gui", "render_tana"),
+    MEKABOW_TOGGLE_RENDER("gui", "render_bow"),
+    MEKAGUN_TOGGLE_RENDER("gui", "render_gun"),
 
     RADIAL_TOGGLE_ON("radial", "toggle_on"),
     RADIAL_TOGGLE_OFF("radial", "toggle_off"),

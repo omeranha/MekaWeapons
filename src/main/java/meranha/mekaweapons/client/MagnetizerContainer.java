@@ -18,4 +18,8 @@ public class MagnetizerContainer extends FrequencyItemContainer<InventoryFrequen
     public FrequencyType<InventoryFrequency> getFrequencyType() {
         return FrequencyType.INVENTORY;
     }
+
+    public ItemStack getMagnetizerStack() {
+        return stack;
+    }
 }

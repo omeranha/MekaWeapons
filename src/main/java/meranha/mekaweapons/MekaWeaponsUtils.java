@@ -1,5 +1,6 @@
 package meranha.mekaweapons;
 
+import meranha.mekaweapons.items.ItemMekaGun;
 import meranha.mekaweapons.items.modules.WeaponsModules;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +29,8 @@ public class MekaWeaponsUtils {
             energy = MekaWeapons.general.mekaBowEnergyUsage;
         } else if (weapon instanceof ItemMekaTana) {
             energy = MekaWeapons.general.mekaTanaEnergyUsage;
+        } else if (weapon instanceof ItemMekaGun) {
+            energy = MekaWeapons.general.mekaGunEnergyUsage;
         }
 
         return energy != null ? energy.get().longValue() : 0;
@@ -93,6 +96,8 @@ public class MekaWeaponsUtils {
             damage = MekaWeapons.general.mekaBowBaseDamage;
         } else if (weapon instanceof ItemMekaTana) {
             damage = MekaWeapons.general.mekaTanaBaseDamage;
+        }else if (weapon instanceof ItemMekaGun) {
+            damage = MekaWeapons.general.mekaGunBaseDamage;
         }
 
         return damage != null ? damage.get() : 0;

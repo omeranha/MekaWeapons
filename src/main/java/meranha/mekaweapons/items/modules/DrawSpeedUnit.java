@@ -28,7 +28,7 @@ import mekanism.api.text.TextComponentUtil;
 import mekanism.common.MekanismLang;
 import mekanism.common.util.MekanismUtils;
 import meranha.mekaweapons.MekaWeapons;
-import meranha.mekaweapons.WeaponsLang;
+import meranha.mekaweapons.client.WeaponsLang;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

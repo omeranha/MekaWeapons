@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "item": "mekaweapons:meka_gun"
+  },
+  "pattern": [ "plp", "oao", "cbc" ],
+  "key": {
+    "l": { "item":"mekanism:laser" },
+    "c": { "tag":"forge:circuits/ultimate" },
+    "p": { "item":"mekanism:pellet_polonium" },
+    "b": { "item":"mekanism:basic_induction_cell" },
+    "o": { "tag":"forge:ingots/refined_obsidian" },
+    "a": { "item":"mekanism:laser_amplifier" }
+  }
+}

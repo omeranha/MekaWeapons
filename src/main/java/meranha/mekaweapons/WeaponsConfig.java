@@ -34,6 +34,16 @@ public class WeaponsConfig extends BaseMekanismConfig {
     public final CachedFloatingLongValue mekaBowBaseEnergyCapacity;
     public final CachedFloatingLongValue mekaBowBaseChargeRate;
 
+    public final CachedIntValue mekaGunBaseDamage;
+    public final CachedFloatingLongValue mekaGunEnergyUsage;
+    public final CachedFloatingLongValue mekaGunBaseEnergyCapacity;
+    public final CachedFloatingLongValue mekaGunBaseChargeRate;
+    public final CachedIntValue mekaGunBeamLength;
+    public final CachedIntValue mekaGunMaxHeat;
+    public final CachedIntValue mekaGunHeatPerShot;
+    public final CachedIntValue mekaGunHeatLossPerSecond;
+    public final CachedIntValue mekaGunCooldownDelayTicks;
+
     public final CachedBooleanValue mekaTanaEnchantments;
     public final CachedBooleanValue mekaBowEnchantments;
 
@@ -68,6 +78,17 @@ public class WeaponsConfig extends BaseMekanismConfig {
         mekaBowBaseEnergyCapacity = CachedFloatingLongValue.define(this, builder, "Base energy capacity of Meka-Bow.", "baseEnergyCapacity", FloatingLong.createConst(16_000_000));
         mekaBowBaseChargeRate = CachedFloatingLongValue.define(this, builder, "Base charge rate of Meka-Bow.", "baseChargeRate", FloatingLong.createConst(350_000));
         mekaBowEnchantments = CachedBooleanValue.wrap(this, builder.comment("Whether Meka-Bow can be enchanted. False by default. Use at your own risk.").define("enchantments", false));
+
+        builder.comment("Meka-Gun Settings").push("meka_gun");
+        mekaGunBaseDamage = CachedIntValue.wrap(this, builder.comment("Base damage of Meka-Gun.").define("baseDamage", 50));
+        mekaGunEnergyUsage = CachedFloatingLongValue.define(this, builder, "Cost in Joules of using Meka-Gun.", "energyUsage", FloatingLong.createConst(250_000));
+        mekaGunBaseEnergyCapacity = CachedFloatingLongValue.define(this, builder, "Base energy capacity of Meka-Gun.", "baseEnergyCapacity", FloatingLong.createConst(16_000_000));
+        mekaGunBaseChargeRate = CachedFloatingLongValue.define(this, builder, "Base charge rate of Meka-Gun.", "baseChargeRate", FloatingLong.createConst(350_000));
+        mekaGunBeamLength = CachedIntValue.wrap(this, builder.comment("Laser beam length of Meka-Gun, in blocks.").defineInRange("beamLength", 20, 1, 1_024));
+        mekaGunMaxHeat = CachedIntValue.wrap(this, builder.comment("Max heat percentage of Meka-Gun.").defineInRange("maxHeat", 100, 1, 10_000));
+        mekaGunHeatPerShot = CachedIntValue.wrap(this, builder.comment("Heat percentage added to Meka-Gun per shot.").defineInRange("heatPerShot", 10, 1, 10_000));
+        mekaGunHeatLossPerSecond = CachedIntValue.wrap(this, builder.comment("Heat percentage lost by Meka-Gun per second.").defineInRange("heatLossPerSecond", 5, 1, 10_000));
+        mekaGunCooldownDelayTicks = CachedIntValue.wrap(this, builder.comment("Ticks to wait before Meka-Gun starts cooling down.").defineInRange("cooldownDelayTicks", 20, 1, 10_000));
         this.configSpec = builder.build();
     }
 
