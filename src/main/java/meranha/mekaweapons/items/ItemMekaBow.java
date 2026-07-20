@@ -5,7 +5,12 @@ import java.util.List;
 
 import meranha.mekaweapons.items.modules.DrawSpeedUnit;
 import meranha.mekaweapons.items.modules.WeaponsModules;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.item.*;
+import net.neoforged.neoforge.event.EventHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import mekanism.api.Action;
@@ -35,11 +40,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 
@@ -88,15 +88,41 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         if (world.isClientSide && isEnergyInsufficient(bow)) {
             return InteractionResultHolder.fail(bow);
         }
-        return super.use(world, player, hand);
+
+        boolean hasAmmo = !player.getProjectile(bow).isEmpty() || isModuleEnabled(bow, WeaponsModules.ARROWENERGY_UNIT);
+        InteractionResultHolder<ItemStack> ret = EventHooks.onArrowNock(bow, world, player, hand, hasAmmo);
+        if (ret != null) {
+            return ret;
+        } else if (!player.hasInfiniteMaterials() && !hasAmmo) {
+            return InteractionResultHolder.fail(bow);
+        } else {
+            player.startUsingItem(hand);
+            return InteractionResultHolder.consume(bow);
+        }
     }
 
     @Override
     public void releaseUsing(@NotNull ItemStack bow, @NotNull Level world, @NotNull LivingEntity entity, int timeLeft) {
-        if (!(entity instanceof Player player) || (!player.isCreative() && isEnergyInsufficient(bow))) {
+        if (!(entity instanceof Player player) || (!player.isCreative() && isEnergyInsufficient(bow)) || !(bow.getItem() instanceof ProjectileWeaponItem projectileWeaponItem)) {
             return;
         }
-        super.releaseUsing(bow, world, entity, timeLeft);
+
+        int charge = EventHooks.onArrowLoose(bow, world, player, this.getUseDuration(bow, entity) - timeLeft, true);
+        float power = getPowerForTime(charge);
+        if (charge < 0 || power < 0.1) {
+            return;
+        }
+
+        ItemStack ammoStack = projectileWeaponItem.getDefaultCreativeAmmo(player, bow);
+        List<ItemStack> list = draw(bow, ammoStack, player);
+        if (world instanceof ServerLevel serverlevel) {
+            if (!list.isEmpty()) {
+                this.shoot(serverlevel, player, player.getUsedItemHand(), bow, list, power * 3.0F, 1.0F, power == 1.0F, null);
+            }
+        }
+
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + power * 0.5F);
+        player.awardStat(Stats.ITEM_USED.get(this));
     }
 
     @Override

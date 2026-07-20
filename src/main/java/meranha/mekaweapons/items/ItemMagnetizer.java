@@ -67,21 +67,21 @@ public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, IC
         }
 
         for (ItemStack armorSlot : player.getArmorSlots()) {
-            toCharge = charge(frequencyContainer, armorSlot, toCharge);
             if (toCharge == 0L) return;
+            toCharge = charge(frequencyContainer, armorSlot, toCharge);
         }
 
         for (ItemStack slot : player.getInventory().items) {
-            toCharge = charge(frequencyContainer, slot, toCharge);
             if (toCharge == 0L) return;
+            toCharge = charge(frequencyContainer, slot, toCharge);
         }
 
         if (Mekanism.hooks.curios.isLoaded()) {
             IItemHandler handler = CuriosIntegration.getCuriosInventory(player);
             if (handler == null) return;
             for (int slot = 0, slots = handler.getSlots(); slot < slots; slot++) {
-                toCharge = charge(frequencyContainer, handler.getStackInSlot(slot), toCharge);
                 if (toCharge == 0L) return;
+                toCharge = charge(frequencyContainer, handler.getStackInSlot(slot), toCharge);
             }
         }
     }

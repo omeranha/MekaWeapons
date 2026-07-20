@@ -78,6 +78,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
         mekaBowBaseEnergyCapacity = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_BASE_ENERGY_CAPACITY, "base_energy_capacity", 16_000_000);
         mekaBowBaseChargeRate = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_BASE_CHARGE_RATE, "base_charge_rate", 350_000);
         mekaBowEnchantments = CachedBooleanValue.wrap(this, WeaponsConfigTranslations.MEKA_BOW_ENCHANTMENTS.applyToBuilder(builder).define("enchantments", false));
+        builder.pop();
 
         WeaponsConfigTranslations.MEKA_GUN.applyToBuilder(builder).push("meka_gun");
         mekaGunBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 50));

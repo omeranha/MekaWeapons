@@ -8,21 +8,18 @@ import mekanism.api.lasers.ILaserDissipation;
 import mekanism.api.text.EnumColor;
 import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
-import mekanism.client.sound.SoundHandler;
 import mekanism.common.MekanismLang;
 import mekanism.common.capabilities.Capabilities;
 import mekanism.common.content.gear.IRadialModuleContainerItem;
 import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.item.ItemEnergized;
 import mekanism.common.registries.MekanismDamageTypes;
-import mekanism.common.registries.MekanismSounds;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.MekaWeapons;
+import meranha.mekaweapons.client.BeamManager;
 import meranha.mekaweapons.client.WeaponsLang;
-import meranha.mekaweapons.particle.MekaGunLaserParticleData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -35,10 +32,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -87,17 +81,29 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
     }
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand usedHand) {
-        ItemStack stack = player.getItemInHand(usedHand);
+    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
+        player.startUsingItem(hand);
+        return InteractionResultHolder.fail(player.getItemInHand(hand));
+    }
+
+    @Override
+    public void onUseTick(@NotNull Level level, @NotNull LivingEntity livingEntity, @NotNull ItemStack stack, int remainingUseTicks) {
+        if (!(livingEntity instanceof Player player)) {
+            return;
+        }
+
         int heat = getHeat(stack);
         if (isEnergyInsufficient(stack) || heat >= MekaWeapons.general.mekaGunMaxHeat.get()) {
-            return InteractionResultHolder.fail(stack);
+            player.releaseUsingItem();
+            return;
         }
 
         Vec3 look = player.getViewVector(1.0F).normalize();
         Vec3 eye = player.getEyePosition(1.0F);
+
+        InteractionHand hand = player.getUsedItemHand();
         double mainHandSign = player.getMainArm() == net.minecraft.world.entity.HumanoidArm.RIGHT ? 1.0D : -1.0D;
-        double handSign = (usedHand == InteractionHand.MAIN_HAND) ? mainHandSign : -mainHandSign;
+        double handSign = hand == InteractionHand.MAIN_HAND ? mainHandSign : -mainHandSign;
         Vec3 right = look.cross(new Vec3(0, 1, 0));
         if (right.lengthSqr() < 1.0E-6) {
             right = new Vec3(1, 0, 0);
@@ -105,12 +111,13 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
             right = right.normalize();
         }
 
-        Vec3 upLocal = right.cross(look).normalize();
-        Vec3 from = eye.add(right.scale(MUZZLE_SIDE_OFFSET * handSign)).add(look.scale(MUZZLE_FORWARD_OFFSET)).add(upLocal.scale(MUZZLE_DOWN_OFFSET));
-        Vec3 aimEnd = eye.add(look.scale(MekaWeapons.general.mekaGunBeamLength.get()));
-        BlockHitResult result = level.clip(new ClipContext(eye, aimEnd, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+        Vec3 up = right.cross(look).normalize();
+        Vec3 from = eye.add(right.scale(MUZZLE_SIDE_OFFSET * handSign)).add(look.scale(MUZZLE_FORWARD_OFFSET)).add(up.scale(MUZZLE_DOWN_OFFSET));
 
-        Vec3 to = result.getType() != HitResult.Type.MISS ? result.getLocation() : aimEnd;
+        Vec3 aimEnd = eye.add(look.scale(MekaWeapons.general.mekaGunBeamLength.get()));
+        BlockHitResult hit = level.clip(new ClipContext(eye, aimEnd, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+
+        Vec3 to = hit.getType() != HitResult.Type.MISS ? hit.getLocation() : aimEnd;
         Vec3 beam = to.subtract(from);
         if (beam.length() < MIN_BEAM_LENGTH) {
             to = from.add(look.scale(MIN_BEAM_LENGTH));
@@ -122,17 +129,27 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
         if (!player.isCreative() && energyContainer != null) {
             energyContainer.extract(energy, Action.EXECUTE, AutomationType.MANUAL);
         }
-        Vec3 finalBeam = finalTo.subtract(from);
-        sendLaserDataToPlayers(level, new MekaGunLaserParticleData(finalBeam.x, finalBeam.y, finalBeam.z, 70, 242, 149), from);
-        SoundHandler.playSound(MekanismSounds.LASER);
+
+        if (!level.isClientSide()) {
+            BeamManager.setBeam(player.getUUID(), from, finalTo, 70 / 255F, 242 / 255F, 149 / 255F, 0.5F);
+        }
+
+        // TODO: start and stop laser sound in use and release using to avoid sound spam each tick
+        //  SoundHandler.playSound(MekanismSounds.LASER);
         setHeat(stack, heat + MekaWeapons.general.mekaGunHeatPerShot.get());
         setLastFireTick(stack, level.getGameTime());
-        return super.use(level, player, usedHand);
+    }
+
+    @Override
+    public void releaseUsing(@NotNull ItemStack stack, Level level, @NotNull LivingEntity entity, int timeLeft) {
+        if (!level.isClientSide() && entity instanceof ServerPlayer player) {
+            BeamManager.removeBeam(player.getUUID());
+        }
     }
 
     @Override
     public void inventoryTick(@NotNull ItemStack stack, Level level, @NotNull Entity entity, int slot, boolean selected) {
-        if (level.isClientSide || !(entity instanceof Player player) || player.getMainHandItem() != stack) return;
+        if (level.isClientSide || !(entity instanceof Player)) return;
 
         long gameTime = level.getGameTime();
         if (gameTime - getLastFireTick(stack) < MekaWeapons.general.mekaGunCooldownDelayTicks.get() || gameTime % 20 != 0) return;
@@ -285,14 +302,6 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
         return dx * dx + dy * dy + dz * dz <= radius * radius;
     }
 
-    private void sendLaserDataToPlayers(Level level, MekaGunLaserParticleData data, Vec3 from) {
-        if (level instanceof ServerLevel serverWorld) {
-            for (ServerPlayer player : serverWorld.players()) {
-                serverWorld.sendParticles(player, data, true, from.x, from.y, from.z, 1, 0, 0, 0, 0);
-            }
-        }
-    }
-
     @Override
     public void addHUDStrings(List<Component> list, Player player, ItemStack stack, EquipmentSlot slotType) {
         list.add(WeaponsLang.HEAT.translateColored(EnumColor.WHITE, getHeat(stack) + "%"));
@@ -336,5 +345,15 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
 
     private static void setLastFireTick(ItemStack stack, long tick) {
         stack.set(MekaWeapons.LAST_FIRE_TICK, tick);
+    }
+
+    @Override
+    public int getUseDuration(@NotNull ItemStack stack, @NotNull LivingEntity entity) {
+        return 72000;
+    }
+
+    @Override
+    public @NotNull UseAnim getUseAnimation(@NotNull ItemStack stack) {
+        return UseAnim.NONE;
     }
 }
