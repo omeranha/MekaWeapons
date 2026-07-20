@@ -104,7 +104,7 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
     public void adjustAttributes(@NotNull ItemAttributeModifierEvent event) {
         long totalDamage = getTotalDamage(event.getItemStack());
         event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
-        event.addModifier(Attributes.SWEEPING_DAMAGE_RATIO, new AttributeModifier(Objects.requireNonNull(Attributes.SWEEPING_DAMAGE_RATIO.getKey()).location(), totalDamage, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
+        event.addModifier(Attributes.SWEEPING_DAMAGE_RATIO, new AttributeModifier(Objects.requireNonNull(Attributes.SWEEPING_DAMAGE_RATIO.getKey()).location(), (double) totalDamage / 2, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         event.addModifier(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, MekaWeapons.general.mekaTanaAttackSpeed.get(), Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
         IRadialModuleContainerItem.super.adjustAttributes(event);
     }

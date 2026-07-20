@@ -30,8 +30,8 @@ public class BeamManager {
         Minecraft.getInstance().renderBuffers().bufferSource().endBatch();
     }
 
-    public static void setBeam(UUID player, Vec3 start, Vec3 end, float r, float b, float g, float a) {
-        ACTIVE_BEAMS.put(player, new BeamData(start, end, 70 / 255F, 242 / 255F, 149 / 255F, 0.5F));
+    public static void setBeam(UUID player, Vec3 start, Vec3 end, float r, float g, float b, float a) {
+        ACTIVE_BEAMS.put(player, new BeamData(start, end, r, g, b, a));
     }
 
     public static void removeBeam(UUID player) {
