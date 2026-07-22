@@ -59,7 +59,6 @@ public class WeaponsConfig extends BaseMekanismConfig {
         moduleDamageMode = CachedEnumValue.wrap(this, WeaponsConfigTranslations.MODULE_DAMAGE_MODE.applyToBuilder(builder).defineEnum("module_damage_mode", ModuleDamageMode.HALF_BASE_DAMAGE));
         moduleCustomDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MODULE_DAMAGE_CUSTOM.applyToBuilder(builder).define("module_damage_custom", 32));
 
-        builder.push("weapons");
         WeaponsConfigTranslations.MEKA_TANA.applyToBuilder(builder).push("meka_tana");
         mekaTanaBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_TANA_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 32));
         mekaTanaAttackSpeed = CachedDoubleValue.wrap(this, WeaponsConfigTranslations.MEKA_TANA_ATTACK_SPEED.applyToBuilder(builder).defineInRange("attack_speed", -2.4, -Attributes.ATTACK_SPEED.value().getDefaultValue(), 100));

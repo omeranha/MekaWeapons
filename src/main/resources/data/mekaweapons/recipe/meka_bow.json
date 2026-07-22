@@ -9,7 +9,7 @@
   "result":{
     "id":"mekaweapons:meka_bow"
   },
-  "pattern":[ "pbp", "heh", " s " ],
+  "pattern":[ "pbp", "heh", "sss" ],
   "key":{
     "s":{ "item":"mekaweapons:bow_limb" },
     "h":{ "item":"mekanism:hdpe_sheet" },
