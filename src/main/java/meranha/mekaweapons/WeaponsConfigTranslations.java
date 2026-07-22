@@ -36,6 +36,7 @@ public enum WeaponsConfigTranslations implements IConfigTranslation {
     MEKA_GUN_ENERGY_USAGE("meka_gun.energy_usage", "Energy Usage", "Cost in Joules of using Meka-Gun."),
     MEKA_GUN_BEAM_LENGTH("meka_gun.beam_length", "Beam Length", "Laser beam length of Meka-Gun, in blocks."),
     MEKA_GUN_MAX_HEAT("meka_gun.max_heat", "Max Heat", "Max heat percentage of Meka-Gun."),
+    MEKA_GUN_LOOTING_ENERGY_USAGE("meka_bow.looting_energy_usage", "Looting Energy Usage", "Additional cost in Joules of using Meka-Gun to apply Looting effect"),
     MEKA_GUN_HEAT_PER_SHOT("meka_gun.heat_per_shot", "Heat Per Shot", "Heat percentage added to Meka-Gun per shot."),
     MEKA_GUN_HEAT_LOSS_PER_SECOND("meka_gun.heat_loss_per_second", "Heat Loss Per Second", "Heat percentage lost by Meka-Gun per second."),
     MEKA_GUN_COOLDOWN_DELAY_TICKS("meka_gun.cooldown_delay_ticks", "Cooldown Delay Ticks", "Ticks to wait before Meka-Gun starts cooling down."),

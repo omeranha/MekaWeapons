@@ -39,6 +39,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
     public final CachedLongValue mekaGunEnergyUsage;
     public final CachedLongValue mekaGunBaseEnergyCapacity;
     public final CachedLongValue mekaGunBaseChargeRate;
+    public final CachedLongValue mekaGunLootingEnergyUsage;
     public final CachedIntValue mekaGunBeamLength;
     public final CachedIntValue mekaGunMaxHeat;
     public final CachedIntValue mekaGunHeatPerShot;
@@ -89,6 +90,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
         mekaGunBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 32));
         mekaGunEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_ENERGY_USAGE, "energy_usage", 625_000);
         mekaGunBeamLength = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_BEAM_LENGTH.applyToBuilder(builder).defineInRange("beam_length", 20, 1, 1_024));
+        mekaGunLootingEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_LOOTING_ENERGY_USAGE, "looting_energy_usage", 125_000);
         mekaGunMaxHeat = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_MAX_HEAT.applyToBuilder(builder).defineInRange("max_heat", 100, 1, 10_000));
         mekaGunHeatPerShot = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_HEAT_PER_SHOT.applyToBuilder(builder).defineInRange("heat_per_shot", 5, 1, 10_000));
         mekaGunHeatLossPerSecond = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_HEAT_LOSS_PER_SECOND.applyToBuilder(builder).defineInRange("heat_loss_per_second", 5, 1, 10_000));

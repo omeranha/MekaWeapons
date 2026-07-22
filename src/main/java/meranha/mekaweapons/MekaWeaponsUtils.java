@@ -86,6 +86,10 @@ public class MekaWeaponsUtils {
             if (isModuleEnabled(weaponStack, WeaponsModules.LOOTING_UNIT)) {
                 energy += MekaWeapons.general.mekaTanaLootingEnergyUsage.get();
             }
+        } else if (weaponStack.getItem() instanceof ItemMekaGun) {
+            if (isModuleEnabled(weaponStack, WeaponsModules.LOOTING_UNIT)) {
+                energy += MekaWeapons.general.mekaGunLootingEnergyUsage.get();
+            }
         }
 
         IModule<AdvancedAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, WeaponsModules.ATTACKAMPLIFICATION_UNIT);
