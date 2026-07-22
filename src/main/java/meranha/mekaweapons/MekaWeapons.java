@@ -3,7 +3,6 @@ package meranha.mekaweapons;
 import java.util.HashMap;
 import java.util.Map;
 
-import mekanism.api.functions.ConstantPredicates;
 import mekanism.api.gear.IModule;
 import mekanism.api.gear.IModuleHelper;
 import mekanism.common.content.gear.shared.ModuleColorModulationUnit;
@@ -27,14 +26,8 @@ import com.mojang.logging.LogUtils;
 import mekanism.api.MekanismIMC;
 import mekanism.client.ClientRegistrationUtil;
 import mekanism.common.Mekanism;
-import mekanism.common.attachments.containers.ContainerType;
-import mekanism.common.attachments.containers.energy.ComponentBackedNoClampEnergyContainer;
-import mekanism.common.attachments.containers.energy.EnergyContainersBuilder;
-import mekanism.common.capabilities.energy.BasicEnergyContainer;
 import mekanism.common.config.IMekanismConfig;
 import mekanism.common.config.MekanismConfigHelper;
-import mekanism.common.content.gear.shared.ModuleEnergyUnit;
-import mekanism.common.item.ItemModule;
 import mekanism.common.registries.MekanismCreativeTabs;
 import mekanism.common.registries.MekanismModules;
 import mekanism.common.util.MekanismUtils.ResourceType;
@@ -45,9 +38,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.item.Rarity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -57,27 +47,24 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.IConfigSpec;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.event.entity.living.LivingGetProjectileEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 
-@SuppressWarnings({"Convert2MethodRef", "unused", "forremoval"})
+@SuppressWarnings({"unused", "forremoval"})
 @Mod(MekaWeapons.MODID)
 public class MekaWeapons {
     public static final String MODID = "mekaweapons";
-    public static final Logger logger = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     public static final WeaponsConfig general = new WeaponsConfig();
     private static final Map<IConfigSpec, IMekanismConfig> KNOWN_CONFIGS = new HashMap<>();
 
     public static final EntityTypeDeferredRegister ENTITY_TYPES = new EntityTypeDeferredRegister(MODID);
-    public static final DeferredHolder<EntityType<?>, EntityType<MekaArrowEntity>> MEKA_ARROW = ENTITY_TYPES.register("meka_arrow", () -> EntityType.Builder.<MekaArrowEntity>of(MekaArrowEntity::new,
-            MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20).build(MODID + ":meka_arrow"));
+    public static final DeferredHolder<EntityType<?>, EntityType<MekaArrowEntity>> MEKA_ARROW = ENTITY_TYPES.register("meka_arrow", () -> EntityType.Builder.<MekaArrowEntity>of(MekaArrowEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20).build(MODID + ":meka_arrow"));
 
     public static final ContainerTypeDeferredRegister CONTAINER_TYPES = new ContainerTypeDeferredRegister(MODID);
     public static final ContainerTypeRegistryObject<MagnetizerContainer> MAGNETIZER_CONTAINER = CONTAINER_TYPES.register(WeaponsItems.MAGNETIZER, ItemMagnetizer.class, MagnetizerContainer::new);
@@ -136,7 +123,7 @@ public class MekaWeapons {
         MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MAGNETIZER, ADD_MAGNETIZER_MODULE);
         MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT, WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
-        MekanismIMC.sendModuleIMC(ADD_MEKA_GUN_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_GUN_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MAGNETIZER_MODULE, MekanismModules.COLOR_MODULATION_UNIT);
     }
 
@@ -172,8 +159,7 @@ public class MekaWeapons {
                     }
                     return 0;
                 });
-                ClientRegistrationUtil.setPropertyOverride(WeaponsItems.MEKA_BOW, Mekanism.rl("pulling"), (stack, world, entity, seed) ->
-                        entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
+                ClientRegistrationUtil.setPropertyOverride(WeaponsItems.MEKA_BOW, Mekanism.rl("pulling"), (stack, world, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
             });
         }
 

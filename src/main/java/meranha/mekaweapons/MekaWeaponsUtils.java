@@ -33,7 +33,7 @@ import mekanism.common.config.value.CachedLongValue;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaTana;
-import meranha.mekaweapons.items.modules.WeaponAttackAmplificationUnit;
+import meranha.mekaweapons.items.modules.AdvancedAttackAmplificationUnit;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Locale;
@@ -88,9 +88,9 @@ public class MekaWeaponsUtils {
             }
         }
 
-        IModule<WeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, WeaponsModules.ATTACKAMPLIFICATION_UNIT);
+        IModule<AdvancedAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, WeaponsModules.ATTACKAMPLIFICATION_UNIT);
         if (attackAmplificationUnit != null) {
-            energy *= attackAmplificationUnit.getCustomInstance().getCurrentUnit();
+            energy *= attackAmplificationUnit.getCustomInstance().attackDamage().ordinal();
         }
         return energy;
     }
@@ -120,11 +120,19 @@ public class MekaWeaponsUtils {
         }
 
         long damage = getBaseDamage(weapon);
-        IModule<WeaponAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weapon, WeaponsModules.ATTACKAMPLIFICATION_UNIT);
+        IModule<AdvancedAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weapon, WeaponsModules.ATTACKAMPLIFICATION_UNIT);
         if (attackAmplificationUnit != null) {
-            damage *= attackAmplificationUnit.getCustomInstance().getCurrentUnit();
+            damage = attackAmplificationUnit.getCustomInstance().getCurrentMaxDamage(weapon);
         }
         return damage;
+    }
+
+    public static int getModuleAdditionalDamage(int baseDamage) {
+        return switch (MekaWeapons.general.moduleDamageMode.get()) {
+            case BASE_DAMAGE -> baseDamage;
+            case HALF_BASE_DAMAGE -> baseDamage / 2;
+            case CUSTOM -> MekaWeapons.general.moduleCustomDamage.get();
+        };
     }
 
     public static boolean isEnergyInsufficient(@Nullable IEnergyContainer energyContainer, long energyNeeded) {

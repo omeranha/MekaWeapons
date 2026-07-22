@@ -43,7 +43,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @ParametersAreNotNullByDefault
-public record WeaponAttackAmplificationUnit(AttackDamage attackDamage) implements ICustomModule<WeaponAttackAmplificationUnit> {
+public record AdvancedAttackAmplificationUnit(AttackDamage attackDamage) implements ICustomModule<AdvancedAttackAmplificationUnit> {
     public static final ResourceLocation ATTACK_DAMAGE = Mekanism.rl("bonus_attack_damage");
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("attack_damage");
     private static final Int2ObjectMap<Lazy<NestedRadialMode>> RADIAL_DATAS = Util.make(() -> {
@@ -57,42 +57,38 @@ public record WeaponAttackAmplificationUnit(AttackDamage attackDamage) implement
         return map;
     });
 
-    public WeaponAttackAmplificationUnit(IModule<WeaponAttackAmplificationUnit> module) {
+    public AdvancedAttackAmplificationUnit(IModule<AdvancedAttackAmplificationUnit> module) {
         this(module.<AttackDamage>getConfigOrThrow(ATTACK_DAMAGE).get());
     }
 
-    public void addHUDStrings(IModule<WeaponAttackAmplificationUnit> module, IModuleContainer moduleContainer, ItemStack stack, Player player, Consumer<Component> hudStringAdder) {
+    public void addHUDStrings(IModule<AdvancedAttackAmplificationUnit> module, IModuleContainer moduleContainer, ItemStack stack, Player player, Consumer<Component> hudStringAdder) {
         if (module.isEnabled()) {
-            hudStringAdder.accept(MekanismLang.MODULE_DAMAGE.translateColored(EnumColor.DARK_GRAY, EnumColor.INDIGO, getCurrentMaxDamage(stack)));
+            hudStringAdder.accept(MekanismLang.MODULE_DAMAGE.translateColored(EnumColor.DARK_GRAY, EnumColor.INDIGO, module.getCustomInstance().attackDamage().sliceNamePreCalc));
         }
     }
 
     @NotNull
-    private NestedRadialMode getNestedData(IModule<WeaponAttackAmplificationUnit> module) {
+    private NestedRadialMode getNestedData(IModule<AdvancedAttackAmplificationUnit> module) {
         return RADIAL_DATAS.get(module.getInstalledCount()).get();
     }
 
     @NotNull
-    private RadialData<?> getRadialData(IModule<WeaponAttackAmplificationUnit> module) {
+    private RadialData<?> getRadialData(IModule<AdvancedAttackAmplificationUnit> module) {
         return getNestedData(module).nestedData();
     }
 
     @Override
-    public void addRadialModes(IModule<WeaponAttackAmplificationUnit> module, ItemStack stack, Consumer<NestedRadialMode> adder) {
+    public void addRadialModes(IModule<AdvancedAttackAmplificationUnit> module, ItemStack stack, Consumer<NestedRadialMode> adder) {
         adder.accept(getNestedData(module));
-    }
-
-    public int getCurrentUnit() {
-        return attackDamage.ordinal();
     }
 
     @Nullable
     @SuppressWarnings("unchecked")
-    public <MODE extends IRadialMode> MODE getMode(IModule<WeaponAttackAmplificationUnit> module, ItemStack stack, RadialData<MODE> radialData) {
+    public <MODE extends IRadialMode> MODE getMode(IModule<AdvancedAttackAmplificationUnit> module, ItemStack stack, RadialData<MODE> radialData) {
         return radialData == getRadialData(module) ? (MODE) attackDamage : null;
     }
 
-    public <MODE extends IRadialMode> boolean setMode(IModule<WeaponAttackAmplificationUnit> module, Player player, IModuleContainer moduleContainer, ItemStack stack, RadialData<MODE> radialData, MODE mode) {
+    public <MODE extends IRadialMode> boolean setMode(IModule<AdvancedAttackAmplificationUnit> module, Player player, IModuleContainer moduleContainer, ItemStack stack, RadialData<MODE> radialData, MODE mode) {
         if (radialData == getRadialData(module)) {
             AttackDamage newMode = (AttackDamage) mode;
             if (attackDamage != newMode) {
@@ -104,11 +100,11 @@ public record WeaponAttackAmplificationUnit(AttackDamage attackDamage) implement
     }
 
     @NotNull
-    public Component getModeScrollComponent(IModule<WeaponAttackAmplificationUnit> module, ItemStack stack) {
+    public Component getModeScrollComponent(IModule<AdvancedAttackAmplificationUnit> module, ItemStack stack) {
         return MekanismLang.GENERIC_WITH_PARENTHESIS.translateColored(EnumColor.INDIGO, attackDamage.sliceName(), EnumColor.AQUA, getCurrentMaxDamage(stack));
     }
 
-    public void changeMode(IModule<WeaponAttackAmplificationUnit> module, Player player, IModuleContainer moduleContainer, ItemStack stack, int shift, boolean displayChangeMessage) {
+    public void changeMode(IModule<AdvancedAttackAmplificationUnit> module, Player player, IModuleContainer moduleContainer, ItemStack stack, int shift, boolean displayChangeMessage) {
         AttackDamage newMode = attackDamage.adjust(shift, v -> v.ordinal() < module.getInstalledCount() + 2);
         if (attackDamage != newMode) {
             if (displayChangeMessage) {
@@ -169,7 +165,8 @@ public record WeaponAttackAmplificationUnit(AttackDamage attackDamage) implement
         }
     }
 
-    private int getCurrentMaxDamage(ItemStack stack) {
-        return getBaseDamage(stack) * getCurrentUnit();
+    public int getCurrentMaxDamage(ItemStack stack) {
+        int base = getBaseDamage(stack);
+        return base + getModuleAdditionalDamage(base) * attackDamage.ordinal();
     }
 }

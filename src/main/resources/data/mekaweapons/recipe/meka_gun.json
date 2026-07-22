@@ -9,13 +9,13 @@
   "result": {
     "id": "mekaweapons:meka_gun"
   },
-  "pattern": [ "plp", "oao", "cbc" ],
+  "pattern": [ "flf", "aca", "pbp" ],
   "key": {
     "l": { "item":"mekanism:laser" },
     "c": { "tag":"c:circuits/ultimate" },
-    "p": { "item":"mekanism:pellet_polonium" },
+    "p": { "item":"mekanism:pellet_plutonium" },
     "b": { "item":"mekanism:basic_induction_cell" },
-    "o": { "tag":"c:ingots/refined_obsidian" },
+    "f": { "item":"mekaweapons:fiber_optic_glass" },
     "a": { "item":"mekanism:laser_amplifier" }
   }
 }

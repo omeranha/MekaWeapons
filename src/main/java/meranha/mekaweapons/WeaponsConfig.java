@@ -1,10 +1,8 @@
 package meranha.mekaweapons;
 
 import mekanism.common.config.BaseMekanismConfig;
-import mekanism.common.config.value.CachedBooleanValue;
-import mekanism.common.config.value.CachedDoubleValue;
-import mekanism.common.config.value.CachedIntValue;
-import mekanism.common.config.value.CachedLongValue;
+import mekanism.common.config.value.*;
+import meranha.mekaweapons.items.modules.ModuleDamageMode;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.neoforged.fml.config.ModConfig.Type;
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -14,6 +12,8 @@ public class WeaponsConfig extends BaseMekanismConfig {
     private final ModConfigSpec configSpec;
 
     public final CachedLongValue wirelessChargerEnergyRate;
+    public final CachedEnumValue<ModuleDamageMode> moduleDamageMode;
+    public final CachedIntValue moduleCustomDamage;
 
     public final CachedIntValue mekaTanaBaseDamage;
     public final CachedDoubleValue mekaTanaAttackSpeed;
@@ -44,18 +44,24 @@ public class WeaponsConfig extends BaseMekanismConfig {
     public final CachedIntValue mekaGunHeatPerShot;
     public final CachedIntValue mekaGunHeatLossPerSecond;
     public final CachedIntValue mekaGunCooldownDelayTicks;
+    public final CachedIntValue mekaGunFireInterval;
 
     public final CachedBooleanValue mekaTanaEnchantments;
     public final CachedBooleanValue mekaBowEnchantments;
+    public final CachedBooleanValue mekaGunEnchantments;
 
     WeaponsConfig() {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-        builder.comment("MekaWeapons Settings. Joules to FE conversion: 2.5J = 1FE").push("weapons");
+        builder.comment("MekaWeapons Settings. Joules to FE conversion: 2.5J = 1FE");
 
         wirelessChargerEnergyRate = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.WIRELESS_CHARGE_RATE, "wireless_charge_rate", 2_500_000);
 
+        moduleDamageMode = CachedEnumValue.wrap(this, WeaponsConfigTranslations.MODULE_DAMAGE_MODE.applyToBuilder(builder).defineEnum("module_damage_mode", ModuleDamageMode.HALF_BASE_DAMAGE));
+        moduleCustomDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MODULE_DAMAGE_CUSTOM.applyToBuilder(builder).define("module_damage_custom", 32));
+
+        builder.push("weapons");
         WeaponsConfigTranslations.MEKA_TANA.applyToBuilder(builder).push("meka_tana");
-        mekaTanaBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_TANA_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 50));
+        mekaTanaBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_TANA_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 32));
         mekaTanaAttackSpeed = CachedDoubleValue.wrap(this, WeaponsConfigTranslations.MEKA_TANA_ATTACK_SPEED.applyToBuilder(builder).defineInRange("attack_speed", -2.4, -Attributes.ATTACK_SPEED.value().getDefaultValue(), 100));
         mekaTanaEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_TANA_ENERGY_USAGE, "energy_usage", 625_000);
         mekaTanaSweepingEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_TANA_SWEEPING_ATTACK, "sweeping_attack_energy_usage", 125_000);
@@ -68,7 +74,7 @@ public class WeaponsConfig extends BaseMekanismConfig {
         builder.pop();
 
         WeaponsConfigTranslations.MEKA_BOW.applyToBuilder(builder).push("meka_bow");
-        mekaBowBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_BOW_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 50));
+        mekaBowBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_BOW_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 32));
         mekaBowEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_ENERGY_USAGE, "energy_usage", 625_000);
         mekaBowEnergyArrowUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_ENERGYARROW_USAGE, "energy_arrow_usage", 625_000);
         mekabowAutoFireEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_BOW_AUTOFIRE_ENERGY_USAGE, "autofire_energy_usage", 125_000);
@@ -81,15 +87,17 @@ public class WeaponsConfig extends BaseMekanismConfig {
         builder.pop();
 
         WeaponsConfigTranslations.MEKA_GUN.applyToBuilder(builder).push("meka_gun");
-        mekaGunBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 50));
-        mekaGunEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_ENERGY_USAGE, "energy_usage", 250_000);
-        mekaGunBaseEnergyCapacity = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_BASE_ENERGY_CAPACITY, "base_energy_capacity", 16_000_000);
-        mekaGunBaseChargeRate = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_BASE_CHARGE_RATE, "base_charge_rate", 350_000);
+        mekaGunBaseDamage = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_BASE_DAMAGE.applyToBuilder(builder).define("base_damage", 32));
+        mekaGunEnergyUsage = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_ENERGY_USAGE, "energy_usage", 625_000);
         mekaGunBeamLength = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_BEAM_LENGTH.applyToBuilder(builder).defineInRange("beam_length", 20, 1, 1_024));
         mekaGunMaxHeat = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_MAX_HEAT.applyToBuilder(builder).defineInRange("max_heat", 100, 1, 10_000));
-        mekaGunHeatPerShot = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_HEAT_PER_SHOT.applyToBuilder(builder).defineInRange("heat_per_shot", 10, 1, 10_000));
+        mekaGunHeatPerShot = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_HEAT_PER_SHOT.applyToBuilder(builder).defineInRange("heat_per_shot", 5, 1, 10_000));
         mekaGunHeatLossPerSecond = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_HEAT_LOSS_PER_SECOND.applyToBuilder(builder).defineInRange("heat_loss_per_second", 5, 1, 10_000));
         mekaGunCooldownDelayTicks = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_COOLDOWN_DELAY_TICKS.applyToBuilder(builder).defineInRange("cooldown_delay_ticks", 20, 1, 10_000));
+        mekaGunFireInterval = CachedIntValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_FIRE_INTERVAL.applyToBuilder(builder).defineInRange("fire_interval", 5, 1, 10_000));
+        mekaGunBaseEnergyCapacity = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_BASE_ENERGY_CAPACITY, "base_energy_capacity", 16_000_000);
+        mekaGunBaseChargeRate = CachedLongValue.definePositive(this, builder, WeaponsConfigTranslations.MEKA_GUN_BASE_CHARGE_RATE, "base_charge_rate", 350_000);
+        mekaGunEnchantments = CachedBooleanValue.wrap(this, WeaponsConfigTranslations.MEKA_GUN_ENCHANTMENTS.applyToBuilder(builder).define("enchantments", false));
         builder.pop();
 
         this.configSpec = builder.build();

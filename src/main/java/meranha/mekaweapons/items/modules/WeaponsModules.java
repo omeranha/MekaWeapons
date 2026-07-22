@@ -12,11 +12,11 @@ public class WeaponsModules {
 
     public static final ModuleDeferredRegister MODULES =  new ModuleDeferredRegister(MekaWeapons.MODID);
 
-    public static final ModuleRegistryObject<WeaponAttackAmplificationUnit> ATTACKAMPLIFICATION_UNIT = MODULES.register("attackamplification_unit", WeaponAttackAmplificationUnit::new, () -> WeaponsItems.MODULE_ATTACKAMPLIFICATION,
+    public static final ModuleRegistryObject<AdvancedAttackAmplificationUnit> ATTACKAMPLIFICATION_UNIT = MODULES.register("attackamplification_unit", AdvancedAttackAmplificationUnit::new, () -> WeaponsItems.MODULE_ATTACKAMPLIFICATION,
             builder -> builder.maxStackSize(4).handlesModeChange().rendersHUD().addInstalledCountConfig(
-                    installed -> ModuleEnumConfig.createBounded(WeaponAttackAmplificationUnit.ATTACK_DAMAGE, WeaponAttackAmplificationUnit.AttackDamage.MED, installed + 2),
-                    installed -> ModuleEnumConfig.codec(WeaponAttackAmplificationUnit.AttackDamage.CODEC, WeaponAttackAmplificationUnit.AttackDamage.class, installed + 2),
-                    installed -> ModuleEnumConfig.streamCodec(WeaponAttackAmplificationUnit.AttackDamage.STREAM_CODEC, WeaponAttackAmplificationUnit.AttackDamage.class, installed + 2)
+                    installed -> ModuleEnumConfig.createBounded(AdvancedAttackAmplificationUnit.ATTACK_DAMAGE, AdvancedAttackAmplificationUnit.AttackDamage.MED, installed + 2),
+                    installed -> ModuleEnumConfig.codec(AdvancedAttackAmplificationUnit.AttackDamage.CODEC, AdvancedAttackAmplificationUnit.AttackDamage.class, installed + 2),
+                    installed -> ModuleEnumConfig.streamCodec(AdvancedAttackAmplificationUnit.AttackDamage.STREAM_CODEC, AdvancedAttackAmplificationUnit.AttackDamage.class, installed + 2)
             )
     );
     public static final ModuleRegistryObject<LootingUnit> LOOTING_UNIT = MODULES.registerInstanced("looting_unit", LootingUnit::new, () -> WeaponsItems.MODULE_LOOTING, builder -> builder.maxStackSize(5));

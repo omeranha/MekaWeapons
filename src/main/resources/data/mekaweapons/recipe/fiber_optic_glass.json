@@ -1,0 +1,18 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:fiber_optic_glass"
+    }
+  ],
+  "type":"minecraft:crafting_shaped",
+  "result":{
+    "id":"mekaweapons:fiber_optic_glass"
+  },
+  "pattern":[ "hrh", "hgh", "hgh" ],
+  "key":{
+    "g":{ "tag":"c:glass_panes" },
+    "r":{ "tag":"c:ingots/refined_glowstone" },
+    "h":{ "item":"mekanism:hdpe_sheet" }
+  }
+}

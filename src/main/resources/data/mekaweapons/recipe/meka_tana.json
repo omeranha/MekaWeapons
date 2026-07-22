@@ -9,13 +9,12 @@
   "result":{
     "id":"mekaweapons:meka_tana"
   },
-  "pattern":[ "ckc", "hsh", "pep" ],
+  "pattern":[ "pkp", "hch", " b " ],
   "key":{
-    "s":{ "tag":"c:ingots/steel" },
-    "p":{ "item":"mekanism:pellet_polonium" },
-    "c":{ "tag":"c:circuits/ultimate" },
-    "e":{ "item":"mekanism:basic_induction_cell" },
+    "p":{ "item":"mekanism:pellet_plutonium" },
+    "k":{ "item":"mekaweapons:katana_blade" },
     "h":{ "item":"mekanism:hdpe_sheet" },
-    "k":{ "item":"mekaweapons:katana_blade" }
+    "c":{ "tag":"c:circuits/ultimate" },
+    "b":{ "item":"mekanism:basic_induction_cell" }
   }
 }

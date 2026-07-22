@@ -8,12 +8,14 @@ import mekanism.api.lasers.ILaserDissipation;
 import mekanism.api.text.EnumColor;
 import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
+import mekanism.client.sound.SoundHandler;
 import mekanism.common.MekanismLang;
 import mekanism.common.capabilities.Capabilities;
 import mekanism.common.content.gear.IRadialModuleContainerItem;
 import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.item.ItemEnergized;
 import mekanism.common.registries.MekanismDamageTypes;
+import mekanism.common.registries.MekanismSounds;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.MekaWeapons;
 import meranha.mekaweapons.client.BeamManager;
@@ -47,6 +49,8 @@ import java.util.List;
 import static meranha.mekaweapons.MekaWeaponsUtils.*;
 
 public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainerItem {
+    private record LaserHit(LivingEntity entity, Vec3 hitPosition) {}
+
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_gun");
     private static final double MUZZLE_SIDE_OFFSET = 0.02D;
     private static final double MUZZLE_FORWARD_OFFSET = 0.05D;
@@ -115,29 +119,105 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
         Vec3 from = eye.add(right.scale(MUZZLE_SIDE_OFFSET * handSign)).add(look.scale(MUZZLE_FORWARD_OFFSET)).add(up.scale(MUZZLE_DOWN_OFFSET));
 
         Vec3 aimEnd = eye.add(look.scale(MekaWeapons.general.mekaGunBeamLength.get()));
-        BlockHitResult hit = level.clip(new ClipContext(eye, aimEnd, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
-
-        Vec3 to = hit.getType() != HitResult.Type.MISS ? hit.getLocation() : aimEnd;
+        BlockHitResult blockHitResult = level.clip(new ClipContext(eye, aimEnd, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+        Vec3 to = blockHitResult.getType() != HitResult.Type.MISS ? blockHitResult.getLocation() : aimEnd;
         Vec3 beam = to.subtract(from);
         if (beam.length() < MIN_BEAM_LENGTH) {
             to = from.add(look.scale(MIN_BEAM_LENGTH));
         }
 
-        Vec3 finalTo = fireLaser(level, stack, player, from, to);
-        IEnergyContainer energyContainer = StorageUtils.getEnergyContainer(stack, 0);
-        long energy = getEnergyNeeded(stack);
-        if (!player.isCreative() && energyContainer != null) {
-            energyContainer.extract(energy, Action.EXECUTE, AutomationType.MANUAL);
-        }
-
+        LaserHit hit = traceLaser(level, player, from, to);
         if (!level.isClientSide()) {
-            BeamManager.setBeam(player.getUUID(), from, finalTo, 70 / 255F, 242 / 255F, 149 / 255F, 0.5F);
+            BeamManager.setBeam(player.getUUID(), from, hit.hitPosition(), 70 / 255F, 242 / 255F, 149 / 255F, 0.5F);
         }
 
-        // TODO: start and stop laser sound in use and release using to avoid sound spam each tick
-        //  SoundHandler.playSound(MekanismSounds.LASER);
+        long gameTime = level.getGameTime();
+        boolean canFire = gameTime - getLastFireTick(stack) >= MekaWeapons.general.mekaGunFireInterval.get();
+        if (!canFire) return;
+
+        IEnergyContainer energy = StorageUtils.getEnergyContainer(stack, 0);
+        if (!player.isCreative() && energy != null) {
+            energy.extract(getEnergyNeeded(stack), Action.EXECUTE, AutomationType.MANUAL);
+        }
         setHeat(stack, heat + MekaWeapons.general.mekaGunHeatPerShot.get());
-        setLastFireTick(stack, level.getGameTime());
+        setLastFireTick(stack, gameTime);
+        // TODO: start and stop laser sound in use and release using to avoid sound spam each tick
+        SoundHandler.playSound(MekanismSounds.LASER);
+
+        if (hit.entity() != null) {
+            damageLaserHit(level, stack, hit.entity());
+        }
+    }
+
+    private LaserHit traceLaser(Level level, Player owner, Vec3 from, Vec3 to) {
+        Vec3 beam = to.subtract(from);
+        double length = beam.length();
+        if (length < 1e-6) {
+            return new LaserHit(null, to);
+        }
+
+        Vec3 dir = beam.normalize();
+        float radius = 0.1F;
+        LivingEntity closest = null;
+        double closestDistance = Double.MAX_VALUE;
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, getLaserBox(from, to, radius))) {
+            if (!isEntityHit(from, dir, length, entity, radius)) {
+                continue;
+            }
+
+            if (entity instanceof Player player && (!owner.canHarmPlayer(player) || player == owner)) {
+                continue;
+            }
+
+            Vec3 pos = entity.position();
+            double distance = (pos.x - from.x) * dir.x + (pos.y - from.y) * dir.y + (pos.z - from.z) * dir.z;
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closest = entity;
+            }
+        }
+
+        if (closest == null) {
+            return new LaserHit(null, to);
+        }
+        return new LaserHit(closest, projectPoint(from, dir, closest.position()));
+    }
+
+    private void damageLaserHit(Level level, ItemStack stack, LivingEntity target) {
+        if (target.isInvulnerable() || target.isInvulnerableTo(MekanismDamageTypes.LASER.source(level))) {
+            return;
+        }
+
+        float damage = getTotalDamage(stack);
+        float remainingDamage = damage;
+        double dissipation = 0;
+        double refraction = 0;
+        for (ItemStack armor : target.getArmorSlots()) {
+            ILaserDissipation laser = armor.getCapability(Capabilities.LASER_DISSIPATION);
+            if (laser == null) {
+                continue;
+            }
+
+            dissipation += laser.getDissipationPercent();
+            refraction += laser.getRefractionPercent();
+        }
+
+        dissipation = Math.min(dissipation, 1);
+        remainingDamage *= (float) (1 - dissipation);
+        if (remainingDamage <= 0) {
+            return;
+        }
+
+        refraction = Math.min(refraction, 1);
+        damage = (float)(remainingDamage * (1 - refraction));
+        if (damage <= 0) {
+            return;
+        }
+
+        if (!target.fireImmune()) {
+            target.igniteForSeconds((int)damage);
+        }
+        target.hurt(MekanismDamageTypes.LASER.source(level), damage);
     }
 
     @Override
@@ -158,91 +238,6 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
         if (heat <= MekaWeapons.general.mekaGunMaxHeat.get()) {
             setHeat(stack, heat - MekaWeapons.general.mekaGunHeatLossPerSecond.get());
         }
-    }
-
-    private Vec3 fireLaser(Level level, ItemStack stack, Player owner, Vec3 from, Vec3 to) {
-        Vec3 beam = to.subtract(from);
-        double length = beam.length();
-        if (length < 1e-6) {
-            return to;
-        }
-
-        Vec3 dir = beam.normalize();
-        float radius = 0.1F;
-        LivingEntity hitEntity = null;
-        double closestDistance = Double.MAX_VALUE;
-        for (LivingEntity livingEntity : level.getEntitiesOfClass(LivingEntity.class, getLaserBox(from, to, radius))) {
-            if (!isEntityHit(from, dir, length, livingEntity, radius)) {
-                continue;
-            }
-
-            if (livingEntity instanceof Player player && (!owner.canHarmPlayer(player) || player.is(owner))) {
-                continue;
-            }
-
-            Vec3 pos = livingEntity.position();
-            double distance = (pos.x - from.x) * dir.x + (pos.y - from.y) * dir.y + (pos.z - from.z) * dir.z;
-
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                hitEntity = livingEntity;
-            }
-        }
-
-        if (hitEntity == null) {
-            return to;
-        }
-
-        if (hitEntity.isInvulnerable() || hitEntity.isInvulnerableTo(MekanismDamageTypes.LASER.source(level))) {
-            return projectPoint(from, dir, hitEntity.position());
-        }
-
-        float damage = getTotalDamage(stack);
-        float remainingDamage = damage;
-        double dissipationPercent = 0;
-        double refractionPercent = 0;
-        for (ItemStack armor : hitEntity.getArmorSlots()) {
-            if (armor.isEmpty()) {
-                continue;
-            }
-
-            ILaserDissipation laserDissipation = armor.getCapability(Capabilities.LASER_DISSIPATION);
-            if (laserDissipation == null) {
-                continue;
-            }
-
-            dissipationPercent += laserDissipation.getDissipationPercent();
-            refractionPercent += laserDissipation.getRefractionPercent();
-            if (dissipationPercent >= 1) {
-                break;
-            }
-        }
-
-        if (dissipationPercent > 0) {
-            dissipationPercent = Math.min(dissipationPercent, 1);
-            remainingDamage *= (float) (1D - dissipationPercent);
-            if (remainingDamage <= 0) {
-                return projectPoint(from, dir, hitEntity.position());
-            }
-        }
-
-        if (refractionPercent > 0) {
-            refractionPercent = Math.min(refractionPercent, 1);
-            double refractedDamage = remainingDamage * refractionPercent;
-            damage = (float) (remainingDamage - refractedDamage);
-        } else {
-            damage = remainingDamage;
-        }
-
-        if (damage > 0) {
-            if (!hitEntity.fireImmune()) {
-                hitEntity.igniteForSeconds((int) damage);
-            }
-
-            hitEntity.hurt(MekanismDamageTypes.LASER.source(level), damage);
-        }
-
-        return to;
     }
 
     private AABB getLaserBox(Vec3 from, Vec3 to, float radius) {
@@ -355,5 +350,15 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
     @Override
     public @NotNull UseAnim getUseAnimation(@NotNull ItemStack stack) {
         return UseAnim.NONE;
+    }
+
+    @Override
+    public boolean isEnchantable(@NotNull ItemStack stack) {
+        return MekaWeapons.general.mekaGunEnchantments.get();
+    }
+
+    @Override
+    public boolean isBookEnchantable(@NotNull ItemStack stack, @NotNull ItemStack book) {
+        return MekaWeapons.general.mekaGunEnchantments.get();
     }
 }

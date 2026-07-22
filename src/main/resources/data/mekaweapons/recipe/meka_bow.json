@@ -9,13 +9,12 @@
   "result":{
     "id":"mekaweapons:meka_bow"
   },
-  "pattern":[ "pbp", "iei", "oso" ],
+  "pattern":[ "pbp", "heh", " s " ],
   "key":{
     "s":{ "item":"mekaweapons:bow_limb" },
-    "i":{ "tag":"c:ingots/steel" },
-    "p":{ "item":"mekanism:pellet_polonium" },
+    "h":{ "item":"mekanism:hdpe_sheet" },
+    "p":{ "item":"mekanism:pellet_plutonium" },
     "e":{ "item":"mekanism:basic_induction_cell" },
-    "b":{ "item":"mekaweapons:bow_riser" },
-    "o":{ "tag":"c:ingots/refined_obsidian" }
+    "b":{ "item":"mekaweapons:bow_riser" }
   }
 }

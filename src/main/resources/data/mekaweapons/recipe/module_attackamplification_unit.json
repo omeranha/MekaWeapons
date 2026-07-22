@@ -9,8 +9,23 @@
   "result":{
     "id":"mekaweapons:module_attackamplification_unit"
   },
-  "pattern": ["m"],
+  "pattern": ["psp", "ama", "lgl"],
   "key":{
-    "m":{ "item": "mekanism:module_attack_amplification_unit" }
+    "m":{ "item": "mekanism:module_attack_amplification_unit" },
+    "a": {
+      "item": "mekanism:alloy_atomic"
+    },
+    "p": {
+      "item": "mekanism:pellet_plutonium"
+    },
+    "s": {
+      "item": "minecraft:netherite_sword"
+    },
+    "l": {
+      "tag": "c:ingots/lead"
+    },
+    "g": {
+      "tag": "c:ingots/refined_glowstone"
+    }
   }
 }
