@@ -1,6 +1,7 @@
 package meranha.mekaweapons.client;
 
 import meranha.mekaweapons.MekaWeapons;
+import meranha.mekaweapons.WeaponsItems;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
@@ -23,9 +24,9 @@ import top.theillusivec4.curios.api.client.ICurioRenderer;
 import java.util.function.Consumer;
 
 public class WeaponsRenderer implements ICurioRenderer {
-    private static final Item MekaTana = MekaWeapons.MEKA_TANA.get();
-    private static final Item MekaBow = MekaWeapons.MEKA_BOW.get();
-    private static final Item MekaGun = MekaWeapons.MEKA_GUN.get();
+    private static final Item MekaTana = WeaponsItems.MEKA_TANA.get();
+    private static final Item MekaBow = WeaponsItems.MEKA_BOW.get();
+    private static final Item MekaGun = WeaponsItems.MEKA_GUN.get();
 
     public <T extends LivingEntity, M extends EntityModel<T>> void render(ItemStack stack, @NotNull SlotContext slotContext, PoseStack ms, RenderLayerParent<T, M> renderLayerParent, MultiBufferSource buffer, int light, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
         if (!(slotContext.entity() instanceof Player player)) {

@@ -75,45 +75,12 @@ public class MekaWeapons {
     public static final WeaponsConfig general = new WeaponsConfig();
     private static final Map<IConfigSpec, IMekanismConfig> KNOWN_CONFIGS = new HashMap<>();
 
-    public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);
-    public static final ItemRegistryObject<ItemMekaTana> MEKA_TANA = ITEMS.registerUnburnable("meka_tana", ItemMekaTana::new)
-    .addAttachedContainerCapabilities(ContainerType.ENERGY, () -> EnergyContainersBuilder.builder()
-        .addContainer((type, attachedTo, containerIndex) -> new ComponentBackedNoClampEnergyContainer(attachedTo, containerIndex, BasicEnergyContainer.manualOnly,
-            ConstantPredicates.alwaysTrue(), () -> ModuleEnergyUnit.getChargeRate(attachedTo, MekaWeapons.general.mekaTanaBaseChargeRate),
-            () -> ModuleEnergyUnit.getEnergyCapacity(attachedTo, MekaWeapons.general.mekaTanaBaseEnergyCapacity)))
-    .build(), MekaWeapons.general);
-    public static final ItemRegistryObject<ItemMekaBow> MEKA_BOW = ITEMS.registerUnburnable("meka_bow", ItemMekaBow::new)
-    .addAttachedContainerCapabilities(ContainerType.ENERGY, () -> EnergyContainersBuilder.builder()
-          .addContainer((type, attachedTo, containerIndex) -> new ComponentBackedNoClampEnergyContainer(attachedTo, containerIndex, BasicEnergyContainer.manualOnly,
-                  ConstantPredicates.alwaysTrue(), () -> ModuleEnergyUnit.getChargeRate(attachedTo, MekaWeapons.general.mekaBowBaseChargeRate),
-                () -> ModuleEnergyUnit.getEnergyCapacity(attachedTo, MekaWeapons.general.mekaBowBaseEnergyCapacity)))
-    .build(), MekaWeapons.general);
-    public static final ItemRegistryObject<ItemMekaGun> MEKA_GUN = ITEMS.registerUnburnable("meka_gun", ItemMekaGun::new)
-            .addAttachedContainerCapabilities(ContainerType.ENERGY, () -> EnergyContainersBuilder.builder()
-                    .addContainer((type, attachedTo, containerIndex) -> new ComponentBackedNoClampEnergyContainer(attachedTo, containerIndex, BasicEnergyContainer.manualOnly,
-                            ConstantPredicates.alwaysTrue(), () -> ModuleEnergyUnit.getChargeRate(attachedTo, MekaWeapons.general.mekaGunBaseChargeRate),
-                            () -> ModuleEnergyUnit.getEnergyCapacity(attachedTo, MekaWeapons.general.mekaGunBaseEnergyCapacity)))
-                    .build(), MekaWeapons.general);
-
-    public static final ItemRegistryObject<ItemMagnetizer> MAGNETIZER = ITEMS.registerUnburnable("magnetizer", ItemMagnetizer::new);
-    public static final ItemRegistryObject<Item> KATANA_BLADE = ITEMS.register("katana_blade");
-    public static final ItemRegistryObject<Item> BOW_RISER = ITEMS.register("bow_riser");
-    public static final ItemRegistryObject<Item> BOW_LIMB = ITEMS.register("bow_limb");
-    public static final ItemRegistryObject<ItemModule> MODULE_ARROWENERGY = ITEMS.registerModule(WeaponsModules.ARROWENERGY_UNIT, Rarity.RARE);
-    public static final ItemRegistryObject<ItemModule> MODULE_AUTOFIRE = ITEMS.registerModule(WeaponsModules.AUTOFIRE_UNIT, Rarity.RARE);
-    public static final ItemRegistryObject<ItemModule> MODULE_DRAWSPEED = ITEMS.registerModule(WeaponsModules.DRAWSPEED_UNIT, Rarity.RARE);
-    public static final ItemRegistryObject<ItemModule> MODULE_GRAVITYDAMPENER = ITEMS.registerModule(WeaponsModules.GRAVITYDAMPENER_UNIT, Rarity.EPIC);
-    //public static final ItemRegistryObject<ItemModule> MODULE_ARROWVELOCITY = ITEMS.registerModule(MekaWeapons.ARROWVELOCITY_UNIT);
-    public static final ItemRegistryObject<ItemModule> MODULE_ATTACKAMPLIFICATION = ITEMS.registerModule(WeaponsModules.ATTACKAMPLIFICATION_UNIT, Rarity.UNCOMMON);
-    public static final ItemRegistryObject<ItemModule> MODULE_SWEEPING = ITEMS.registerModule(WeaponsModules.SWEEPING_UNIT, Rarity.UNCOMMON);
-    public static final ItemRegistryObject<ItemModule> MODULE_LOOTING = ITEMS.registerModule(WeaponsModules.LOOTING_UNIT, Rarity.UNCOMMON);
-
     public static final EntityTypeDeferredRegister ENTITY_TYPES = new EntityTypeDeferredRegister(MODID);
     public static final DeferredHolder<EntityType<?>, EntityType<MekaArrowEntity>> MEKA_ARROW = ENTITY_TYPES.register("meka_arrow", () -> EntityType.Builder.<MekaArrowEntity>of(MekaArrowEntity::new,
             MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20).build(MODID + ":meka_arrow"));
 
     public static final ContainerTypeDeferredRegister CONTAINER_TYPES = new ContainerTypeDeferredRegister(MODID);
-    public static final ContainerTypeRegistryObject<MagnetizerContainer> MAGNETIZER_CONTAINER = CONTAINER_TYPES.register(MekaWeapons.MAGNETIZER, ItemMagnetizer.class, MagnetizerContainer::new);
+    public static final ContainerTypeRegistryObject<MagnetizerContainer> MAGNETIZER_CONTAINER = CONTAINER_TYPES.register(WeaponsItems.MAGNETIZER, ItemMagnetizer.class, MagnetizerContainer::new);
 
     public static final DataComponentDeferredRegister DATA_COMPONENTS = new DataComponentDeferredRegister(MODID);
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKATANA = DATA_COMPONENTS.registerBoolean("render_mekatana");
@@ -123,7 +90,7 @@ public class MekaWeapons {
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Long>> LAST_FIRE_TICK = DATA_COMPONENTS.registerNonNegativeLong("last_fire_tick");
 
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
-        MekaWeapons.ITEMS.register(modEventBus);
+        WeaponsItems.ITEMS.register(modEventBus);
         WeaponsModules.MODULES.register(modEventBus);
         MekaWeapons.ENTITY_TYPES.register(modEventBus);
         MekaWeapons.CONTAINER_TYPES.register(modEventBus);
@@ -154,7 +121,7 @@ public class MekaWeapons {
 
     private void buildCreativeModeTabContents(@NotNull BuildCreativeModeTabContentsEvent event) {
         if (event.getTab() == MekanismCreativeTabs.MEKANISM.get()) {
-            ITEMS.getEntries().forEach(entry -> event.accept(entry.get()));
+            WeaponsItems.ITEMS.getEntries().forEach(entry -> event.accept(entry.get()));
         }
     }
 
@@ -163,10 +130,10 @@ public class MekaWeapons {
         final String ADD_MEKA_BOW_MODULES = "add_meka_bow_modules";
         final String ADD_MEKA_GUN_MODULES = "add_meka_gun_modules";
         final String ADD_MAGNETIZER_MODULE = "add_magnetizer_module";
-        MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_TANA, ADD_MEKA_TANA_MODULES);
-        MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_BOW, ADD_MEKA_BOW_MODULES);
-        MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MEKA_GUN, ADD_MEKA_GUN_MODULES);
-        MekanismIMC.addModuleContainer((Holder<Item>)MekaWeapons.MAGNETIZER, ADD_MAGNETIZER_MODULE);
+        MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MEKA_TANA, ADD_MEKA_TANA_MODULES);
+        MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MEKA_BOW, ADD_MEKA_BOW_MODULES);
+        MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MEKA_GUN, ADD_MEKA_GUN_MODULES);
+        MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MAGNETIZER, ADD_MAGNETIZER_MODULE);
         MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT, WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MEKA_GUN_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
@@ -195,17 +162,17 @@ public class MekaWeapons {
         @SubscribeEvent
         public static void onClientSetup(final FMLClientSetupEvent event) {
             if (ModList.get().isLoaded("curios")) {
-                CuriosRendererRegistry.register(MekaWeapons.MAGNETIZER.get(), WeaponsRenderer::new);
+                CuriosRendererRegistry.register(WeaponsItems.MAGNETIZER.get(), WeaponsRenderer::new);
             }
 
             event.enqueueWork(() -> {
-                ClientRegistrationUtil.setPropertyOverride(MekaWeapons.MEKA_BOW, Mekanism.rl("pull"), (stack, world, entity, seed) -> {
+                ClientRegistrationUtil.setPropertyOverride(WeaponsItems.MEKA_BOW, Mekanism.rl("pull"), (stack, world, entity, seed) -> {
                     if (entity != null && entity.getUseItem() == stack && stack.getItem() instanceof ItemMekaBow bow) {
                         return (stack.getUseDuration(entity) - entity.getUseItemRemainingTicks()) / bow.getUseTick(stack);
                     }
                     return 0;
                 });
-                ClientRegistrationUtil.setPropertyOverride(MekaWeapons.MEKA_BOW, Mekanism.rl("pulling"), (stack, world, entity, seed) ->
+                ClientRegistrationUtil.setPropertyOverride(WeaponsItems.MEKA_BOW, Mekanism.rl("pulling"), (stack, world, entity, seed) ->
                         entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
             });
         }
@@ -223,7 +190,7 @@ public class MekaWeapons {
                     return colorUnit != null ? colorUnit.getCustomInstance().color().argb() : Color.WHITE.argb();
                 }
                 return 0xFFFFFFFF;
-            }, MekaWeapons.MEKA_TANA.get(), MekaWeapons.MEKA_BOW.get(), MekaWeapons.MEKA_GUN.get(), MekaWeapons.MAGNETIZER.get());
+            }, WeaponsItems.MEKA_TANA.get(), WeaponsItems.MEKA_BOW.get(), WeaponsItems.MEKA_GUN.get(), WeaponsItems.MAGNETIZER.get());
         }
     }
 }
