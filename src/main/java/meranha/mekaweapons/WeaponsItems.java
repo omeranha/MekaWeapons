@@ -15,6 +15,7 @@ import meranha.mekaweapons.items.ItemMekaGun;
 import meranha.mekaweapons.items.ItemMekaTana;
 import meranha.mekaweapons.items.modules.WeaponsModules;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 
 public class WeaponsItems {
@@ -45,6 +46,7 @@ public class WeaponsItems {
     public static final ItemRegistryObject<Item> KATANA_BLADE = ITEMS.register("katana_blade");
     public static final ItemRegistryObject<Item> BOW_RISER = ITEMS.register("bow_riser");
     public static final ItemRegistryObject<Item> BOW_LIMB = ITEMS.register("bow_limb");
+    public static final ItemRegistryObject<Item> FIBER_OPTIC_GLASS = ITEMS.register("fiber_optic_glass");
     public static final ItemRegistryObject<ItemModule> MODULE_ARROWENERGY = ITEMS.registerModule(WeaponsModules.ARROWENERGY_UNIT, Rarity.RARE);
     public static final ItemRegistryObject<ItemModule> MODULE_AUTOFIRE = ITEMS.registerModule(WeaponsModules.AUTOFIRE_UNIT, Rarity.RARE);
     public static final ItemRegistryObject<ItemModule> MODULE_DRAWSPEED = ITEMS.registerModule(WeaponsModules.DRAWSPEED_UNIT, Rarity.RARE);
