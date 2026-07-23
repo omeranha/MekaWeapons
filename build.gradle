@@ -80,7 +80,7 @@ configurations {
 }
 
 dependencies {
-    implementation "mekanism:Mekanism:${mekanism_version}"
+    implementation "mekanism:Mekanism:${minecraft_version}-${mekanism_version}"
     implementation "top.theillusivec4.curios:curios-neoforge:${curios_version}"
 
     runtimeOnly "dev.emi:emi-neoforge:${emi_version}+${minecraft_version}"
