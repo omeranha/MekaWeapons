@@ -1,5 +1,6 @@
 package meranha.mekaweapons.items;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import mekanism.api.Action;
@@ -42,6 +43,8 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, ICapabilityAware, IModuleContainerItem {
+    private record ChargeTarget(IEnergyContainer frequencyContainer, IStrictEnergyHandler handler, long wanted) { }
+
     public ItemMagnetizer(@NotNull Properties pProperties) {
         super(pProperties.rarity(Rarity.RARE).stacksTo(1).component(MekaWeapons.TOGGLE_RENDER_MEKATANA, true).component(MekaWeapons.TOGGLE_RENDER_MEKABOW, true).component(MekaWeapons.TOGGLE_RENDER_MEKAGUN, true));
     }
@@ -54,52 +57,82 @@ public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, IC
 
     @Override
     public void inventoryTick(@NotNull ItemStack stack, Level level, @NotNull Entity entity, int slotId, boolean isSelected) {
-        if (level.isClientSide() || !(entity instanceof Player player)) {
-            return;
-        }
+        if (level.isClientSide() || !(entity instanceof Player player)) return;
 
         FrequencyAware<InventoryFrequency> frequencyAware = stack.get(getFrequencyComponent());
         if (frequencyAware == null || !(frequencyAware.getFrequency(stack, getFrequencyComponent()) instanceof InventoryFrequency frequency)) return;
         IEnergyContainer frequencyContainer = frequency.storedEnergy;
-        long toCharge = Math.min(MekaWeapons.general.wirelessChargerEnergyRate.get(), frequencyContainer.getEnergy());
-        if (toCharge == 0L) {
+        long available = Math.min(MekaWeapons.general.wirelessChargerEnergyRate.get(), frequencyContainer.getEnergy());
+        if (available <= 0) {
             return;
         }
 
+        List<ChargeTarget> targets = new ArrayList<>();
         for (ItemStack armorSlot : player.getArmorSlots()) {
-            if (toCharge == 0L) return;
-            toCharge = charge(frequencyContainer, armorSlot, toCharge);
+            collectChargeTarget(targets, frequencyContainer, armorSlot);
         }
 
-        for (ItemStack slot : player.getInventory().items) {
-            if (toCharge == 0L) return;
-            toCharge = charge(frequencyContainer, slot, toCharge);
+        for (ItemStack inventorySlot : player.getInventory().items) {
+            collectChargeTarget(targets, frequencyContainer, inventorySlot);
         }
 
         if (Mekanism.hooks.curios.isLoaded()) {
             IItemHandler handler = CuriosIntegration.getCuriosInventory(player);
-            if (handler == null) return;
-            for (int slot = 0, slots = handler.getSlots(); slot < slots; slot++) {
-                if (toCharge == 0L) return;
-                toCharge = charge(frequencyContainer, handler.getStackInSlot(slot), toCharge);
+            if (handler != null) {
+                for (int i = 0; i < handler.getSlots(); i++) {
+                    collectChargeTarget(targets, frequencyContainer, handler.getStackInSlot(i));
+                }
+            }
+        }
+
+        if (targets.isEmpty()) {
+            return;
+        }
+
+        long totalWanted = 0;
+        for (ChargeTarget target : targets) {
+            totalWanted += target.wanted();
+        }
+
+        if (totalWanted == 0) {
+            return;
+        }
+
+        long remaining = available;
+        for (int i = 0; i < targets.size(); i++) {
+            ChargeTarget target = targets.get(i);
+
+            long share;
+            if (i == targets.size() - 1) {
+                share = remaining;
+            } else {
+                share = Math.min(target.wanted(), available * target.wanted() / totalWanted);
+                remaining -= share;
+            }
+
+            if (share > 0) {
+                long extracted = frequencyContainer.extract(share, Action.EXECUTE, AutomationType.MANUAL);
+                target.handler().insertEnergy(extracted, Action.EXECUTE);
             }
         }
     }
 
-    private long charge(IEnergyContainer energyContainer, ItemStack stack, long amount) {
-        if (!stack.isEmpty() && amount > 0L) {
-            IStrictEnergyHandler handler = EnergyCompatUtils.getStrictEnergyHandler(stack);
-            if (handler != null) {
-                long remaining = handler.insertEnergy(amount, Action.SIMULATE);
-                if (remaining < amount) {
-                    long toExtract = amount - remaining;
-                    long extracted = energyContainer.extract(toExtract, Action.EXECUTE, AutomationType.MANUAL);
-                    long inserted = handler.insertEnergy(extracted, Action.EXECUTE);
-                    return inserted + remaining;
-                }
-            }
+    private void collectChargeTarget(List<ChargeTarget> targets, IEnergyContainer frequencyContainer, ItemStack stack) {
+        if (stack.isEmpty()) {
+            return;
         }
-        return amount;
+
+        IStrictEnergyHandler handler = EnergyCompatUtils.getStrictEnergyHandler(stack);
+        if (handler == null) {
+            return;
+        }
+
+        long maxTransfer = Math.min(MekaWeapons.general.wirelessChargerEnergyRate.get(), frequencyContainer.getEnergy());
+        long remainder = handler.insertEnergy(maxTransfer, Action.SIMULATE);
+        long wanted = maxTransfer - remainder;
+        if (wanted > 0) {
+            targets.add(new ChargeTarget(frequencyContainer, handler, wanted));
+        }
     }
 
     @Override
