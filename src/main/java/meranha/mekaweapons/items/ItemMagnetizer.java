@@ -43,7 +43,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, ICapabilityAware, IModuleContainerItem {
-    private record ChargeTarget(IEnergyContainer frequencyContainer, IStrictEnergyHandler handler, long wanted) { }
+    private record ChargeTarget(IStrictEnergyHandler handler, long wanted) {}
 
     public ItemMagnetizer(@NotNull Properties pProperties) {
         super(pProperties.rarity(Rarity.RARE).stacksTo(1).component(MekaWeapons.TOGGLE_RENDER_MEKATANA, true).component(MekaWeapons.TOGGLE_RENDER_MEKABOW, true).component(MekaWeapons.TOGGLE_RENDER_MEKAGUN, true));
@@ -68,19 +68,19 @@ public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, IC
         }
 
         List<ChargeTarget> targets = new ArrayList<>();
-        for (ItemStack armorSlot : player.getArmorSlots()) {
-            collectChargeTarget(targets, frequencyContainer, armorSlot);
+        for (ItemStack armor : player.getArmorSlots()) {
+            collectChargeTarget(targets, armor, available);
         }
 
         for (ItemStack inventorySlot : player.getInventory().items) {
-            collectChargeTarget(targets, frequencyContainer, inventorySlot);
+            collectChargeTarget(targets, inventorySlot, available);
         }
 
         if (Mekanism.hooks.curios.isLoaded()) {
             IItemHandler handler = CuriosIntegration.getCuriosInventory(player);
             if (handler != null) {
                 for (int i = 0; i < handler.getSlots(); i++) {
-                    collectChargeTarget(targets, frequencyContainer, handler.getStackInSlot(i));
+                    collectChargeTarget(targets, handler.getStackInSlot(i), available);
                 }
             }
         }
@@ -94,30 +94,25 @@ public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, IC
             totalWanted += target.wanted();
         }
 
-        if (totalWanted == 0) {
+        if (totalWanted <= 0) {
             return;
         }
 
-        long remaining = available;
-        for (int i = 0; i < targets.size(); i++) {
+        long remainingBudget = available;
+        for (int i = 0; i < targets.size() && remainingBudget > 0; i++) {
             ChargeTarget target = targets.get(i);
-
-            long share;
+            long allocation;
             if (i == targets.size() - 1) {
-                share = remaining;
+                allocation = remainingBudget;
             } else {
-                share = Math.min(target.wanted(), available * target.wanted() / totalWanted);
-                remaining -= share;
+                allocation = Math.min(target.wanted(), available * target.wanted() / totalWanted);
             }
-
-            if (share > 0) {
-                long extracted = frequencyContainer.extract(share, Action.EXECUTE, AutomationType.MANUAL);
-                target.handler().insertEnergy(extracted, Action.EXECUTE);
-            }
+            long unused = charge(frequencyContainer, target.handler(), allocation);
+            remainingBudget = remainingBudget - allocation + unused;
         }
     }
 
-    private void collectChargeTarget(List<ChargeTarget> targets, IEnergyContainer frequencyContainer, ItemStack stack) {
+    private void collectChargeTarget(List<ChargeTarget> targets, ItemStack stack, long maxTransfer) {
         if (stack.isEmpty()) {
             return;
         }
@@ -127,12 +122,27 @@ public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, IC
             return;
         }
 
-        long maxTransfer = Math.min(MekaWeapons.general.wirelessChargerEnergyRate.get(), frequencyContainer.getEnergy());
         long remainder = handler.insertEnergy(maxTransfer, Action.SIMULATE);
         long wanted = maxTransfer - remainder;
         if (wanted > 0) {
-            targets.add(new ChargeTarget(frequencyContainer, handler, wanted));
+            targets.add(new ChargeTarget(handler, wanted));
         }
+    }
+
+    private long charge(IEnergyContainer energyContainer, IStrictEnergyHandler handler, long amount) {
+        if (amount <= 0) {
+            return amount;
+        }
+
+        long remaining = handler.insertEnergy(amount, Action.SIMULATE);
+        if (remaining == amount) {
+            return amount;
+        }
+
+        long toExtract = amount - remaining;
+        long extracted = energyContainer.extract(toExtract, Action.EXECUTE, AutomationType.MANUAL);
+        long leftover = handler.insertEnergy(extracted, Action.EXECUTE);
+        return remaining + leftover;
     }
 
     @Override
