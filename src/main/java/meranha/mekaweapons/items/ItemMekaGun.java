@@ -8,7 +8,6 @@ import mekanism.api.lasers.ILaserDissipation;
 import mekanism.api.text.EnumColor;
 import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
-import mekanism.client.sound.SoundHandler;
 import mekanism.common.MekanismLang;
 import mekanism.common.capabilities.Capabilities;
 import mekanism.common.content.gear.IRadialModuleContainerItem;
@@ -18,17 +17,17 @@ import mekanism.common.registries.MekanismDamageTypes;
 import mekanism.common.registries.MekanismSounds;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.MekaWeapons;
-import meranha.mekaweapons.client.BeamManager;
 import meranha.mekaweapons.client.WeaponsLang;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -43,19 +42,21 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 import static meranha.mekaweapons.MekaWeaponsUtils.*;
 
 public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainerItem {
-    private record LaserHit(LivingEntity entity, Vec3 hitPosition) {}
+    public record LaserHit(@Nullable LivingEntity entity, Vec3 hitPosition) {}
 
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_gun");
     private static final double MUZZLE_SIDE_OFFSET = 0.02D;
     private static final double MUZZLE_FORWARD_OFFSET = 0.05D;
     private static final double MUZZLE_DOWN_OFFSET = -0.02D;
     private static final double MIN_BEAM_LENGTH = 0.35D;
+    private static final float LASER_RADIUS = 0.1F;
 
     public ItemMekaGun(Properties properties) {
         super(IModuleHelper.INSTANCE.applyModuleContainerProperties(properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1)));
@@ -92,7 +93,8 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
 
     @Override
     public void onUseTick(@NotNull Level level, @NotNull LivingEntity livingEntity, @NotNull ItemStack stack, int remainingUseTicks) {
-        if (!(livingEntity instanceof Player player)) {
+        // The laser beam is rendered client side from the synced item use state, so all the firing logic stays on the server.
+        if (level.isClientSide() || !(livingEntity instanceof Player player)) {
             return;
         }
 
@@ -102,54 +104,60 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
             return;
         }
 
-        Vec3 look = player.getViewVector(1.0F).normalize();
-        Vec3 eye = player.getEyePosition(1.0F);
-
-        InteractionHand hand = player.getUsedItemHand();
-        double mainHandSign = player.getMainArm() == net.minecraft.world.entity.HumanoidArm.RIGHT ? 1.0D : -1.0D;
-        double handSign = hand == InteractionHand.MAIN_HAND ? mainHandSign : -mainHandSign;
-        Vec3 right = look.cross(new Vec3(0, 1, 0));
-        if (right.lengthSqr() < 1.0E-6) {
-            right = new Vec3(1, 0, 0);
-        } else {
-            right = right.normalize();
-        }
-
-        Vec3 up = right.cross(look).normalize();
-        Vec3 from = eye.add(right.scale(MUZZLE_SIDE_OFFSET * handSign)).add(look.scale(MUZZLE_FORWARD_OFFSET)).add(up.scale(MUZZLE_DOWN_OFFSET));
-
-        Vec3 aimEnd = eye.add(look.scale(MekaWeapons.general.mekaGunBeamLength.get()));
-        BlockHitResult blockHitResult = level.clip(new ClipContext(eye, aimEnd, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
-        Vec3 to = blockHitResult.getType() != HitResult.Type.MISS ? blockHitResult.getLocation() : aimEnd;
-        Vec3 beam = to.subtract(from);
-        if (beam.length() < MIN_BEAM_LENGTH) {
-            to = from.add(look.scale(MIN_BEAM_LENGTH));
-        }
-
-        LaserHit hit = traceLaser(level, player, from, to);
-        if (!level.isClientSide()) {
-            BeamManager.setBeam(player.getUUID(), from, hit.hitPosition(), 70 / 255F, 242 / 255F, 149 / 255F, 0.5F);
-        }
-
         long gameTime = level.getGameTime();
-        boolean canFire = gameTime - getLastFireTick(stack) >= MekaWeapons.general.mekaGunFireInterval.get();
-        if (!canFire) return;
+        if (gameTime - getLastFireTick(stack) < MekaWeapons.general.mekaGunFireInterval.get()) {
+            return;
+        }
 
         IEnergyContainer energy = StorageUtils.getEnergyContainer(stack, 0);
         if (!player.isCreative() && energy != null) {
             energy.extract(getEnergyNeeded(stack), Action.EXECUTE, AutomationType.MANUAL);
         }
+
         setHeat(stack, heat + MekaWeapons.general.mekaGunHeatPerShot.get());
         setLastFireTick(stack, gameTime);
-        // TODO: start and stop laser sound in use and release using to avoid sound spam each tick
-        SoundHandler.playSound(MekanismSounds.LASER);
+        // TODO: start and stop laser sound in use and release using to avoid sound spam each shot
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), MekanismSounds.LASER.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 
+        LaserHit hit = traceLaser(level, player, 1.0F);
         if (hit.entity() != null) {
             damageLaserHit(level, stack, hit.entity());
         }
     }
 
-    private LaserHit traceLaser(Level level, Player owner, Vec3 from, Vec3 to) {
+    /**
+     * Position the beam is emitted from, slightly offset from the eyes towards the hand holding the gun.
+     */
+    public static Vec3 getMuzzlePosition(@NotNull Player player, float partialTick) {
+        Vec3 look = player.getViewVector(partialTick).normalize();
+        Vec3 eye = player.getEyePosition(partialTick);
+        double mainHandSign = player.getMainArm() == HumanoidArm.RIGHT ? 1.0D : -1.0D;
+        double handSign = player.getUsedItemHand() == InteractionHand.MAIN_HAND ? mainHandSign : -mainHandSign;
+        Vec3 right = look.cross(new Vec3(0, 1, 0));
+        right = right.lengthSqr() < 1.0E-6 ? new Vec3(1, 0, 0) : right.normalize();
+
+        Vec3 up = right.cross(look).normalize();
+        return eye.add(right.scale(MUZZLE_SIDE_OFFSET * handSign)).add(look.scale(MUZZLE_FORWARD_OFFSET)).add(up.scale(MUZZLE_DOWN_OFFSET));
+    }
+
+    /**
+     * Traces the beam from the muzzle up to the first block or living entity in the way.
+     */
+    public static LaserHit traceLaser(@NotNull Level level, @NotNull Player player, float partialTick) {
+        Vec3 look = player.getViewVector(partialTick).normalize();
+        Vec3 eye = player.getEyePosition(partialTick);
+        Vec3 from = getMuzzlePosition(player, partialTick);
+
+        Vec3 aimEnd = eye.add(look.scale(MekaWeapons.general.mekaGunBeamLength.get()));
+        BlockHitResult blockHitResult = level.clip(new ClipContext(eye, aimEnd, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+        Vec3 to = blockHitResult.getType() != HitResult.Type.MISS ? blockHitResult.getLocation() : aimEnd;
+        if (to.subtract(from).length() < MIN_BEAM_LENGTH) {
+            to = from.add(look.scale(MIN_BEAM_LENGTH));
+        }
+        return traceLaser(level, player, from, to);
+    }
+
+    private static LaserHit traceLaser(Level level, Player owner, Vec3 from, Vec3 to) {
         Vec3 beam = to.subtract(from);
         double length = beam.length();
         if (length < 1e-6) {
@@ -157,11 +165,10 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
         }
 
         Vec3 dir = beam.normalize();
-        float radius = 0.1F;
         LivingEntity closest = null;
         double closestDistance = Double.MAX_VALUE;
-        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, getLaserBox(from, to, radius))) {
-            if (!isEntityHit(from, dir, length, entity, radius)) {
+        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, getLaserBox(from, to, LASER_RADIUS))) {
+            if (!isEntityHit(from, dir, length, entity, LASER_RADIUS)) {
                 continue;
             }
 
@@ -221,13 +228,6 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
     }
 
     @Override
-    public void releaseUsing(@NotNull ItemStack stack, Level level, @NotNull LivingEntity entity, int timeLeft) {
-        if (!level.isClientSide() && entity instanceof ServerPlayer player) {
-            BeamManager.removeBeam(player.getUUID());
-        }
-    }
-
-    @Override
     public void inventoryTick(@NotNull ItemStack stack, Level level, @NotNull Entity entity, int slot, boolean selected) {
         if (level.isClientSide || !(entity instanceof Player)) return;
 
@@ -235,12 +235,12 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
         if (gameTime - getLastFireTick(stack) < MekaWeapons.general.mekaGunCooldownDelayTicks.get() || gameTime % 20 != 0) return;
 
         int heat = getHeat(stack);
-        if (heat <= MekaWeapons.general.mekaGunMaxHeat.get()) {
+        if (heat > 0) {
             setHeat(stack, heat - MekaWeapons.general.mekaGunHeatLossPerSecond.get());
         }
     }
 
-    private AABB getLaserBox(Vec3 from, Vec3 to, float radius) {
+    private static AABB getLaserBox(Vec3 from, Vec3 to, float radius) {
         double dx = to.x - from.x;
         double dy = to.y - from.y;
         double dz = to.z - from.z;
@@ -253,13 +253,13 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
         return new AABB(from, to).inflate((1.0 - Math.abs(dx * invLength)) * radius, (1.0 - Math.abs(dy * invLength)) * radius, (1.0 - Math.abs(dz * invLength)) * radius);
     }
 
-    private Vec3 projectPoint(Vec3 from, Vec3 dir, Vec3 point) {
+    private static Vec3 projectPoint(Vec3 from, Vec3 dir, Vec3 point) {
         Vec3 toPoint = point.subtract(from);
         double t = toPoint.dot(dir);
         return from.add(dir.scale(t));
     }
 
-    private boolean isEntityHit(Vec3 from, Vec3 dir, double length, Entity entity, double radius) {
+    private static boolean isEntityHit(Vec3 from, Vec3 dir, double length, Entity entity, double radius) {
         AABB box = entity.getBoundingBox();
 
         double centerX = (box.minX + box.maxX) * 0.5;

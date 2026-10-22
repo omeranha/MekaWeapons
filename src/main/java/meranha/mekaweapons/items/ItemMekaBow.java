@@ -45,6 +45,7 @@ import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 
 public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_bow");
+    private static final float VANILLA_DRAW_TICKS = 20.0F;
 
     public ItemMekaBow(@NotNull Properties properties) {
         super(IModuleHelper.INSTANCE.applyModuleContainerProperties(properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1)));
@@ -75,7 +76,8 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
 
     @Override
     public void onUseTick(@NotNull Level world, @NotNull LivingEntity player, @NotNull ItemStack stack, int timeLeft) {
-        if (player.isAlive() && isModuleEnabled(stack, WeaponsModules.AUTOFIRE_UNIT) && getUseDuration(stack, player) - timeLeft == getUseTick(stack)) {
+        // ">=" instead of "==" because anything shortening the use duration can make the elapsed time skip over the draw time
+        if (player.isAlive() && isModuleEnabled(stack, WeaponsModules.AUTOFIRE_UNIT) && getUseDuration(stack, player) - timeLeft >= getUseTick(stack)) {
             player.stopUsingItem();
             stack.releaseUsing(world, player, 0);
             player.startUsingItem(player.getUsedItemHand());
@@ -108,8 +110,13 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         }
 
         int charge = EventHooks.onArrowLoose(bow, world, player, this.getUseDuration(bow, entity) - timeLeft, true);
-        float power = getPowerForTime(charge);
-        if (charge < 0 || power < 0.1) {
+        if (charge < 0) {
+            return;
+        }
+
+        // the Draw Speed Unit shortens the draw time, so the charge has to be scaled back to the vanilla draw time to keep full power shots
+        float power = getPowerForTime(Math.round(charge * VANILLA_DRAW_TICKS / getUseTick(bow)));
+        if (power < 0.1) {
             return;
         }
 
@@ -172,12 +179,12 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     }
 
     public float getUseTick(@NotNull ItemStack stack) {
-        float useTick = 20.0F;
+        float useTick = VANILLA_DRAW_TICKS;
         IModule<DrawSpeedUnit> drawSpeedUnit = getEnabledModule(stack, WeaponsModules.DRAWSPEED_UNIT);
         if (drawSpeedUnit != null) {
             useTick -= 5.0f * drawSpeedUnit.getCustomInstance().getDrawSpeed();
         }
-        return useTick;
+        return Math.max(1.0F, useTick);
     }
 
     @Override
