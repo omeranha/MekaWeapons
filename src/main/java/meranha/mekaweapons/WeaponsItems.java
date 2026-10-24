@@ -1,7 +1,10 @@
 package meranha.mekaweapons;
 
+import mekanism.api.AutomationType;
 import mekanism.api.functions.ConstantPredicates;
 import mekanism.common.attachments.containers.ContainerType;
+import mekanism.common.attachments.containers.chemical.ChemicalTanksBuilder;
+import mekanism.common.attachments.containers.chemical.ComponentBackedChemicalTank;
 import mekanism.common.attachments.containers.energy.ComponentBackedNoClampEnergyContainer;
 import mekanism.common.attachments.containers.energy.EnergyContainersBuilder;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
@@ -13,10 +16,12 @@ import meranha.mekaweapons.items.ItemMagnetizer;
 import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaGun;
 import meranha.mekaweapons.items.ItemMekaTana;
+import meranha.mekaweapons.items.modules.ChemicalArrowEffect;
 import meranha.mekaweapons.items.modules.WeaponsModules;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
+
+import static meranha.mekaweapons.MekaWeaponsUtils.isModuleInstalled;
 
 public class WeaponsItems {
     public static final ItemDeferredRegister ITEMS = new ItemDeferredRegister(MekaWeapons.MODID);
@@ -55,4 +60,9 @@ public class WeaponsItems {
     public static final ItemRegistryObject<ItemModule> MODULE_ATTACKAMPLIFICATION = ITEMS.registerModule(WeaponsModules.ATTACKAMPLIFICATION_UNIT, Rarity.UNCOMMON);
     public static final ItemRegistryObject<ItemModule> MODULE_SWEEPING = ITEMS.registerModule(WeaponsModules.SWEEPING_UNIT, Rarity.UNCOMMON);
     public static final ItemRegistryObject<ItemModule> MODULE_LOOTING = ITEMS.registerModule(WeaponsModules.LOOTING_UNIT, Rarity.UNCOMMON);
+    public static final ItemRegistryObject<ItemModule> MODULE_PUNCH = ITEMS.registerModule(WeaponsModules.PUNCH_UNIT, Rarity.UNCOMMON);
+    public static final ItemRegistryObject<ItemModule> MODULE_FIREASPECT = ITEMS.registerModule(WeaponsModules.FIREASPECT_UNIT, Rarity.UNCOMMON);
+    public static final ItemRegistryObject<ItemModule> MODULE_KNOCKBACK = ITEMS.registerModule(WeaponsModules.KNOCKBACK_UNIT, Rarity.UNCOMMON);
+    public static final ItemRegistryObject<ItemModule> MODULE_COOLING = ITEMS.registerModule(WeaponsModules.COOLING_UNIT, Rarity.RARE);
+    public static final ItemRegistryObject<ItemModule> MODULE_CHEMICALARROW = ITEMS.registerModule(WeaponsModules.CHEMICALARROW_UNIT, Rarity.EPIC);
 }

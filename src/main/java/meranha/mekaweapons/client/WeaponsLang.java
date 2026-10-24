@@ -13,6 +13,8 @@ public enum WeaponsLang implements ILangEntry {
     MAGNETIZER("tooltip", "magnetizer"),
     DRAWSPEED("tooltip", "drawspeed"),
     HEAT("tooltip", "gun_heat"),
+    CHEMICAL_ARROWS("tooltip", "chemical_arrows"),
+    CHEMICAL_ARROWS_EMPTY("tooltip", "chemical_arrows_empty"),
 
     RADIAL_TOGGLE_ON("radial", "toggle_on"),
     RADIAL_TOGGLE_OFF("radial", "toggle_off"),

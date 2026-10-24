@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:module_knockback_unit"
+    }
+  ],
+  "type":"minecraft:crafting_shaped",
+  "result":{
+    "id":"mekaweapons:module_knockback_unit"
+  },
+  "pattern":[ "isi", "imi", "hhh" ],
+  "key":{
+    "m":{ "item": "mekanism:module_base" },
+    "i":{ "item": "mekanism:alloy_infused" },
+    "s":{ "item": "minecraft:piston" },
+    "h":{ "item": "mekanism:hdpe_sheet" }
+  }
+}

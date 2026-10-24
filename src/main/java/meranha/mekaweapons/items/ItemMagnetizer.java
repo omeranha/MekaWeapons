@@ -68,12 +68,10 @@ public class ItemMagnetizer extends Item implements IFrequencyItem, IGuiItem, IC
         }
 
         List<ChargeTarget> targets = new ArrayList<>();
-        for (ItemStack armor : player.getArmorSlots()) {
-            collectChargeTarget(targets, armor, available);
-        }
-
-        for (ItemStack inventorySlot : player.getInventory().items) {
-            collectChargeTarget(targets, inventorySlot, available);
+        for (List<ItemStack> compartment : List.of(player.getInventory().items, player.getInventory().armor, player.getInventory().offhand)) {
+            for (ItemStack inventorySlot : compartment) {
+                collectChargeTarget(targets, inventorySlot, available);
+            }
         }
 
         if (Mekanism.hooks.curios.isLoaded()) {

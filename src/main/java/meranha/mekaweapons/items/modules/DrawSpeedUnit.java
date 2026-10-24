@@ -43,6 +43,7 @@ import java.util.function.IntFunction;
 @ParametersAreNotNullByDefault
 public record DrawSpeedUnit(DrawSpeed drawSpeed) implements ICustomModule<DrawSpeedUnit> {
     public static final ResourceLocation DRAWSPEED = MekaWeapons.rl("drawspeed");
+    private static final int MAX_INSTALLED = DrawSpeed.values().length - 1;
     private static final Int2ObjectMap<Lazy<NestedRadialMode>> RADIAL_DATAS = Util.make(() -> {
         int types = DrawSpeed.values().length - 1;
         Int2ObjectMap<Lazy<NestedRadialMode>> map = new Int2ObjectArrayMap<>(types);
@@ -54,13 +55,20 @@ public record DrawSpeedUnit(DrawSpeed drawSpeed) implements ICustomModule<DrawSp
         return map;
     });
 
+    /**
+     * Amount of draw speed steps unlocked by the given amount of installed units, never more than the enum can represent.
+     */
+    public static int boundFor(int installed) {
+        return Math.min(installed + 1, DrawSpeed.values().length);
+    }
+
     public DrawSpeedUnit(IModule<DrawSpeedUnit> module) {
         this(module.<DrawSpeed>getConfigOrThrow(DRAWSPEED).get());
     }
 
     @NotNull
     private NestedRadialMode getNestedData(IModule<DrawSpeedUnit> module) {
-        return RADIAL_DATAS.get(module.getInstalledCount()).get();
+        return RADIAL_DATAS.get(Math.clamp(module.getInstalledCount(), 1, MAX_INSTALLED)).get();
     }
 
     @NotNull
@@ -95,7 +103,7 @@ public record DrawSpeedUnit(DrawSpeed drawSpeed) implements ICustomModule<DrawSp
     }
 
     public void changeMode(IModule<DrawSpeedUnit> module, Player player, IModuleContainer moduleContainer, ItemStack stack, int shift, boolean displayChangeMessage) {
-        DrawSpeed newMode = drawSpeed.adjust(shift, v -> v.ordinal() < module.getInstalledCount() + 1);
+        DrawSpeed newMode = drawSpeed.adjust(shift, v -> v.ordinal() < boundFor(module.getInstalledCount()));
         if (drawSpeed != newMode) {
             if (displayChangeMessage) {
                 module.displayModeChange(player, MekanismLang.MODULE_EFFICIENCY.translate(), newMode);

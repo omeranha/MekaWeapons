@@ -32,6 +32,7 @@ import mekanism.common.util.MekanismUtils;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.MekaWeapons;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -50,6 +51,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -157,6 +160,11 @@ public class ItemMekaTana extends ItemEnergized implements IRadialModuleContaine
         PacketUtils.sendToAllTracking(new PacketPortalFX(pos.above()), world, pos);
         world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
         return InteractionResultHolder.success(stack);
+    }
+
+    @Override
+    public @NotNull ItemEnchantments getAllEnchantments(@NotNull ItemStack stack, @NotNull HolderLookup.RegistryLookup<Enchantment> lookup) {
+        return mergeModuleEnchantments(stack, super.getAllEnchantments(stack, lookup));
     }
 
     @Override

@@ -1,0 +1,19 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:module_fireaspect_unit"
+    }
+  ],
+  "type":"minecraft:crafting_shaped",
+  "result":{
+    "id":"mekaweapons:module_fireaspect_unit"
+  },
+  "pattern":[ "ibi", "imi", "hhh" ],
+  "key":{
+    "m":{ "item": "mekanism:module_base" },
+    "i":{ "item": "mekanism:alloy_infused" },
+    "b":{ "item": "minecraft:blaze_rod" },
+    "h":{ "item": "mekanism:hdpe_sheet" }
+  }
+}

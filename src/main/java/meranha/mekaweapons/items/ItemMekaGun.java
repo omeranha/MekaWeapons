@@ -14,13 +14,13 @@ import mekanism.common.content.gear.IRadialModuleContainerItem;
 import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.item.ItemEnergized;
 import mekanism.common.registries.MekanismDamageTypes;
-import mekanism.common.registries.MekanismSounds;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.MekaWeapons;
 import meranha.mekaweapons.client.WeaponsLang;
+import meranha.mekaweapons.items.modules.WeaponsModules;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.damagesource.DamageSource;
@@ -34,6 +34,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -116,13 +118,19 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
 
         setHeat(stack, heat + MekaWeapons.general.mekaGunHeatPerShot.get());
         setLastFireTick(stack, gameTime);
-        // TODO: start and stop laser sound in use and release using to avoid sound spam each shot
-        level.playSound(null, player.getX(), player.getY(), player.getZ(), MekanismSounds.LASER.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 
         LaserHit hit = traceLaser(level, player, 1.0F);
         if (hit.entity() != null) {
             damageLaserHit(level, stack, hit.entity());
         }
+    }
+
+    /**
+     * Whether the entity is currently firing a Meka-Gun. The item use state is synced to every client, so this drives
+     * the beam and the laser sound without any extra packets.
+     */
+    public static boolean isFiring(LivingEntity entity) {
+        return entity.isAlive() && entity.isUsingItem() && entity.getUseItem().getItem() instanceof ItemMekaGun;
     }
 
     /**
@@ -231,12 +239,15 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
     public void inventoryTick(@NotNull ItemStack stack, Level level, @NotNull Entity entity, int slot, boolean selected) {
         if (level.isClientSide || !(entity instanceof Player)) return;
 
+        int coolingUnits = getEnabledModuleCount(stack, WeaponsModules.COOLING_UNIT);
+        int cooldownDelay = Math.max(1, MekaWeapons.general.mekaGunCooldownDelayTicks.get() - coolingUnits * MekaWeapons.general.mekaGunCoolingDelayReduction.get());
         long gameTime = level.getGameTime();
-        if (gameTime - getLastFireTick(stack) < MekaWeapons.general.mekaGunCooldownDelayTicks.get() || gameTime % 20 != 0) return;
+        if (gameTime - getLastFireTick(stack) < cooldownDelay || gameTime % 20 != 0) return;
 
         int heat = getHeat(stack);
         if (heat > 0) {
-            setHeat(stack, heat - MekaWeapons.general.mekaGunHeatLossPerSecond.get());
+            int heatLoss = MekaWeapons.general.mekaGunHeatLossPerSecond.get() + coolingUnits * MekaWeapons.general.mekaGunCoolingHeatLossBonus.get();
+            setHeat(stack, heat - heatLoss);
         }
     }
 
@@ -300,6 +311,11 @@ public class ItemMekaGun extends ItemEnergized implements IRadialModuleContainer
     @Override
     public void addHUDStrings(List<Component> list, Player player, ItemStack stack, EquipmentSlot slotType) {
         list.add(WeaponsLang.HEAT.translateColored(EnumColor.WHITE, getHeat(stack) + "%"));
+    }
+
+    @Override
+    public @NotNull ItemEnchantments getAllEnchantments(@NotNull ItemStack stack, @NotNull HolderLookup.RegistryLookup<Enchantment> lookup) {
+        return mergeModuleEnchantments(stack, super.getAllEnchantments(stack, lookup));
     }
 
     @Override

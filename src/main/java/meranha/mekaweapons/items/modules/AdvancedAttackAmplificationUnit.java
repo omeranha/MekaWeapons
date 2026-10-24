@@ -46,6 +46,7 @@ import org.jetbrains.annotations.Nullable;
 public record AdvancedAttackAmplificationUnit(AttackDamage attackDamage) implements ICustomModule<AdvancedAttackAmplificationUnit> {
     public static final ResourceLocation ATTACK_DAMAGE = Mekanism.rl("bonus_attack_damage");
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("attack_damage");
+    private static final int MAX_INSTALLED = AttackDamage.values().length - 2;
     private static final Int2ObjectMap<Lazy<NestedRadialMode>> RADIAL_DATAS = Util.make(() -> {
         int types = AttackDamage.values().length - 2;
         Int2ObjectMap<Lazy<NestedRadialMode>> map = new Int2ObjectArrayMap<>(types);
@@ -56,6 +57,13 @@ public record AdvancedAttackAmplificationUnit(AttackDamage attackDamage) impleme
         }
         return map;
     });
+
+    /**
+     * Amount of damage steps unlocked by the given amount of installed units, never more than the enum can represent.
+     */
+    public static int boundFor(int installed) {
+        return Math.min(installed + 2, AttackDamage.values().length);
+    }
 
     public AdvancedAttackAmplificationUnit(IModule<AdvancedAttackAmplificationUnit> module) {
         this(module.<AttackDamage>getConfigOrThrow(ATTACK_DAMAGE).get());
@@ -69,7 +77,7 @@ public record AdvancedAttackAmplificationUnit(AttackDamage attackDamage) impleme
 
     @NotNull
     private NestedRadialMode getNestedData(IModule<AdvancedAttackAmplificationUnit> module) {
-        return RADIAL_DATAS.get(module.getInstalledCount()).get();
+        return RADIAL_DATAS.get(Math.clamp(module.getInstalledCount(), 1, MAX_INSTALLED)).get();
     }
 
     @NotNull
@@ -105,7 +113,7 @@ public record AdvancedAttackAmplificationUnit(AttackDamage attackDamage) impleme
     }
 
     public void changeMode(IModule<AdvancedAttackAmplificationUnit> module, Player player, IModuleContainer moduleContainer, ItemStack stack, int shift, boolean displayChangeMessage) {
-        AttackDamage newMode = attackDamage.adjust(shift, v -> v.ordinal() < module.getInstalledCount() + 2);
+        AttackDamage newMode = attackDamage.adjust(shift, v -> v.ordinal() < boundFor(module.getInstalledCount()));
         if (attackDamage != newMode) {
             if (displayChangeMessage) {
                 module.displayModeChange(player, MekanismLang.MODULE_EFFICIENCY.translate(), newMode);

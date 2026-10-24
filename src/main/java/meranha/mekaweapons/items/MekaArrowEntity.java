@@ -4,8 +4,10 @@ import static meranha.mekaweapons.MekaWeaponsUtils.*;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import meranha.mekaweapons.items.modules.ChemicalArrowEffect;
 import meranha.mekaweapons.items.modules.WeaponsModules;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,6 +19,7 @@ import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import meranha.mekaweapons.MekaWeapons;
 import net.minecraft.world.entity.EntityType;
@@ -28,15 +31,20 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 public class MekaArrowEntity extends AbstractArrow {
+    private static final String CHEMICAL_EFFECT_KEY = "ChemicalEffect";
+
     private IntOpenHashSet piercingIgnoreEntityIds;
     private List<Entity> piercedAndKilledEntities;
+    @Nullable
+    private ChemicalArrowEffect chemicalEffect;
 
     public MekaArrowEntity(EntityType<? extends MekaArrowEntity> entityType, Level level, ItemStack itemStack) {
         super(entityType, level);
     }
 
     public MekaArrowEntity(Level level, AbstractArrow arrow, ItemStack projectileStack, ItemStack weaponStack, int damage) {
-        super(MekaWeapons.MEKA_ARROW.get(), arrow.getX(), arrow.getY(), arrow.getZ(), level, projectileStack, null);
+        // the weapon stack has to be passed along so the weapon's module based enchantments apply to the arrow
+        super(MekaWeapons.MEKA_ARROW.get(), arrow.getX(), arrow.getY(), arrow.getZ(), level, projectileStack, weaponStack);
         this.setPickup(!isModuleEnabled(weaponStack, WeaponsModules.ARROWENERGY_UNIT));
         this.setNoGravity(isModuleEnabled(weaponStack, WeaponsModules.GRAVITYDAMPENER_UNIT));
         this.setBaseDamage(damage);
@@ -45,6 +53,24 @@ public class MekaArrowEntity extends AbstractArrow {
 
     public MekaArrowEntity(EntityType<MekaArrowEntity> entityType, Level level) {
         this(entityType, level, new ItemStack(Items.ARROW));
+    }
+
+    public void setChemicalEffect(@Nullable ChemicalArrowEffect chemicalEffect) {
+        this.chemicalEffect = chemicalEffect;
+    }
+
+    @Override
+    public void addAdditionalSaveData(@NotNull CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        if (chemicalEffect != null) {
+            tag.putString(CHEMICAL_EFFECT_KEY, chemicalEffect.getSerializedName());
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(@NotNull CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        chemicalEffect = tag.contains(CHEMICAL_EFFECT_KEY) ? ChemicalArrowEffect.bySerializedName(tag.getString(CHEMICAL_EFFECT_KEY)) : null;
     }
 
     public void tick() {
@@ -104,6 +130,10 @@ public class MekaArrowEntity extends AbstractArrow {
             if (entity instanceof LivingEntity livingentity) {
                 if (!level.isClientSide && this.getPierceLevel() <= 0) {
                     livingentity.setArrowCount(livingentity.getArrowCount() + 1);
+                }
+
+                if (!level.isClientSide && chemicalEffect != null && chemicalEffect.isEnabled()) {
+                    chemicalEffect.apply(livingentity);
                 }
 
                 this.doKnockback(livingentity, damagesource);

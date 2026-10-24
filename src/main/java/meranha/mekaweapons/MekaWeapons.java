@@ -5,6 +5,7 @@ import java.util.Map;
 
 import mekanism.api.gear.IModule;
 import mekanism.api.gear.IModuleHelper;
+import mekanism.client.render.item.MekaSuitBarDecorator;
 import mekanism.common.content.gear.shared.ModuleColorModulationUnit;
 import mekanism.common.lib.Color;
 import mekanism.common.lib.Version;
@@ -16,6 +17,7 @@ import meranha.mekaweapons.items.modules.*;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +48,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.IConfigSpec;
+import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers;
@@ -61,6 +64,7 @@ public class MekaWeapons {
     public static final String MODID = "mekaweapons";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final WeaponsConfig general = new WeaponsConfig();
+    public static final WeaponsStartupConfig startup = new WeaponsStartupConfig();
     private static final Map<IConfigSpec, IMekanismConfig> KNOWN_CONFIGS = new HashMap<>();
 
     public static final EntityTypeDeferredRegister ENTITY_TYPES = new EntityTypeDeferredRegister(MODID);
@@ -77,13 +81,18 @@ public class MekaWeapons {
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Long>> LAST_FIRE_TICK = DATA_COMPONENTS.registerNonNegativeLong("last_fire_tick");
 
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
+        // the startup config holds the module install limits, so it has to be loaded before the modules are registered
+        MekanismConfigHelper.registerConfig(KNOWN_CONFIGS, modContainer, startup);
+        MekanismConfigHelper.registerConfig(KNOWN_CONFIGS, modContainer, general);
+
         WeaponsItems.ITEMS.register(modEventBus);
         WeaponsModules.MODULES.register(modEventBus);
         MekaWeapons.ENTITY_TYPES.register(modEventBus);
         MekaWeapons.CONTAINER_TYPES.register(modEventBus);
         MekaWeapons.DATA_COMPONENTS.register(modEventBus);
 
-        MekanismConfigHelper.registerConfig(KNOWN_CONFIGS, modContainer, general);
+        modEventBus.addListener((ModConfigEvent.Loading event) -> MekanismConfigHelper.onConfigLoad(event, MODID, KNOWN_CONFIGS));
+        modEventBus.addListener((ModConfigEvent.Reloading event) -> MekanismConfigHelper.onConfigLoad(event, MODID, KNOWN_CONFIGS));
         modEventBus.addListener(this::buildCreativeModeTabContents);
         modEventBus.addListener(this::sendCustomModules);
         modEventBus.addListener(this::registerRenderers);
@@ -121,9 +130,9 @@ public class MekaWeapons {
         MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MEKA_BOW, ADD_MEKA_BOW_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MEKA_GUN, ADD_MEKA_GUN_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MAGNETIZER, ADD_MAGNETIZER_MODULE);
-        MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
-        MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT, WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
-        MekanismIMC.sendModuleIMC(ADD_MEKA_GUN_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.LOOTING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT, WeaponsModules.FIREASPECT_UNIT, WeaponsModules.KNOCKBACK_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT, WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT, WeaponsModules.PUNCH_UNIT, WeaponsModules.CHEMICALARROW_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_GUN_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.LOOTING_UNIT, WeaponsModules.COOLING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MAGNETIZER_MODULE, MekanismModules.COLOR_MODULATION_UNIT);
     }
 
@@ -160,6 +169,7 @@ public class MekaWeapons {
                     return 0;
                 });
                 ClientRegistrationUtil.setPropertyOverride(WeaponsItems.MEKA_BOW, Mekanism.rl("pulling"), (stack, world, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
+
             });
         }
 
@@ -177,6 +187,11 @@ public class MekaWeapons {
                 }
                 return 0xFFFFFFFF;
             }, WeaponsItems.MEKA_TANA.get(), WeaponsItems.MEKA_BOW.get(), WeaponsItems.MEKA_GUN.get(), WeaponsItems.MAGNETIZER.get());
+        }
+
+        @SubscribeEvent
+        public static void registerItemDecorations(RegisterItemDecorationsEvent event) {
+            event.register(WeaponsItems.MEKA_BOW, WeaponsBarDecorator.INSTANCE);
         }
     }
 }

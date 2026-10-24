@@ -1,15 +1,29 @@
 package meranha.mekaweapons.items;
 
 import static meranha.mekaweapons.MekaWeaponsUtils.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
+import mekanism.api.chemical.IChemicalTank;
+import mekanism.common.attachments.IAttachmentAware;
+import mekanism.common.attachments.containers.ContainerType;
+import mekanism.common.attachments.containers.chemical.ChemicalTanksBuilder;
+import mekanism.common.attachments.containers.chemical.ComponentBackedChemicalTank;
+import mekanism.common.capabilities.chemical.item.ChemicalTankSpec;
+import mekanism.common.config.MekanismConfig;
+import mekanism.common.registries.MekanismChemicals;
+import meranha.mekaweapons.client.WeaponsLang;
+import meranha.mekaweapons.items.modules.ChemicalArrowEffect;
 import meranha.mekaweapons.items.modules.DrawSpeedUnit;
 import meranha.mekaweapons.items.modules.WeaponsModules;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.item.*;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Entity;import net.minecraft.world.item.*;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.EventHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,9 +38,12 @@ import mekanism.client.key.MekKeyHandler;
 import mekanism.client.key.MekanismKeyHandler;
 import mekanism.common.MekanismLang;
 import mekanism.common.content.gear.IRadialModuleContainerItem;
+import mekanism.common.content.gear.Module;
+import mekanism.common.content.gear.ModuleContainer;
 import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.MekaWeapons;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -40,20 +57,41 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 
-public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
+public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem, IAttachmentAware {
     private static final ResourceLocation RADIAL_ID = MekaWeapons.rl("meka_bow");
     private static final float VANILLA_DRAW_TICKS = 20.0F;
 
+    private final List<ChemicalTankSpec> chemicalTankSpecs = new ArrayList<>();
+
     public ItemMekaBow(@NotNull Properties properties) {
         super(IModuleHelper.INSTANCE.applyModuleContainerProperties(properties.rarity(Rarity.EPIC).setNoRepair().stacksTo(1)));
+        chemicalTankSpecs.add(ChemicalTankSpec.createFillOnly(MekaWeapons.general.chemicalArrowsTransferRate, MekaWeapons.general.chemicalArrowsCapacity,
+                chemical -> chemical.is(MekanismChemicals.HYDROGEN) || chemical.is(MekanismChemicals.SULFURIC_ACID)
+                        || chemical.is(MekanismChemicals.HYDROGEN_CHLORIDE) || chemical.is(MekanismChemicals.WATER_VAPOR),
+                stack -> hasModule(stack, WeaponsModules.CHEMICALARROW_UNIT)));
     }
 
     @Override
     public void onDestroyed(@NotNull ItemEntity item, @NotNull DamageSource damageSource) {
         ModuleHelper.INSTANCE.dropModuleContainerContents(item, damageSource);
+    }
+
+    @Override
+    public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slotId, boolean isSelected) {
+        super.inventoryTick(stack, level, entity, slotId, isSelected);
+        if (!level.isClientSide() && entity instanceof Player player) {
+            ModuleContainer container = ModuleHelper.get().getModuleContainer(stack);
+            if (container != null) {
+                for (Module<?> module : container.modules()) {
+                    module.tick(container, stack, player);
+                }
+            }
+        }
     }
 
     @Override
@@ -64,6 +102,9 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
         }
 
         StorageUtils.addStoredEnergy(stack, tooltip, true);
+        if (isModuleInstalled(stack, WeaponsModules.CHEMICALARROW_UNIT)) {
+            StorageUtils.addStoredChemical(stack, tooltip);
+        }
         tooltip.add(MekanismLang.HOLD_FOR_MODULES.translateColored(EnumColor.GRAY, EnumColor.INDIGO, MekanismKeyHandler.detailsKey.getTranslatedKeyMessage()));
     }
 
@@ -150,7 +191,68 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
     @Override
     public AbstractArrow customArrow(@NotNull AbstractArrow arrow, @NotNull ItemStack projectileStack, @NotNull ItemStack weaponStack) {
         long totalDamage = getTotalDamage(weaponStack);
-        return new MekaArrowEntity(arrow.level(), arrow, projectileStack, weaponStack, MathUtils.clampToInt(totalDamage));
+        MekaArrowEntity mekaArrow = new MekaArrowEntity(arrow.level(), arrow, projectileStack, weaponStack, MathUtils.clampToInt(totalDamage));
+        mekaArrow.setChemicalEffect(consumeChemical(arrow.level(), weaponStack));
+        return mekaArrow;
+    }
+
+    @Override
+    public void attachAttachments(IEventBus eventBus) {
+        if (!chemicalTankSpecs.isEmpty()) {
+            ContainerType.CHEMICAL.addDefaultCreators(eventBus, this, () -> {
+                ChemicalTanksBuilder builder = ChemicalTanksBuilder.builder();
+                for (ChemicalTankSpec spec : chemicalTankSpecs) {
+                    spec.addTank(builder, ComponentBackedChemicalTank::new);
+                }
+                return builder.build();
+            }, MekanismConfig.gear);
+        }
+    }
+
+    /**
+     * Drains one shot worth of chemical from the bow and returns the effect the arrow should apply, or null when the
+     * Chemical Arrows Unit is missing, disabled or out of chemical.
+     */
+    @Nullable
+    private ChemicalArrowEffect consumeChemical(Level level, ItemStack bow) {
+        if (level.isClientSide() || !isModuleEnabled(bow, WeaponsModules.CHEMICALARROW_UNIT)) {
+            return null;
+        }
+
+        IChemicalTank tank = getChemicalTank(bow);
+        if (tank == null || tank.isEmpty()) {
+            return null;
+        }
+
+        ChemicalArrowEffect effect = ChemicalArrowEffect.byStack(tank.getStack());
+        if (effect == null) {
+            return null;
+        }
+
+        long usage = MekaWeapons.general.chemicalArrowsUsage.get();
+        if (tank.extract(usage, Action.SIMULATE, AutomationType.MANUAL).getAmount() < usage) {
+            return null;
+        }
+
+        tank.extract(usage, Action.EXECUTE, AutomationType.MANUAL);
+        return effect;
+    }
+
+    @Override
+    public void addHUDStrings(List<Component> list, Player player, ItemStack stack, EquipmentSlot slotType) {
+        IChemicalTank tank = getChemicalTank(stack);
+        if (tank != null && isModuleEnabled(stack, WeaponsModules.CHEMICALARROW_UNIT)) {
+            if (tank.isEmpty()) {
+                list.add(WeaponsLang.CHEMICAL_ARROWS_EMPTY.translateColored(EnumColor.DARK_GRAY, EnumColor.RED, MekanismLang.NONE.translate()));
+            } else {
+                list.add(WeaponsLang.CHEMICAL_ARROWS.translateColored(EnumColor.DARK_GRAY, EnumColor.INDIGO, tank.getStack().getTextComponent(), EnumColor.AQUA, tank.getStored()));
+            }
+        }
+    }
+
+    @Override
+    public @NotNull ItemEnchantments getAllEnchantments(@NotNull ItemStack stack, @NotNull HolderLookup.RegistryLookup<Enchantment> lookup) {
+        return mergeModuleEnchantments(stack, super.getAllEnchantments(stack, lookup));
     }
 
     @Override
@@ -204,5 +306,9 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem {
 
     public ResourceLocation getRadialIdentifier() {
         return RADIAL_ID;
+    }
+
+    public List<ChemicalTankSpec> getChemicalTankSpecs() {
+        return chemicalTankSpecs;
     }
 }

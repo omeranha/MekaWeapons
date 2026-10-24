@@ -60,15 +60,11 @@ public class BeamManager {
      * packets are needed and the beam disappears on its own as soon as the player stops firing.
      */
     private static BeamData getActiveBeam(ClientLevel level, Player player, float partialTick) {
-        if (!player.isAlive() || !player.isUsingItem()) {
+        if (!ItemMekaGun.isFiring(player)) {
             return null;
         }
 
         ItemStack stack = player.getUseItem();
-        if (!(stack.getItem() instanceof ItemMekaGun)) {
-            return null;
-        }
-
         Vec3 from = ItemMekaGun.getMuzzlePosition(player, partialTick);
         Vec3 to = ItemMekaGun.traceLaser(level, player, partialTick).hitPosition();
         Color color = getBeamColor(stack);

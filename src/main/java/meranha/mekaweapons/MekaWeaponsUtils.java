@@ -1,7 +1,9 @@
 package meranha.mekaweapons;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import mekanism.api.IIncrementalEnum;
 import mekanism.api.annotations.NothingNullByDefault;
+import mekanism.api.chemical.IChemicalTank;
 import mekanism.api.gear.ModuleData;
 import mekanism.api.radial.IRadialDataHelper;
 import mekanism.api.radial.mode.BasicRadialMode;
@@ -10,6 +12,7 @@ import mekanism.api.text.EnumColor;
 import mekanism.api.text.IHasTextComponent;
 import mekanism.api.text.ILangEntry;
 import mekanism.api.text.TextComponentUtil;
+import mekanism.common.attachments.containers.ContainerType;
 import mekanism.common.util.MekanismUtils;
 import meranha.mekaweapons.client.WeaponsLang;
 import meranha.mekaweapons.items.ItemMekaGun;
@@ -19,6 +22,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.neoforged.neoforge.common.TranslatableEnum;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.gear.ICustomModule;
 import mekanism.api.gear.IModule;
+import mekanism.api.gear.IModuleContainer;
 import mekanism.api.gear.IModuleHelper;
 import mekanism.common.config.MekanismConfig;
 import mekanism.common.config.value.CachedIntValue;
@@ -78,6 +84,14 @@ public class MekaWeaponsUtils {
             if (isModuleEnabled(weaponStack, WeaponsModules.LOOTING_UNIT)) {
                 energy += MekaWeapons.general.mekaBowLootingEnergyUsage.get();
             }
+
+            if (isModuleEnabled(weaponStack, WeaponsModules.PUNCH_UNIT)) {
+                energy += MekaWeapons.general.mekaBowPunchEnergyUsage.get();
+            }
+
+            if (isModuleEnabled(weaponStack, WeaponsModules.CHEMICALARROW_UNIT)) {
+                energy += MekaWeapons.general.chemicalArrowsEnergyUsage.get();
+            }
         } else if (weaponStack.getItem() instanceof ItemMekaTana) {
             if (isModuleEnabled(weaponStack, WeaponsModules.SWEEPING_UNIT)) {
                 energy += MekaWeapons.general.mekaTanaSweepingEnergyUsage.get();
@@ -86,10 +100,20 @@ public class MekaWeaponsUtils {
             if (isModuleEnabled(weaponStack, WeaponsModules.LOOTING_UNIT)) {
                 energy += MekaWeapons.general.mekaTanaLootingEnergyUsage.get();
             }
+
+            if (isModuleEnabled(weaponStack, WeaponsModules.FIREASPECT_UNIT)) {
+                energy += MekaWeapons.general.mekaTanaFireAspectEnergyUsage.get();
+            }
+
+            if (isModuleEnabled(weaponStack, WeaponsModules.KNOCKBACK_UNIT)) {
+                energy += MekaWeapons.general.mekaTanaKnockbackEnergyUsage.get();
+            }
         } else if (weaponStack.getItem() instanceof ItemMekaGun) {
             if (isModuleEnabled(weaponStack, WeaponsModules.LOOTING_UNIT)) {
                 energy += MekaWeapons.general.mekaGunLootingEnergyUsage.get();
             }
+
+            energy += getEnabledModuleCount(weaponStack, WeaponsModules.COOLING_UNIT) * MekaWeapons.general.mekaGunCoolingEnergyUsage.get();
         }
 
         IModule<AdvancedAttackAmplificationUnit> attackAmplificationUnit = getEnabledModule(weaponStack, WeaponsModules.ATTACKAMPLIFICATION_UNIT);
@@ -154,6 +178,51 @@ public class MekaWeaponsUtils {
 
     public static boolean isModuleEnabled(ItemStack stack, Holder<ModuleData<?>> type) {
         return IModuleHelper.INSTANCE.isEnabled(stack, type);
+    }
+
+    public static boolean isModuleInstalled(ItemStack stack, Holder<ModuleData<?>> type) {
+        IModuleContainer container = IModuleHelper.INSTANCE.getModuleContainer(stack);
+        return container != null && container.has(type);
+    }
+
+    /**
+     * Amount of copies of the given module installed on the stack, or 0 when the module is missing or disabled.
+     */
+    public static int getEnabledModuleCount(ItemStack stack, Holder<ModuleData<?>> type) {
+        IModuleContainer container = IModuleHelper.INSTANCE.getModuleContainer(stack);
+        return (container != null && container.hasEnabled(type)) ? container.installedCount(type) : 0;
+    }
+
+    @Nullable
+    public static IChemicalTank getChemicalTank(ItemStack stack) {
+        if (ContainerType.CHEMICAL.getContainerCount(stack) == 0) {
+            return null;
+        }
+        return ContainerType.CHEMICAL.createContainer(stack, 0);
+    }
+
+    /**
+     * Merges the enchantments the installed modules provide into the ones already on the stack. Without this the
+     * enchantment based modules, such as the Looting Unit, are stored but never applied.
+     */
+    public static ItemEnchantments mergeModuleEnchantments(ItemStack stack, ItemEnchantments enchantments) {
+        IModuleContainer container = IModuleHelper.INSTANCE.getModuleContainer(stack);
+        if (container == null) {
+            return enchantments;
+        }
+
+        ItemEnchantments moduleBased = container.moduleBasedEnchantments();
+        if (moduleBased.isEmpty()) {
+            return enchantments;
+        } else if (enchantments.isEmpty()) {
+            return moduleBased;
+        }
+
+        ItemEnchantments.Mutable merged = new ItemEnchantments.Mutable(enchantments);
+        for (Object2IntMap.Entry<Holder<Enchantment>> entry : moduleBased.entrySet()) {
+            merged.upgrade(entry.getKey(), entry.getIntValue());
+        }
+        return merged.toImmutable();
     }
 
     @NothingNullByDefault
