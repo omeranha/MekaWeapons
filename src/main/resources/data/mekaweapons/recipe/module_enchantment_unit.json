@@ -1,0 +1,20 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "mekaweapons:module_enchantment_unit"
+    }
+  ],
+  "type":"minecraft:crafting_shaped",
+  "result":{
+    "id":"mekaweapons:module_enchantment_unit"
+  },
+  "pattern":[ "rlr", "rbr", "hph" ],
+  "key":{
+    "b":{ "item": "mekanism:module_base" },
+    "r":{ "item": "mekanism:alloy_reinforced" },
+    "l":{ "item": "minecraft:enchanted_book" },
+    "p":{ "item": "mekanism:pellet_polonium" },
+    "h":{ "item": "mekanism:hdpe_sheet"}
+  }
+}

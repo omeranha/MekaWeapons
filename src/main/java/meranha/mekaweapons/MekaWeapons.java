@@ -72,6 +72,7 @@ public class MekaWeapons {
 
     public static final ContainerTypeDeferredRegister CONTAINER_TYPES = new ContainerTypeDeferredRegister(MODID);
     public static final ContainerTypeRegistryObject<MagnetizerContainer> MAGNETIZER_CONTAINER = CONTAINER_TYPES.register(WeaponsItems.MAGNETIZER, ItemMagnetizer.class, MagnetizerContainer::new);
+    public static final ContainerTypeRegistryObject<EnchantmentImbuerContainer> ENCHANTMENT_IMBUER_CONTAINER = CONTAINER_TYPES.register(WeaponsItems.ENCHANTMENT_IMBUER, ItemEnchantmentImbuer.class, EnchantmentImbuerContainer::new);
 
     public static final DataComponentDeferredRegister DATA_COMPONENTS = new DataComponentDeferredRegister(MODID);
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKATANA = DATA_COMPONENTS.registerBoolean("render_mekatana");
@@ -79,6 +80,7 @@ public class MekaWeapons {
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKAGUN = DATA_COMPONENTS.registerBoolean("render_mekagun");
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Integer>> HEAT = DATA_COMPONENTS.registerInt("heat");
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Long>> LAST_FIRE_TICK = DATA_COMPONENTS.registerNonNegativeLong("last_fire_tick");
+    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<ImbuerContents>> IMBUER_CONTENTS = DATA_COMPONENTS.simple("imbuer_contents", builder -> builder.persistent(ImbuerContents.CODEC).networkSynchronized(ImbuerContents.STREAM_CODEC));
 
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
         // the startup config holds the module install limits, so it has to be loaded before the modules are registered
@@ -130,9 +132,9 @@ public class MekaWeapons {
         MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MEKA_BOW, ADD_MEKA_BOW_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MEKA_GUN, ADD_MEKA_GUN_MODULES);
         MekanismIMC.addModuleContainer((Holder<Item>)WeaponsItems.MAGNETIZER, ADD_MAGNETIZER_MODULE);
-        MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT, WeaponsModules.FIREASPECT_UNIT, WeaponsModules.KNOCKBACK_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
-        MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT, WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT, WeaponsModules.PUNCH_UNIT, WeaponsModules.CHEMICALARROW_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
-        MekanismIMC.sendModuleIMC(ADD_MEKA_GUN_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.LOOTING_UNIT, WeaponsModules.COOLING_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_TANA_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, MekanismModules.TELEPORTATION_UNIT, WeaponsModules.SWEEPING_UNIT, WeaponsModules.LOOTING_UNIT, WeaponsModules.FIREASPECT_UNIT, WeaponsModules.KNOCKBACK_UNIT, WeaponsModules.ENCHANTMENT_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_BOW_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.AUTOFIRE_UNIT, WeaponsModules.ARROWENERGY_UNIT, WeaponsModules.DRAWSPEED_UNIT, WeaponsModules.GRAVITYDAMPENER_UNIT, WeaponsModules.LOOTING_UNIT, WeaponsModules.PUNCH_UNIT, WeaponsModules.CHEMICALARROW_UNIT, WeaponsModules.ENCHANTMENT_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
+        MekanismIMC.sendModuleIMC(ADD_MEKA_GUN_MODULES, MekanismModules.ENERGY_UNIT, WeaponsModules.ATTACKAMPLIFICATION_UNIT, WeaponsModules.LOOTING_UNIT, WeaponsModules.COOLING_UNIT, WeaponsModules.ENCHANTMENT_UNIT, MekanismModules.COLOR_MODULATION_UNIT);
         MekanismIMC.sendModuleIMC(ADD_MAGNETIZER_MODULE, MekanismModules.COLOR_MODULATION_UNIT);
     }
 
@@ -176,6 +178,7 @@ public class MekaWeapons {
         @SubscribeEvent
         public static void registerScreens(RegisterMenuScreensEvent event) {
             ClientRegistrationUtil.registerScreen(event, MekaWeapons.MAGNETIZER_CONTAINER, GuiMagnetizer::new);
+            ClientRegistrationUtil.registerScreen(event, MekaWeapons.ENCHANTMENT_IMBUER_CONTAINER, GuiEnchantmentImbuer::new);
         }
 
         @SubscribeEvent

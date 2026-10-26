@@ -15,6 +15,17 @@ public enum WeaponsLang implements ILangEntry {
     HEAT("tooltip", "gun_heat"),
     CHEMICAL_ARROWS("tooltip", "chemical_arrows"),
     CHEMICAL_ARROWS_EMPTY("tooltip", "chemical_arrows_empty"),
+    IMBUER("tooltip", "imbuer"),
+    IMBUER_HOLDING("tooltip", "imbuer_holding"),
+
+    BUTTON_IMBUE("gui", "imbue"),
+    IMBUER_NOTHING_TO_ADD("gui", "imbuer_nothing_to_add"),
+    IMBUER_FULL("gui", "imbuer_full"),
+    IMBUER_NOT_SUPPORTED("gui", "imbuer_not_supported"),
+    IMBUER_INCOMPATIBLE("gui", "imbuer_incompatible"),
+    IMBUER_REMOVE("gui", "imbuer_remove"),
+    IMBUER_READY("gui", "imbuer_ready"),
+    IMBUER_STORED("gui", "imbuer_stored"),
 
     RADIAL_TOGGLE_ON("radial", "toggle_on"),
     RADIAL_TOGGLE_OFF("radial", "toggle_off"),

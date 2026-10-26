@@ -12,6 +12,7 @@ import mekanism.common.content.gear.shared.ModuleEnergyUnit;
 import mekanism.common.item.ItemModule;
 import mekanism.common.registration.impl.ItemDeferredRegister;
 import mekanism.common.registration.impl.ItemRegistryObject;
+import meranha.mekaweapons.items.ItemEnchantmentImbuer;
 import meranha.mekaweapons.items.ItemMagnetizer;
 import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaGun;
@@ -48,6 +49,7 @@ public class WeaponsItems {
                     .build(), MekaWeapons.general);
 
     public static final ItemRegistryObject<ItemMagnetizer> MAGNETIZER = ITEMS.registerUnburnable("magnetizer", ItemMagnetizer::new);
+    public static final ItemRegistryObject<ItemEnchantmentImbuer> ENCHANTMENT_IMBUER = ITEMS.registerUnburnable("enchantment_imbuer", ItemEnchantmentImbuer::new);
     public static final ItemRegistryObject<Item> KATANA_BLADE = ITEMS.register("katana_blade");
     public static final ItemRegistryObject<Item> BOW_RISER = ITEMS.register("bow_riser");
     public static final ItemRegistryObject<Item> BOW_LIMB = ITEMS.register("bow_limb");
@@ -65,4 +67,5 @@ public class WeaponsItems {
     public static final ItemRegistryObject<ItemModule> MODULE_KNOCKBACK = ITEMS.registerModule(WeaponsModules.KNOCKBACK_UNIT, Rarity.UNCOMMON);
     public static final ItemRegistryObject<ItemModule> MODULE_COOLING = ITEMS.registerModule(WeaponsModules.COOLING_UNIT, Rarity.RARE);
     public static final ItemRegistryObject<ItemModule> MODULE_CHEMICALARROW = ITEMS.registerModule(WeaponsModules.CHEMICALARROW_UNIT, Rarity.EPIC);
+    public static final ItemRegistryObject<ItemModule> MODULE_ENCHANTMENT = ITEMS.registerModule(WeaponsModules.ENCHANTMENT_UNIT, Rarity.EPIC);
 }

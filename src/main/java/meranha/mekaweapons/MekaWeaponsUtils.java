@@ -40,6 +40,7 @@ import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.items.ItemMekaBow;
 import meranha.mekaweapons.items.ItemMekaTana;
 import meranha.mekaweapons.items.modules.AdvancedAttackAmplificationUnit;
+import meranha.mekaweapons.items.modules.EnchantmentUnit;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Locale;
@@ -212,14 +213,16 @@ public class MekaWeaponsUtils {
         }
 
         ItemEnchantments moduleBased = container.moduleBasedEnchantments();
-        if (moduleBased.isEmpty()) {
+        ItemEnchantments imbued = EnchantmentUnit.getImbued(stack);
+        if (moduleBased.isEmpty() && imbued.isEmpty()) {
             return enchantments;
-        } else if (enchantments.isEmpty()) {
-            return moduleBased;
         }
 
         ItemEnchantments.Mutable merged = new ItemEnchantments.Mutable(enchantments);
         for (Object2IntMap.Entry<Holder<Enchantment>> entry : moduleBased.entrySet()) {
+            merged.upgrade(entry.getKey(), entry.getIntValue());
+        }
+        for (Object2IntMap.Entry<Holder<Enchantment>> entry : imbued.entrySet()) {
             merged.upgrade(entry.getKey(), entry.getIntValue());
         }
         return merged.toImmutable();

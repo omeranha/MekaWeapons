@@ -7,6 +7,7 @@
 	"item.mekaweapons.bow_limb": "Fiberglass Bow Limb",
 	"item.mekaweapons.meka_gun": "Meka-Gun",
 	"item.mekaweapons.fiber_optic_glass": "Fiber Optic Glass",
+	"item.mekaweapons.enchantment_imbuer": "Enchantment Imbuer",
 
 	"tooltip.mekaweapons.autofire_mode": "Auto Fire Mode: %s",
 	"tooltip.mekaweapons.arrowenergy_mode": "Energy Arrows Mode: %s",
@@ -15,6 +16,17 @@
 	"tooltip.mekaweapons.gun_heat": "Heat: %s",
 	"tooltip.mekaweapons.chemical_arrows": "Chemical: %s (%s mB)",
 	"tooltip.mekaweapons.chemical_arrows_empty": "Chemical: %s",
+	"tooltip.mekaweapons.imbuer": "Transfers the enchantments of an enchanted book into the Enchantment Unit installed on a weapon.",
+	"tooltip.mekaweapons.imbuer_holding": "Holding:",
+
+	"gui.mekaweapons.imbue": "Imbue",
+	"gui.mekaweapons.imbuer_nothing_to_add": "Nothing new to add from this book",
+	"gui.mekaweapons.imbuer_full": "Full",
+	"gui.mekaweapons.imbuer_not_supported": "Not supported",
+	"gui.mekaweapons.imbuer_incompatible": "Enchantment conflicts",
+	"gui.mekaweapons.imbuer_remove": "Remove and return as a book",
+	"gui.mekaweapons.imbuer_ready": "Ready",
+	"gui.mekaweapons.imbuer_stored": "Stored: %s / %s",
 
 	"radial.mekaweapons.attack_damage": "Attack Damage",
 	"radial.mekaweapons.autofire_mode": "Auto Fire",
@@ -42,6 +54,8 @@
 	"module.mekaweapons.cooling_unit": "Cooling Unit",
 	"module.mekaweapons.chemicalarrow_unit": "Chemical Arrows Unit",
 	"module.mekaweapons.chemicalarrow_dump": "Dump stored chemical",
+	"module.mekaweapons.enchantment_unit": "Enchantment Unit",
+	"module.mekaweapons.enchantments": "Imbued enchantments",
 	"module.mekaweapons.attack_damage_multiplier": "Damage multiplier",
 	"module.mekaweapons.arrowenergy_mode": "Energy Arrows Mode",
 	"module.mekaweapons.autofire_mode": "Auto Fire Mode",
@@ -60,6 +74,7 @@
 	"description.mekaweapons.knockback_unit": "Targets struck by the Meka-Tana are knocked back further.",
 	"description.mekaweapons.cooling_unit": "Vents the Meka-Gun heat faster, at the cost of extra energy per shot.",
 	"description.mekaweapons.chemicalarrow_unit": "Adds a chemical tank to the Meka-Bow and infuses its arrows with the stored chemical. Accepts hydrogen, sulfuric acid, hydrogen chloride and water vapor.",
+	"description.mekaweapons.enchantment_unit": "Holds up to 4 enchantments imbued from enchanted books using the Enchantment Imbuer, and applies them to the weapon.",
 	"curios.identifier.magnetizer": "Magnetizer",
 
 	"gui.mekaweapons.render_tana": "Toggle Meka-Tana render on back",

@@ -49,4 +49,7 @@ public class WeaponsModules {
             builder -> builder.maxStackSize(MekaWeapons.startup.maxCoolingUnits.getOrDefault()));
     public static final ModuleRegistryObject<ChemicalArrowUnit> CHEMICALARROW_UNIT = MODULES.register("chemicalarrow_unit", module -> new ChemicalArrowUnit(), () -> WeaponsItems.MODULE_CHEMICALARROW,
             builder -> builder.addConfig(ModuleBooleanConfig.create(ChemicalArrowUnit.DUMP, false)));
+
+    public static final ModuleRegistryObject<EnchantmentUnit> ENCHANTMENT_UNIT = MODULES.register("enchantment_unit", EnchantmentUnit::new, () -> WeaponsItems.MODULE_ENCHANTMENT,
+            builder -> builder.addConfig(ModuleEnchantmentsConfig.create(EnchantmentUnit.ENCHANTMENTS), ModuleEnchantmentsConfig.CODEC, ModuleEnchantmentsConfig.STREAM_CODEC));
 }

@@ -12,6 +12,8 @@ public class WeaponsPacketHandler extends BasePacketHandler {
     @Override
     protected void registerClientToServer(PacketRegistrar registrar) {
         registrar.play(PacketWeaponItemGuiInteract.TYPE, PacketWeaponItemGuiInteract.STREAM_CODEC);
+        registrar.play(PacketImbueEnchantments.TYPE, PacketImbueEnchantments.STREAM_CODEC);
+        registrar.play(PacketRemoveEnchantment.TYPE, PacketRemoveEnchantment.STREAM_CODEC);
     }
 
     @Override
