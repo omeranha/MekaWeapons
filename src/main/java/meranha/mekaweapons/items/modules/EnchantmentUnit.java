@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Generic enchantment module. Instead of being tied to a single enchantment like Mekanism's enchantment based modules,
- * it stores whatever enchantments were imbued into it, up to {@link #MAX_ENCHANTMENTS}.
+ * it stores whatever enchantments were infused into it, up to {@link #MAX_ENCHANTMENTS}.
  */
 @ParametersAreNotNullByDefault
 public record EnchantmentUnit(ItemEnchantments enchantments) implements ICustomModule<EnchantmentUnit> {
@@ -30,11 +30,11 @@ public record EnchantmentUnit(ItemEnchantments enchantments) implements ICustomM
     }
 
     /**
-     * Enchantments currently imbued into the unit installed on the given stack, or empty when there is no unit or it is
+     * Enchantments currently infused into the unit installed on the given stack, or empty when there is no unit or it is
      * disabled.
      */
     @NotNull
-    public static ItemEnchantments getImbued(ItemStack stack) {
+    public static ItemEnchantments getInfused(ItemStack stack) {
         IModule<EnchantmentUnit> module = getModule(stack);
         if (module == null || !module.isEnabled()) {
             return ItemEnchantments.EMPTY;
@@ -65,7 +65,7 @@ public record EnchantmentUnit(ItemEnchantments enchantments) implements ICustomM
     }
 
     public static boolean isFull(ItemStack target) {
-        return getImbued(target).size() >= MAX_ENCHANTMENTS;
+        return getInfused(target).size() >= MAX_ENCHANTMENTS;
     }
 
     /**

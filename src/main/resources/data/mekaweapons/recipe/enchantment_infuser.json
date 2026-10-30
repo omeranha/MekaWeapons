@@ -2,12 +2,12 @@
   "neoforge:conditions": [
     {
       "type": "neoforge:item_exists",
-      "item": "mekaweapons:enchantment_imbuer"
+      "item": "mekaweapons:enchantment_infuser"
     }
   ],
   "type":"minecraft:crafting_shaped",
   "result":{
-    "id":"mekaweapons:enchantment_imbuer"
+    "id":"mekaweapons:enchantment_infuser"
   },
   "pattern":[ "ete", "rbr", "sss" ],
   "key":{

@@ -72,7 +72,7 @@ public class MekaWeapons {
 
     public static final ContainerTypeDeferredRegister CONTAINER_TYPES = new ContainerTypeDeferredRegister(MODID);
     public static final ContainerTypeRegistryObject<MagnetizerContainer> MAGNETIZER_CONTAINER = CONTAINER_TYPES.register(WeaponsItems.MAGNETIZER, ItemMagnetizer.class, MagnetizerContainer::new);
-    public static final ContainerTypeRegistryObject<EnchantmentImbuerContainer> ENCHANTMENT_IMBUER_CONTAINER = CONTAINER_TYPES.register(WeaponsItems.ENCHANTMENT_IMBUER, ItemEnchantmentImbuer.class, EnchantmentImbuerContainer::new);
+    public static final ContainerTypeRegistryObject<EnchantmentInfuserContainer> ENCHANTMENT_INFUSER_CONTAINER = CONTAINER_TYPES.register(WeaponsItems.ENCHANTMENT_INFUSER, ItemEnchantmentInfuser.class, EnchantmentInfuserContainer::new);
 
     public static final DataComponentDeferredRegister DATA_COMPONENTS = new DataComponentDeferredRegister(MODID);
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKATANA = DATA_COMPONENTS.registerBoolean("render_mekatana");
@@ -80,7 +80,7 @@ public class MekaWeapons {
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> TOGGLE_RENDER_MEKAGUN = DATA_COMPONENTS.registerBoolean("render_mekagun");
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Integer>> HEAT = DATA_COMPONENTS.registerInt("heat");
     public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<Long>> LAST_FIRE_TICK = DATA_COMPONENTS.registerNonNegativeLong("last_fire_tick");
-    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<ImbuerContents>> IMBUER_CONTENTS = DATA_COMPONENTS.simple("imbuer_contents", builder -> builder.persistent(ImbuerContents.CODEC).networkSynchronized(ImbuerContents.STREAM_CODEC));
+    public static final MekanismDeferredHolder<DataComponentType<?>, DataComponentType<InfuserContents>> INFUSER_CONTENTS = DATA_COMPONENTS.simple("infuser_contents", builder -> builder.persistent(InfuserContents.CODEC).networkSynchronized(InfuserContents.STREAM_CODEC));
 
     public MekaWeapons(IEventBus modEventBus, ModContainer modContainer) {
         // the startup config holds the module install limits, so it has to be loaded before the modules are registered
@@ -178,7 +178,7 @@ public class MekaWeapons {
         @SubscribeEvent
         public static void registerScreens(RegisterMenuScreensEvent event) {
             ClientRegistrationUtil.registerScreen(event, MekaWeapons.MAGNETIZER_CONTAINER, GuiMagnetizer::new);
-            ClientRegistrationUtil.registerScreen(event, MekaWeapons.ENCHANTMENT_IMBUER_CONTAINER, GuiEnchantmentImbuer::new);
+            ClientRegistrationUtil.registerScreen(event, MekaWeapons.ENCHANTMENT_INFUSER_CONTAINER, GuiEnchantmentInfuser::new);
         }
 
         @SubscribeEvent

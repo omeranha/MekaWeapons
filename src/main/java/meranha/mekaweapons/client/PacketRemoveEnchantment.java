@@ -29,7 +29,7 @@ public record PacketRemoveEnchantment(ResourceLocation enchantment) implements I
 
     @Override
     public void handle(IPayloadContext context) {
-        if (context.player().containerMenu instanceof EnchantmentImbuerContainer container) {
+        if (context.player().containerMenu instanceof EnchantmentInfuserContainer container) {
             container.removeEnchantment(context.player(), enchantment);
         }
     }

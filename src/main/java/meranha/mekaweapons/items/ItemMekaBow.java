@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mekanism.api.chemical.IChemicalTank;
+import mekanism.api.gear.ModuleData;
+import mekanism.api.text.TextComponentUtil;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import mekanism.common.attachments.IAttachmentAware;
 import mekanism.common.attachments.containers.ContainerType;
 import mekanism.common.attachments.containers.chemical.ChemicalTanksBuilder;
@@ -16,6 +19,7 @@ import mekanism.common.registries.MekanismChemicals;
 import meranha.mekaweapons.client.WeaponsLang;
 import meranha.mekaweapons.items.modules.ChemicalArrowEffect;
 import meranha.mekaweapons.items.modules.DrawSpeedUnit;
+import meranha.mekaweapons.items.modules.EnchantmentUnit;
 import meranha.mekaweapons.items.modules.WeaponsModules;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -44,6 +48,7 @@ import mekanism.common.content.gear.ModuleHelper;
 import mekanism.common.util.StorageUtils;
 import meranha.mekaweapons.MekaWeapons;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -89,6 +94,25 @@ public class ItemMekaBow extends BowItem implements IRadialModuleContainerItem, 
             if (container != null) {
                 for (Module<?> module : container.modules()) {
                     module.tick(container, stack, player);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void addModuleDetails(ItemStack stack, List<Component> tooltip) {
+        for (IModule<?> module : this.getModules(stack)) {
+            ModuleData<?> data = module.getUntypedData();
+            if (module.getInstalledCount() > 1) {
+                Component amount = MekanismLang.GENERIC_FRACTION.translate(module.getInstalledCount(), data.getMaxStackSize());
+                tooltip.add(MekanismLang.GENERIC_WITH_PARENTHESIS.translateColored(EnumColor.GRAY, data, amount));
+            } else {
+                tooltip.add(TextComponentUtil.build(EnumColor.GRAY, data));
+                if (module.getCustomInstance() instanceof EnchantmentUnit(ItemEnchantments enchantments)) {
+                    for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
+                        Component name = Enchantment.getFullname(entry.getKey(), entry.getIntValue());
+                        tooltip.add(TextComponentUtil.build(EnumColor.DARK_GRAY, Component.literal(" ").append(name)));
+                    }
                 }
             }
         }

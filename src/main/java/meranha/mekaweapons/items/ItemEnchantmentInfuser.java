@@ -5,7 +5,7 @@ import mekanism.api.text.EnumColor;
 import mekanism.common.item.interfaces.IGuiItem;
 import mekanism.common.registration.impl.ContainerTypeRegistryObject;
 import meranha.mekaweapons.MekaWeapons;
-import meranha.mekaweapons.client.ImbuerContents;
+import meranha.mekaweapons.client.InfuserContents;
 import meranha.mekaweapons.client.WeaponsLang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -27,18 +27,18 @@ import org.jetbrains.annotations.NotNull;
  * Handheld station that transfers the enchantments of an enchanted book into the Enchantment Unit installed on a
  * weapon.
  */
-public class ItemEnchantmentImbuer extends Item implements IGuiItem {
+public class ItemEnchantmentInfuser extends Item implements IGuiItem {
 
-    public ItemEnchantmentImbuer(@NotNull Properties properties) {
+    public ItemEnchantmentInfuser(@NotNull Properties properties) {
         super(properties.rarity(Rarity.RARE).stacksTo(1));
     }
 
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
-        tooltip.add(WeaponsLang.IMBUER.translateColored(EnumColor.WHITE));
-        ImbuerContents contents = stack.get(MekaWeapons.IMBUER_CONTENTS.get());
+        tooltip.add(WeaponsLang.INFUSER.translateColored(EnumColor.WHITE));
+        InfuserContents contents = stack.get(MekaWeapons.INFUSER_CONTENTS.get());
         if (contents != null && !contents.isEmpty()) {
-            tooltip.add(WeaponsLang.IMBUER_HOLDING.translateColored(EnumColor.YELLOW));
+            tooltip.add(WeaponsLang.INFUSER_HOLDING.translateColored(EnumColor.YELLOW));
             for (ItemStack held : contents.nonEmpty()) {
                 tooltip.add(Component.literal(held.getCount() + "x ").append(held.getHoverName()).withStyle(ChatFormatting.GRAY));
             }
@@ -47,7 +47,7 @@ public class ItemEnchantmentImbuer extends Item implements IGuiItem {
 
     @Override
     public void onDestroyed(@NotNull ItemEntity item, @NotNull DamageSource damageSource) {
-        ImbuerContents contents = item.getItem().get(MekaWeapons.IMBUER_CONTENTS.get());
+        InfuserContents contents = item.getItem().get(MekaWeapons.INFUSER_CONTENTS.get());
         if (contents != null && !contents.isEmpty()) {
             ItemUtils.onContainerDestroyed(item, contents.nonEmpty());
         }
@@ -65,7 +65,7 @@ public class ItemEnchantmentImbuer extends Item implements IGuiItem {
 
     @Override
     public ContainerTypeRegistryObject<?> getContainerType() {
-        return MekaWeapons.ENCHANTMENT_IMBUER_CONTAINER;
+        return MekaWeapons.ENCHANTMENT_INFUSER_CONTAINER;
     }
 
     @Override

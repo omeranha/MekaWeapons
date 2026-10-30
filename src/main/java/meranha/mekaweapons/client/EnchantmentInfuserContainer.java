@@ -13,7 +13,7 @@ import mekanism.common.inventory.container.item.MekanismItemContainer;
 import mekanism.common.inventory.container.slot.ContainerSlotType;
 import mekanism.common.inventory.slot.BasicInventorySlot;
 import meranha.mekaweapons.MekaWeapons;
-import meranha.mekaweapons.items.ItemEnchantmentImbuer;
+import meranha.mekaweapons.items.ItemEnchantmentInfuser;
 import meranha.mekaweapons.items.modules.EnchantmentUnit;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -29,10 +29,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Container for the Enchantment Imbuer. The two slots are intentionally transient: they only live as long as the GUI is
+ * Container for the Enchantment Infuser. The two slots are intentionally transient: they only live as long as the GUI is
  * open and their contents are handed back to the player on close, so nothing has to be persisted onto the item.
  */
-public class EnchantmentImbuerContainer extends MekanismItemContainer {
+public class EnchantmentInfuserContainer extends MekanismItemContainer {
 
     public static final int BOOK_SLOT_X = 26;
     public static final int WEAPON_SLOT_X = 134;
@@ -42,8 +42,8 @@ public class EnchantmentImbuerContainer extends MekanismItemContainer {
     private BasicInventorySlot weaponSlot;
     private boolean loading;
 
-    public EnchantmentImbuerContainer(int id, Inventory inv, InteractionHand hand, ItemStack stack) {
-        super(MekaWeapons.ENCHANTMENT_IMBUER_CONTAINER, id, inv, hand, stack);
+    public EnchantmentInfuserContainer(int id, Inventory inv, InteractionHand hand, ItemStack stack) {
+        super(MekaWeapons.ENCHANTMENT_INFUSER_CONTAINER, id, inv, hand, stack);
     }
 
     @Override
@@ -59,11 +59,11 @@ public class EnchantmentImbuerContainer extends MekanismItemContainer {
     }
 
     /**
-     * Pulls anything the imbuer was holding back into the slots. This is what recovers items after a crash, where
+     * Pulls anything the infuser was holding back into the slots. This is what recovers items after a crash, where
      * {@link #removed(Player)} never ran.
      */
     private void restore() {
-        ImbuerContents contents = getImbuerStack().get(MekaWeapons.IMBUER_CONTENTS.get());
+        InfuserContents contents = getInfuserStack().get(MekaWeapons.INFUSER_CONTENTS.get());
         if (contents == null || contents.isEmpty()) {
             return;
         }
@@ -75,28 +75,28 @@ public class EnchantmentImbuerContainer extends MekanismItemContainer {
     }
 
     /**
-     * Mirrors the slot contents onto the imbuer stack, so they are saved with the player's inventory.
+     * Mirrors the slot contents onto the infuser stack, so they are saved with the player's inventory.
      */
     private void persist() {
         if (loading || bookSlot == null || weaponSlot == null || inv.player.level().isClientSide()) {
             return;
         }
-        ItemStack imbuer = getImbuerStack();
-        if (imbuer.isEmpty()) {
+        ItemStack infuser = getInfuserStack();
+        if (infuser.isEmpty()) {
             return;
         }
 
-        ImbuerContents contents = new ImbuerContents(bookSlot.getStack().copy(), weaponSlot.getStack().copy());
+        InfuserContents contents = new InfuserContents(bookSlot.getStack().copy(), weaponSlot.getStack().copy());
         if (contents.isEmpty()) {
-            imbuer.remove(MekaWeapons.IMBUER_CONTENTS.get());
+            infuser.remove(MekaWeapons.INFUSER_CONTENTS.get());
         } else {
-            imbuer.set(MekaWeapons.IMBUER_CONTENTS.get(), contents);
+            infuser.set(MekaWeapons.INFUSER_CONTENTS.get(), contents);
         }
     }
 
-    private ItemStack getImbuerStack() {
+    private ItemStack getInfuserStack() {
         ItemStack held = inv.player.getItemInHand(hand);
-        return held.getItem() instanceof ItemEnchantmentImbuer ? held : stack;
+        return held.getItem() instanceof ItemEnchantmentInfuser ? held : stack;
     }
 
     @Override
@@ -120,7 +120,7 @@ public class EnchantmentImbuerContainer extends MekanismItemContainer {
      * Stored enchantments in a stable order, so a row in the GUI always refers to the same entry on both sides.
      */
     public List<StoredEnchantment> getStored() {
-        ItemEnchantments stored = EnchantmentUnit.getImbued(getWeaponStack());
+        ItemEnchantments stored = EnchantmentUnit.getInfused(getWeaponStack());
         List<StoredEnchantment> list = new ArrayList<>(stored.size());
         for (Object2IntMap.Entry<Holder<Enchantment>> entry : stored.entrySet()) {
             int level = entry.getIntValue();
@@ -130,18 +130,18 @@ public class EnchantmentImbuerContainer extends MekanismItemContainer {
         return list;
     }
 
-    public ImbueStatus getStatus() {
+    public InfuseStatus getStatus() {
         ItemStack weapon = getWeaponStack();
         if (weapon.isEmpty()) {
-            return ImbueStatus.NO_WEAPON;
+            return InfuseStatus.NO_WEAPON;
         }
         ItemStack book = getBookStack();
         if (book.isEmpty()) {
-            return ImbueStatus.NO_BOOK;
+            return InfuseStatus.NO_BOOK;
         }
 
         ItemEnchantments incoming = EnchantmentUnit.readEnchantments(book);
-        ItemEnchantments current = EnchantmentUnit.getImbued(weapon);
+        ItemEnchantments current = EnchantmentUnit.getInfused(weapon);
         boolean anyApplicable = false;
         boolean anyCompatible = false;
         boolean anyNew = false;
@@ -161,26 +161,26 @@ public class EnchantmentImbuerContainer extends MekanismItemContainer {
         }
 
         if (!anyApplicable) {
-            return ImbueStatus.NOT_SUPPORTED;
+            return InfuseStatus.NOT_SUPPORTED;
         } else if (!anyCompatible) {
-            return ImbueStatus.INCOMPATIBLE;
+            return InfuseStatus.INCOMPATIBLE;
         } else if (!EnchantmentUnit.merge(weapon, current, incoming).equals(current)) {
-            return ImbueStatus.READY;
+            return InfuseStatus.READY;
         } else if (anyNew && EnchantmentUnit.isFull(weapon)) {
-            return ImbueStatus.FULL;
+            return InfuseStatus.FULL;
         }
-        return ImbueStatus.NOTHING_NEW;
+        return InfuseStatus.NOTHING_NEW;
     }
 
-    public boolean canImbue() {
-        return getStatus() == ImbueStatus.READY;
+    public boolean canInfuse() {
+        return getStatus() == InfuseStatus.READY;
     }
 
     /**
      * Server side: moves the book's applicable enchantments into the weapon's Enchantment Unit and consumes the book.
      */
-    public void imbue(Player player) {
-        if (!canImbue()) {
+    public void infuse(Player player) {
+        if (!canInfuse()) {
             return;
         }
 
@@ -282,7 +282,7 @@ public class EnchantmentImbuerContainer extends MekanismItemContainer {
     private record ModuleTarget(IModule<EnchantmentUnit> module, IModuleContainer container, ModuleConfig<ItemEnchantments> config) {
     }
 
-    public enum ImbueStatus {
+    public enum InfuseStatus {
         NO_WEAPON,
         NO_BOOK,
         NOT_SUPPORTED,

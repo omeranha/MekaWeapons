@@ -213,8 +213,8 @@ public class MekaWeaponsUtils {
         }
 
         ItemEnchantments moduleBased = container.moduleBasedEnchantments();
-        ItemEnchantments imbued = EnchantmentUnit.getImbued(stack);
-        if (moduleBased.isEmpty() && imbued.isEmpty()) {
+        ItemEnchantments infused = EnchantmentUnit.getInfused(stack);
+        if (moduleBased.isEmpty() && infused.isEmpty()) {
             return enchantments;
         }
 
@@ -222,7 +222,7 @@ public class MekaWeaponsUtils {
         for (Object2IntMap.Entry<Holder<Enchantment>> entry : moduleBased.entrySet()) {
             merged.upgrade(entry.getKey(), entry.getIntValue());
         }
-        for (Object2IntMap.Entry<Holder<Enchantment>> entry : imbued.entrySet()) {
+        for (Object2IntMap.Entry<Holder<Enchantment>> entry : infused.entrySet()) {
             merged.upgrade(entry.getKey(), entry.getIntValue());
         }
         return merged.toImmutable();

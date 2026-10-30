@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Module config that stores an arbitrary set of enchantments. Mekanism's module tweaker only knows how to render
  * boolean, enum and color configs, so this one is simply skipped there and is instead edited through the Enchantment
- * Imbuer GUI.
+ * Infuser GUI.
  */
 public class ModuleEnchantmentsConfig extends ModuleConfig<ItemEnchantments> {
 

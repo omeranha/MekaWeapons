@@ -12,7 +12,7 @@ import mekanism.client.render.IFancyFontRenderer.TextAlignment;
 import mekanism.common.network.PacketUtils;
 import mekanism.common.util.MekanismUtils;
 import mekanism.common.util.MekanismUtils.ResourceType;
-import meranha.mekaweapons.client.EnchantmentImbuerContainer.StoredEnchantment;
+import meranha.mekaweapons.client.EnchantmentInfuserContainer.StoredEnchantment;
 import meranha.mekaweapons.items.modules.EnchantmentUnit;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -20,7 +20,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.jetbrains.annotations.NotNull;
 
-public class GuiEnchantmentImbuer extends GuiMekanism<EnchantmentImbuerContainer> {
+public class GuiEnchantmentInfuser extends GuiMekanism<EnchantmentInfuserContainer> {
 
     private static final int LIST_TOP = 66;
     private static final int ROW_HEIGHT = 10;
@@ -28,9 +28,9 @@ public class GuiEnchantmentImbuer extends GuiMekanism<EnchantmentImbuerContainer
     private static final int REMOVE_X = 152;
 
     private final List<MekanismImageButton> removeButtons = new ArrayList<>();
-    private TranslationButton imbueButton;
+    private TranslationButton infuseButton;
 
-    public GuiEnchantmentImbuer(EnchantmentImbuerContainer container, Inventory inv, Component title) {
+    public GuiEnchantmentInfuser(EnchantmentInfuserContainer container, Inventory inv, Component title) {
         super(container, inv, title);
         imageHeight = 210;
         inventoryLabelY = imageHeight - 94;
@@ -41,10 +41,10 @@ public class GuiEnchantmentImbuer extends GuiMekanism<EnchantmentImbuerContainer
     @Override
     protected void addGuiElements() {
         super.addGuiElements();
-        addRenderableWidget(new GuiInnerScreen(this, 8, 15, 160, 12, this::getStatusText));
+        addRenderableWidget(new GuiInnerScreen(this, 52, 15, 75, 12, this::getStatusText));
         addRenderableWidget(new GuiInnerScreen(this, 8, 52, 160, 58));
-        imbueButton = addRenderableWidget(new TranslationButton(this, 62, 32, 52, 16, WeaponsLang.BUTTON_IMBUE, (element, mouseX, mouseY) -> {
-            PacketUtils.sendToServer(PacketImbueEnchantments.INSTANCE);
+        infuseButton = addRenderableWidget(new TranslationButton(this, 62, 32, 52, 16, WeaponsLang.BUTTON_INFUSE, (element, mouseX, mouseY) -> {
+            PacketUtils.sendToServer(PacketInfuseEnchantments.INSTANCE);
             return true;
         }));
 
@@ -59,7 +59,7 @@ public class GuiEnchantmentImbuer extends GuiMekanism<EnchantmentImbuerContainer
                 }
                 return false;
             }));
-            button.setTooltip(WeaponsLang.IMBUER_REMOVE);
+            button.setTooltip(WeaponsLang.INFUSER_REMOVE);
             removeButtons.add(button);
         }
         updateButtons();
@@ -72,8 +72,8 @@ public class GuiEnchantmentImbuer extends GuiMekanism<EnchantmentImbuerContainer
     }
 
     private void updateButtons() {
-        if (imbueButton != null) {
-            imbueButton.active = menu.canImbue();
+        if (infuseButton != null) {
+            infuseButton.active = menu.canInfuse();
         }
         int stored = menu.getStored().size();
         for (int i = 0; i < removeButtons.size(); i++) {
@@ -89,7 +89,7 @@ public class GuiEnchantmentImbuer extends GuiMekanism<EnchantmentImbuerContainer
         renderInventoryText(guiGraphics);
 
         List<StoredEnchantment> stored = menu.getStored();
-        drawScaledScrollingString(guiGraphics, WeaponsLang.IMBUER_STORED.translateColored(EnumColor.WHITE, EnumColor.AQUA, stored.size(), EnchantmentUnit.MAX_ENCHANTMENTS),
+        drawScaledScrollingString(guiGraphics, WeaponsLang.INFUSER_STORED.translateColored(EnumColor.WHITE, EnumColor.AQUA, stored.size(), EnchantmentUnit.MAX_ENCHANTMENTS),
                 TEXT_X, 55, TextAlignment.LEFT, screenTextColor(), 148, 0, false, 0.8F);
         for (int i = 0; i < stored.size(); i++) {
             StoredEnchantment entry = stored.get(i);
@@ -103,11 +103,11 @@ public class GuiEnchantmentImbuer extends GuiMekanism<EnchantmentImbuerContainer
     private List<Component> getStatusText() {
         List<Component> text = new ArrayList<>();
         text.add(switch (menu.getStatus()) {
-            case NOT_SUPPORTED -> WeaponsLang.IMBUER_NOT_SUPPORTED.translateColored(EnumColor.RED);
-            case INCOMPATIBLE -> WeaponsLang.IMBUER_INCOMPATIBLE.translateColored(EnumColor.RED);
-            case FULL -> WeaponsLang.IMBUER_FULL.translateColored(EnumColor.YELLOW, EnumColor.AQUA, EnchantmentUnit.MAX_ENCHANTMENTS);
-            case NOTHING_NEW -> WeaponsLang.IMBUER_NOTHING_TO_ADD.translateColored(EnumColor.YELLOW);
-            default -> WeaponsLang.IMBUER_READY.translateColored(EnumColor.BRIGHT_GREEN);
+            case NOT_SUPPORTED -> WeaponsLang.INFUSER_NOT_SUPPORTED.translateColored(EnumColor.RED);
+            case INCOMPATIBLE -> WeaponsLang.INFUSER_INCOMPATIBLE.translateColored(EnumColor.RED);
+            case FULL -> WeaponsLang.INFUSER_FULL.translateColored(EnumColor.YELLOW, EnumColor.AQUA, EnchantmentUnit.MAX_ENCHANTMENTS);
+            case NOTHING_NEW -> WeaponsLang.ALREADY_INFUSED.translateColored(EnumColor.YELLOW);
+            default -> WeaponsLang.INFUSER_READY.translateColored(EnumColor.BRIGHT_GREEN);
         });
         return text;
     }
